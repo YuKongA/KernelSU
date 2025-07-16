@@ -106,6 +106,7 @@ import top.yukonga.miuix.kmp.basic.TopAppBar
 import top.yukonga.miuix.kmp.basic.rememberPullToRefreshState
 import top.yukonga.miuix.kmp.extra.DropdownImpl
 import top.yukonga.miuix.kmp.theme.MiuixTheme
+import top.yukonga.miuix.kmp.theme.MiuixTheme.colorScheme
 import top.yukonga.miuix.kmp.utils.getWindowSize
 import top.yukonga.miuix.kmp.utils.overScrollVertical
 
@@ -253,6 +254,7 @@ fun ModuleScreen(navigator: DestinationsNavigator) {
                 }
 
                 ExtendedFloatingActionButton(
+                    containerColor = colorScheme.surface,
                     onClick = {
                         // Select the zip files to install
                         val intent = Intent(Intent.ACTION_GET_CONTENT).apply {
@@ -261,8 +263,12 @@ fun ModuleScreen(navigator: DestinationsNavigator) {
                         }
                         selectZipLauncher.launch(intent)
                     },
-                    icon = { Icon(Icons.Filled.Add, moduleInstall) },
-                    text = { Text(text = moduleInstall) },
+                    icon = { Icon(
+                        Icons.Filled.Add,
+                        moduleInstall,
+                        tint = colorScheme.onBackground
+                    ) },
+                    text = { Text(text = moduleInstall, color = colorScheme.onBackground) },
                 )
             }
         },

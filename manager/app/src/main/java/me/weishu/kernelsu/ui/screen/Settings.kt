@@ -96,6 +96,7 @@ import top.yukonga.miuix.kmp.basic.Text
 import top.yukonga.miuix.kmp.basic.TopAppBar
 import top.yukonga.miuix.kmp.extra.SuperArrow
 import top.yukonga.miuix.kmp.extra.SuperSwitch
+import top.yukonga.miuix.kmp.theme.MiuixTheme.colorScheme
 import top.yukonga.miuix.kmp.utils.getWindowSize
 import top.yukonga.miuix.kmp.utils.overScrollVertical
 import java.time.LocalDateTime
@@ -172,7 +173,8 @@ fun SettingScreen(navigator: DestinationsNavigator) {
                                 Icon(
                                     Icons.Filled.Fence,
                                     modifier = Modifier.padding(end = 16.dp),
-                                    contentDescription = profileTemplate
+                                    contentDescription = profileTemplate,
+                                    tint = colorScheme.onBackground
                                 )
                             },
                             title = profileTemplate,
@@ -193,7 +195,8 @@ fun SettingScreen(navigator: DestinationsNavigator) {
                                 Icon(
                                     Icons.Filled.FolderDelete,
                                     modifier = Modifier.padding(end = 16.dp),
-                                    contentDescription = stringResource(id = R.string.settings_umount_modules_default)
+                                    contentDescription = stringResource(id = R.string.settings_umount_modules_default),
+                                    tint = colorScheme.onBackground
                                 )
                             },
                             title = stringResource(id = R.string.settings_umount_modules_default),
@@ -217,7 +220,8 @@ fun SettingScreen(navigator: DestinationsNavigator) {
                                     Icon(
                                         Icons.Filled.RemoveModerator,
                                         modifier = Modifier.padding(end = 16.dp),
-                                        contentDescription = stringResource(id = R.string.settings_disable_su)
+                                        contentDescription = stringResource(id = R.string.settings_disable_su),
+                                        tint = colorScheme.onBackground
                                     )
                                 },
                                 title = stringResource(id = R.string.settings_disable_su),
@@ -244,7 +248,8 @@ fun SettingScreen(navigator: DestinationsNavigator) {
                             Icon(
                                 Icons.Filled.Update,
                                 modifier = Modifier.padding(end = 16.dp),
-                                contentDescription = stringResource(id = R.string.settings_check_update)
+                                contentDescription = stringResource(id = R.string.settings_check_update),
+                                tint = colorScheme.onBackground
                             )
                         },
                         title = stringResource(id = R.string.settings_check_update),
@@ -268,7 +273,8 @@ fun SettingScreen(navigator: DestinationsNavigator) {
                                 Icon(
                                     Icons.Filled.DeveloperMode,
                                     modifier = Modifier.padding(end = 16.dp),
-                                    contentDescription = stringResource(id = R.string.enable_web_debugging)
+                                    contentDescription = stringResource(id = R.string.enable_web_debugging),
+                                    tint = colorScheme.onBackground
                                 )
                             },
                             title = stringResource(id = R.string.enable_web_debugging),
@@ -288,7 +294,8 @@ fun SettingScreen(navigator: DestinationsNavigator) {
                             Icon(
                                 Icons.Filled.BugReport,
                                 modifier = Modifier.padding(end = 16.dp),
-                                contentDescription = stringResource(id = R.string.send_log)
+                                contentDescription = stringResource(id = R.string.send_log),
+                                tint = colorScheme.onBackground
                             )
                         },
                         title = stringResource(id = R.string.send_log),
@@ -320,7 +327,8 @@ fun SettingScreen(navigator: DestinationsNavigator) {
                                             Icon(
                                                 Icons.Filled.Save,
                                                 contentDescription = null,
-                                                modifier = Modifier.align(Alignment.CenterHorizontally)
+                                                modifier = Modifier.align(Alignment.CenterHorizontally),
+                                                tint = colorScheme.onBackground
                                             )
                                             Text(
                                                 text = stringResource(id = R.string.save_log),
@@ -372,7 +380,8 @@ fun SettingScreen(navigator: DestinationsNavigator) {
                                             Icon(
                                                 Icons.Filled.Share,
                                                 contentDescription = null,
-                                                modifier = Modifier.align(Alignment.CenterHorizontally)
+                                                modifier = Modifier.align(Alignment.CenterHorizontally),
+                                                tint = colorScheme.onBackground
                                             )
                                             Text(
                                                 text = stringResource(id = R.string.send_log),
@@ -399,7 +408,8 @@ fun SettingScreen(navigator: DestinationsNavigator) {
                                 Icon(
                                     Icons.Filled.Compress,
                                     modifier = Modifier.padding(end = 16.dp),
-                                    contentDescription = shrink
+                                    contentDescription = shrink,
+                                    tint = colorScheme.onBackground
                                 )
                             },
                             title = shrink,
@@ -429,7 +439,8 @@ fun SettingScreen(navigator: DestinationsNavigator) {
                             Icon(
                                 Icons.Filled.ContactPage,
                                 modifier = Modifier.padding(end = 16.dp),
-                                contentDescription = about
+                                contentDescription = about,
+                                tint = colorScheme.onBackground
                             )
                         },
                         title = about,
