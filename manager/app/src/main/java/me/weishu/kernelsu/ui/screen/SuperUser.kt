@@ -1,24 +1,49 @@
 package me.weishu.kernelsu.ui.screen
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.MoreVert
-import androidx.compose.material3.*
-import androidx.compose.material3.pulltorefresh.PullToRefreshBox
-import androidx.compose.runtime.*
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -31,16 +56,37 @@ import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import kotlinx.coroutines.launch
 import me.weishu.kernelsu.Natives
 import me.weishu.kernelsu.R
-import me.weishu.kernelsu.ui.component.SearchAppBar
 import me.weishu.kernelsu.ui.viewmodel.SuperUserViewModel
+import top.yukonga.miuix.kmp.basic.BasicComponent
+import top.yukonga.miuix.kmp.basic.Card
+import top.yukonga.miuix.kmp.basic.Icon
+import top.yukonga.miuix.kmp.basic.IconButton
+import top.yukonga.miuix.kmp.basic.InputField
+import top.yukonga.miuix.kmp.basic.ListPopup
+import top.yukonga.miuix.kmp.basic.ListPopupColumn
+import top.yukonga.miuix.kmp.basic.ListPopupDefaults
+import top.yukonga.miuix.kmp.basic.MiuixScrollBehavior
+import top.yukonga.miuix.kmp.basic.PopupPositionProvider
+import top.yukonga.miuix.kmp.basic.PullToRefresh
+import top.yukonga.miuix.kmp.basic.Scaffold
+import top.yukonga.miuix.kmp.basic.SearchBar
+import top.yukonga.miuix.kmp.basic.Text
+import top.yukonga.miuix.kmp.basic.TopAppBar
+import top.yukonga.miuix.kmp.basic.rememberPullToRefreshState
+import top.yukonga.miuix.kmp.extra.DropdownImpl
+import top.yukonga.miuix.kmp.icon.MiuixIcons
+import top.yukonga.miuix.kmp.icon.icons.basic.SearchCleanup
+import top.yukonga.miuix.kmp.theme.MiuixTheme
+import top.yukonga.miuix.kmp.utils.getWindowSize
+import top.yukonga.miuix.kmp.utils.overScrollVertical
 
-@OptIn(ExperimentalMaterialApi::class, ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class)
 @Destination<RootGraph>
 @Composable
 fun SuperUserScreen(navigator: DestinationsNavigator) {
     val viewModel = viewModel<SuperUserViewModel>()
     val scope = rememberCoroutineScope()
-    val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior(rememberTopAppBarState())
+    val scrollBehavior = MiuixScrollBehavior()
     val listState = rememberLazyListState()
 
     LaunchedEffect(key1 = navigator) {
@@ -58,66 +104,159 @@ fun SuperUserScreen(navigator: DestinationsNavigator) {
 
     Scaffold(
         topBar = {
-            SearchAppBar(
-                title = { Text(stringResource(R.string.superuser)) },
-                searchText = viewModel.search,
-                onSearchTextChange = { viewModel.search = it },
-                onClearClick = { viewModel.search = "" },
-                dropdownContent = {
-                    var showDropdown by remember { mutableStateOf(false) }
+            TopAppBar(
+                title = stringResource(R.string.superuser),
+                actions = {
+                    val showTopPopup = remember { mutableStateOf(false) }
 
                     IconButton(
-                        onClick = { showDropdown = true },
+                        modifier = Modifier.padding(end = 16.dp),
+                        onClick = { showTopPopup.value = true },
+                        holdDownState = showTopPopup.value
                     ) {
                         Icon(
                             imageVector = Icons.Filled.MoreVert,
                             contentDescription = stringResource(id = R.string.settings)
                         )
-
-                        DropdownMenu(expanded = showDropdown, onDismissRequest = {
-                            showDropdown = false
-                        }) {
-                            DropdownMenuItem(text = {
-                                Text(stringResource(R.string.refresh))
-                            }, onClick = {
-                                scope.launch {
-                                    viewModel.fetchAppList()
-                                }
-                                showDropdown = false
-                            })
-                            DropdownMenuItem(text = {
-                                Text(
-                                    if (viewModel.showSystemApps) {
+                        ListPopup(
+                            show = showTopPopup,
+                            popupPositionProvider = ListPopupDefaults.ContextMenuPositionProvider,
+                            alignment = PopupPositionProvider.Align.TopRight,
+                            onDismissRequest = {
+                                showTopPopup.value = false
+                            }
+                        ) {
+                            ListPopupColumn {
+                                DropdownImpl(
+                                    text = stringResource(R.string.refresh),
+                                    optionSize = 2,
+                                    isSelected = false,
+                                    onSelectedIndexChange = {
+                                        scope.launch {
+                                            viewModel.fetchAppList()
+                                        }
+                                        showTopPopup.value = false
+                                    },
+                                    index = 0
+                                )
+                                DropdownImpl(
+                                    text = if (viewModel.showSystemApps) {
                                         stringResource(R.string.hide_system_apps)
                                     } else {
                                         stringResource(R.string.show_system_apps)
-                                    }
+                                    },
+                                    optionSize = 2,
+                                    isSelected = false,
+                                    onSelectedIndexChange = {
+                                        viewModel.showSystemApps = !viewModel.showSystemApps
+                                        showTopPopup.value = false
+                                    },
+                                    index = 1
                                 )
-                            }, onClick = {
-                                viewModel.showSystemApps = !viewModel.showSystemApps
-                                showDropdown = false
-                            })
+                            }
                         }
                     }
                 },
                 scrollBehavior = scrollBehavior
             )
         },
-        contentWindowInsets = WindowInsets.safeDrawing.only(WindowInsetsSides.Top + WindowInsetsSides.Horizontal)
+        popupHost = { },
     ) { innerPadding ->
-        PullToRefreshBox(
-            modifier = Modifier.padding(innerPadding),
+        val pullToRefreshState = rememberPullToRefreshState()
+        PullToRefresh(
+            pullToRefreshState = pullToRefreshState,
             onRefresh = {
-                scope.launch { viewModel.fetchAppList() }
+                scope.launch {
+                    viewModel.fetchAppList()
+                    pullToRefreshState.completeRefreshing { }
+                }
             },
-            isRefreshing = viewModel.isRefreshing
+            contentPadding = PaddingValues(top = innerPadding.calculateTopPadding())
         ) {
+            val keyboardController = LocalSoftwareKeyboardController.current
+            val focusManager = LocalFocusManager.current
+            val focusRequester = remember { FocusRequester() }
+            var expanded by remember { mutableStateOf(false) }
+
             LazyColumn(
                 state = listState,
                 modifier = Modifier
-                    .fillMaxSize()
-                    .nestedScroll(scrollBehavior.nestedScrollConnection)
+                    .height(getWindowSize().height.dp)
+                    .overScrollVertical()
+                    .nestedScroll(scrollBehavior.nestedScrollConnection),
+                contentPadding = PaddingValues(top = innerPadding.calculateTopPadding()),
+                overscrollEffect = null,
             ) {
+                item {
+                    SearchBar(
+                        modifier = Modifier
+                            .padding(vertical = 12.dp)
+                            .focusRequester(focusRequester)
+                            .onFocusChanged { focusState ->
+                                expanded = focusState.isFocused
+                            },
+                        insideMargin = DpSize(16.dp, 0.dp),
+                        inputField = {
+                            InputField(
+                                query = viewModel.search,
+                                onQueryChange = { viewModel.search = it },
+                                onSearch = { },
+                                expanded = false,
+                                onExpandedChange = { },
+                                trailingIcon = {
+                                    AnimatedVisibility(
+                                        visible = viewModel.search.isNotEmpty(),
+                                        enter = fadeIn(),
+                                        exit = fadeOut(),
+                                    ) {
+                                        Box(
+                                            modifier = Modifier.padding(start = 8.dp, end = 16.dp),
+                                            contentAlignment = Alignment.CenterStart
+                                        ) {
+                                            Icon(
+                                                modifier = Modifier
+                                                    .clip(CircleShape)
+                                                    .clickable { viewModel.search = "" },
+                                                imageVector = MiuixIcons.Basic.SearchCleanup,
+                                                tint = MiuixTheme.colorScheme.onSurfaceContainerHighest,
+                                                contentDescription = "Search Cleanup"
+                                            )
+                                        }
+                                    }
+                                }
+                            )
+                        },
+                        onExpandedChange = { },
+                        outsideRightAction = {
+                            Text(
+                                modifier = Modifier
+                                    .padding(end = 12.dp)
+                                    .clickable(
+                                        interactionSource = null,
+                                        indication = null
+                                    ) {
+                                        viewModel.search = ""
+                                        focusManager.clearFocus()
+                                        keyboardController?.hide()
+                                    },
+                                text = stringResource(com.maxkeppeler.sheets.core.R.string.cancel),
+                                style = TextStyle(fontSize = 17.sp, fontWeight = FontWeight.Bold),
+                                color = MiuixTheme.colorScheme.primary
+                            )
+                        },
+                        expanded = expanded,
+                    ) {}
+                }
+                item {
+                    if (viewModel.appList.isEmpty()) {
+                        Text(
+                            modifier = Modifier.fillMaxSize(),
+                            text = "Refresh...",
+                            textAlign = TextAlign.Center,
+                            color = MiuixTheme.colorScheme.onSecondaryContainer,
+                        )
+                    }
+                }
                 items(viewModel.appList, key = { it.packageName + it.uid }) { app ->
                     AppItem(app) {
                         navigator.navigate(AppProfileScreenDestination(app))
@@ -128,18 +267,18 @@ fun SuperUserScreen(navigator: DestinationsNavigator) {
     }
 }
 
-@OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun AppItem(
     app: SuperUserViewModel.AppInfo,
     onClickListener: () -> Unit,
 ) {
-    ListItem(
-        modifier = Modifier.clickable(onClick = onClickListener),
-        headlineContent = { Text(app.label) },
-        supportingContent = {
-            Column {
-                Text(app.packageName)
+    Card(
+        modifier = Modifier.padding(horizontal = 16.dp)
+    ) {
+        BasicComponent(
+            title = app.label,
+            summary = app.packageName,
+            rightActions = {
                 FlowRow {
                     if (app.allowSu) {
                         LabelText(label = "ROOT")
@@ -152,22 +291,26 @@ private fun AppItem(
                         LabelText(label = "CUSTOM")
                     }
                 }
-            }
-        },
-        leadingContent = {
-            AsyncImage(
-                model = ImageRequest.Builder(LocalContext.current)
-                    .data(app.packageInfo)
-                    .crossfade(true)
-                    .build(),
-                contentDescription = app.label,
-                modifier = Modifier
-                    .padding(4.dp)
-                    .width(48.dp)
-                    .height(48.dp)
-            )
-        },
-    )
+            },
+            leftAction = {
+                AsyncImage(
+                    model = ImageRequest.Builder(LocalContext.current)
+                        .data(app.packageInfo)
+                        .crossfade(true)
+                        .build(),
+                    contentDescription = app.label,
+                    modifier = Modifier
+                        .padding(end = 8.dp)
+                        .width(48.dp)
+                        .height(48.dp)
+                )
+            },
+            onClick = {
+                onClickListener()
+            },
+        )
+    }
+    Spacer(modifier = Modifier.height(12.dp))
 }
 
 @Composable
@@ -183,10 +326,8 @@ fun LabelText(label: String) {
         Text(
             text = label,
             modifier = Modifier.padding(vertical = 2.dp, horizontal = 5.dp),
-            style = TextStyle(
-                fontSize = 8.sp,
-                color = Color.White,
-            )
+            color = Color.White,
+            fontSize = 8.sp,
         )
     }
 }

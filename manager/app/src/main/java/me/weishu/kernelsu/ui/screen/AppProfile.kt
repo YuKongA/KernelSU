@@ -1,5 +1,6 @@
 package me.weishu.kernelsu.ui.screen
 
+import android.annotation.SuppressLint
 import androidx.annotation.StringRes
 import androidx.compose.animation.Crossfade
 import androidx.compose.foundation.gestures.detectTapGestures
@@ -7,14 +8,10 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -27,16 +24,8 @@ import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
-import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.ListItem
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
-import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
-import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -66,7 +55,6 @@ import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import kotlinx.coroutines.launch
 import me.weishu.kernelsu.Natives
 import me.weishu.kernelsu.R
-import me.weishu.kernelsu.ui.component.SwitchItem
 import me.weishu.kernelsu.ui.component.profile.AppProfileConfig
 import me.weishu.kernelsu.ui.component.profile.RootProfileConfig
 import me.weishu.kernelsu.ui.component.profile.TemplateConfig
@@ -78,6 +66,17 @@ import me.weishu.kernelsu.ui.util.restartApp
 import me.weishu.kernelsu.ui.util.setSepolicy
 import me.weishu.kernelsu.ui.viewmodel.SuperUserViewModel
 import me.weishu.kernelsu.ui.viewmodel.getTemplateInfoById
+import top.yukonga.miuix.kmp.basic.BasicComponent
+import top.yukonga.miuix.kmp.basic.Card
+import top.yukonga.miuix.kmp.basic.HorizontalDivider
+import top.yukonga.miuix.kmp.basic.Icon
+import top.yukonga.miuix.kmp.basic.IconButton
+import top.yukonga.miuix.kmp.basic.MiuixScrollBehavior
+import top.yukonga.miuix.kmp.basic.Scaffold
+import top.yukonga.miuix.kmp.basic.ScrollBehavior
+import top.yukonga.miuix.kmp.basic.Text
+import top.yukonga.miuix.kmp.basic.TopAppBar
+import top.yukonga.miuix.kmp.extra.SuperSwitch
 
 /**
  * @author weishu
@@ -92,7 +91,7 @@ fun AppProfileScreen(
 ) {
     val context = LocalContext.current
     val snackBarHost = LocalSnackbarHost.current
-    val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
+    val scrollBehavior = MiuixScrollBehavior()
     val scope = rememberCoroutineScope()
     val failToUpdateAppProfile = stringResource(R.string.failed_to_update_app_profile).format(appInfo.label)
     val failToUpdateSepolicy = stringResource(R.string.failed_to_update_sepolicy).format(appInfo.label)
@@ -115,7 +114,7 @@ fun AppProfileScreen(
             )
         },
         snackbarHost = { SnackbarHost(hostState = snackBarHost) },
-        contentWindowInsets = WindowInsets.safeDrawing.only(WindowInsetsSides.Top + WindowInsetsSides.Horizontal)
+        popupHost = { },
     ) { paddingValues ->
         AppProfileInner(
             modifier = Modifier
@@ -180,73 +179,96 @@ private fun AppProfileInner(
 ) {
     val isRootGranted = profile.allowSu
 
-    Column(modifier = modifier) {
+    Column(
+        modifier = modifier
+    ) {
         AppMenuBox(packageName) {
-            ListItem(
-                headlineContent = { Text(appLabel) },
-                supportingContent = { Text(packageName) },
-                leadingContent = appIcon,
+            BasicComponent(
+                title = appLabel,
+                summary = packageName,
+                leftAction = appIcon,
             )
         }
 
-        SwitchItem(
-            icon = Icons.Filled.Security,
-            title = stringResource(id = R.string.superuser),
-            checked = isRootGranted,
-            onCheckedChange = { onProfileChange(profile.copy(allowSu = it)) },
-        )
+        Card(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp)
+                .padding(bottom = 12.dp),
+        ) {
+            SuperSwitch(
+                leftAction = {
+                    Icon(
+                        imageVector = Icons.Filled.Security,
+                        contentDescription = null,
+                        modifier = Modifier.padding(end = 16.dp)
+                    )
+                },
+                title = stringResource(id = R.string.superuser),
+                checked = isRootGranted,
+                onCheckedChange = { onProfileChange(profile.copy(allowSu = it)) },
+            )
+        }
 
         Crossfade(targetState = isRootGranted, label = "") { current ->
             Column(
                 modifier = Modifier.padding(bottom = 6.dp + 48.dp + 6.dp /* SnackBar height */)
             ) {
-                if (current) {
-                    val initialMode = if (profile.rootUseDefault) {
-                        Mode.Default
-                    } else if (profile.rootTemplate != null) {
-                        Mode.Template
-                    } else {
-                        Mode.Custom
-                    }
-                    var mode by rememberSaveable {
-                        mutableStateOf(initialMode)
-                    }
-                    ProfileBox(mode, true) {
-                        // template mode shouldn't change profile here!
-                        if (it == Mode.Default || it == Mode.Custom) {
-                            onProfileChange(profile.copy(rootUseDefault = it == Mode.Default))
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp)
+                        .padding(bottom = 12.dp),
+                ) {
+                    if (current) {
+
+                        val initialMode = if (profile.rootUseDefault) {
+                            Mode.Default
+                        } else if (profile.rootTemplate != null) {
+                            Mode.Template
+                        } else {
+                            Mode.Custom
                         }
-                        mode = it
-                    }
-                    Crossfade(targetState = mode, label = "") { currentMode ->
-                        if (currentMode == Mode.Template) {
-                            TemplateConfig(
-                                profile = profile,
-                                onViewTemplate = onViewTemplate,
-                                onManageTemplate = onManageTemplate,
-                                onProfileChange = onProfileChange
-                            )
-                        } else if (mode == Mode.Custom) {
-                            RootProfileConfig(
+                        var mode by rememberSaveable {
+                            mutableStateOf(initialMode)
+                        }
+                        ProfileBox(mode, true) {
+                            // template mode shouldn't change profile here!
+                            if (it == Mode.Default || it == Mode.Custom) {
+                                onProfileChange(profile.copy(rootUseDefault = it == Mode.Default))
+                            }
+                            mode = it
+                        }
+                        Crossfade(targetState = mode, label = "") { currentMode ->
+                            if (currentMode == Mode.Template) {
+                                TemplateConfig(
+                                    profile = profile,
+                                    onViewTemplate = onViewTemplate,
+                                    onManageTemplate = onManageTemplate,
+                                    onProfileChange = onProfileChange
+                                )
+                            } else if (mode == Mode.Custom) {
+                                RootProfileConfig(
+                                    fixedName = true,
+                                    profile = profile,
+                                    onProfileChange = onProfileChange
+                                )
+                            }
+                        }
+                    } else {
+                        val mode = if (profile.nonRootUseDefault) Mode.Default else Mode.Custom
+                        ProfileBox(mode, false) {
+                            onProfileChange(profile.copy(nonRootUseDefault = (it == Mode.Default)))
+                        }
+                        Crossfade(targetState = mode, label = "") { currentMode ->
+                            val modifyEnabled = currentMode == Mode.Custom
+                            AppProfileConfig(
                                 fixedName = true,
                                 profile = profile,
+                                enabled = modifyEnabled,
                                 onProfileChange = onProfileChange
                             )
                         }
-                    }
-                } else {
-                    val mode = if (profile.nonRootUseDefault) Mode.Default else Mode.Custom
-                    ProfileBox(mode, false) {
-                        onProfileChange(profile.copy(nonRootUseDefault = (it == Mode.Default)))
-                    }
-                    Crossfade(targetState = mode, label = "") { currentMode ->
-                        val modifyEnabled = currentMode == Mode.Custom
-                        AppProfileConfig(
-                            fixedName = true,
-                            profile = profile,
-                            enabled = modifyEnabled,
-                            onProfileChange = onProfileChange
-                        )
                     }
                 }
             }
@@ -261,22 +283,24 @@ private enum class Mode(@StringRes private val res: Int) {
         @Composable get() = stringResource(res)
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun TopBar(
     onBack: () -> Unit,
-    scrollBehavior: TopAppBarScrollBehavior? = null
+    scrollBehavior: ScrollBehavior? = null
 ) {
     TopAppBar(
-        title = {
-            Text(stringResource(R.string.profile))
-        },
+        title = stringResource(R.string.profile),
         navigationIcon = {
             IconButton(
+                modifier = Modifier.padding(start = 16.dp),
                 onClick = onBack
-            ) { Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = null) }
+            ) {
+                Icon(
+                    Icons.AutoMirrored.Filled.ArrowBack,
+                    contentDescription = null
+                )
+            }
         },
-        windowInsets = WindowInsets.safeDrawing.only(WindowInsetsSides.Top + WindowInsetsSides.Horizontal),
         scrollBehavior = scrollBehavior
     )
 }
@@ -287,10 +311,16 @@ private fun ProfileBox(
     hasTemplate: Boolean,
     onModeChange: (Mode) -> Unit,
 ) {
-    ListItem(
-        headlineContent = { Text(stringResource(R.string.profile)) },
-        supportingContent = { Text(mode.text) },
-        leadingContent = { Icon(Icons.Filled.AccountCircle, null) },
+    BasicComponent(
+        title = stringResource(R.string.profile),
+        summary = mode.text,
+        leftAction = {
+            Icon(
+                Icons.Filled.AccountCircle,
+                modifier = Modifier.padding(end = 8.dp),
+                contentDescription = null
+            )
+        },
     )
     HorizontalDivider(thickness = Dp.Hairline)
     ListItem(headlineContent = {
@@ -318,6 +348,7 @@ private fun ProfileBox(
     })
 }
 
+@SuppressLint("UnusedBoxWithConstraintsScope")
 @Composable
 private fun AppMenuBox(packageName: String, content: @Composable () -> Unit) {
 

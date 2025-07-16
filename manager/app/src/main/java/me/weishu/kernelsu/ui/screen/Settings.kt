@@ -9,14 +9,17 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.WindowInsetsSides
-import androidx.compose.foundation.layout.only
+import androidx.compose.foundation.layout.asPaddingValues
+import androidx.compose.foundation.layout.captionBar
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.safeDrawing
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.Undo
@@ -33,17 +36,8 @@ import androidx.compose.material.icons.filled.Save
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material.icons.filled.Update
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.ListItem
 import androidx.compose.material3.ModalBottomSheet
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
-import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
-import androidx.compose.material3.TopAppBarScrollBehavior
-import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -62,6 +56,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.core.content.FileProvider
+import androidx.core.content.edit
 import androidx.lifecycle.compose.dropUnlessResumed
 import com.maxkeppeker.sheets.core.models.base.Header
 import com.maxkeppeker.sheets.core.models.base.IconSource
@@ -84,7 +79,6 @@ import me.weishu.kernelsu.R
 import me.weishu.kernelsu.ui.component.AboutDialog
 import me.weishu.kernelsu.ui.component.ConfirmResult
 import me.weishu.kernelsu.ui.component.DialogHandle
-import me.weishu.kernelsu.ui.component.SwitchItem
 import me.weishu.kernelsu.ui.component.KsuIsValid
 import me.weishu.kernelsu.ui.component.rememberConfirmDialog
 import me.weishu.kernelsu.ui.component.rememberCustomDialog
@@ -92,6 +86,18 @@ import me.weishu.kernelsu.ui.component.rememberLoadingDialog
 import me.weishu.kernelsu.ui.util.LocalSnackbarHost
 import me.weishu.kernelsu.ui.util.getBugreportFile
 import me.weishu.kernelsu.ui.util.shrinkModules
+import top.yukonga.miuix.kmp.basic.Card
+import top.yukonga.miuix.kmp.basic.Icon
+import top.yukonga.miuix.kmp.basic.IconButton
+import top.yukonga.miuix.kmp.basic.MiuixScrollBehavior
+import top.yukonga.miuix.kmp.basic.Scaffold
+import top.yukonga.miuix.kmp.basic.ScrollBehavior
+import top.yukonga.miuix.kmp.basic.Text
+import top.yukonga.miuix.kmp.basic.TopAppBar
+import top.yukonga.miuix.kmp.extra.SuperArrow
+import top.yukonga.miuix.kmp.extra.SuperSwitch
+import top.yukonga.miuix.kmp.utils.getWindowSize
+import top.yukonga.miuix.kmp.utils.overScrollVertical
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
@@ -103,7 +109,7 @@ import java.time.format.DateTimeFormatter
 @Destination<RootGraph>
 @Composable
 fun SettingScreen(navigator: DestinationsNavigator) {
-    val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior(rememberTopAppBarState())
+    val scrollBehavior = MiuixScrollBehavior()
     val snackBarHost = LocalSnackbarHost.current
 
     Scaffold(
@@ -116,275 +122,329 @@ fun SettingScreen(navigator: DestinationsNavigator) {
             )
         },
         snackbarHost = { SnackbarHost(snackBarHost) },
-        contentWindowInsets = WindowInsets.safeDrawing.only(WindowInsetsSides.Top + WindowInsetsSides.Horizontal)
-    ) { paddingValues ->
+        popupHost = { },
+    ) { innerPadding ->
         val aboutDialog = rememberCustomDialog {
             AboutDialog(it)
         }
         val loadingDialog = rememberLoadingDialog()
         val shrinkDialog = rememberConfirmDialog()
 
-        Column(
+        LazyColumn(
             modifier = Modifier
-                .padding(paddingValues)
+                .height(getWindowSize().height.dp)
+                .overScrollVertical()
                 .nestedScroll(scrollBehavior.nestedScrollConnection)
-                .verticalScroll(rememberScrollState())
+                .padding(top = 12.dp)
+                .padding(horizontal = 16.dp),
+            contentPadding = PaddingValues(top = innerPadding.calculateTopPadding()),
+            overscrollEffect = null,
         ) {
 
-            val context = LocalContext.current
-            val scope = rememberCoroutineScope()
-
-            val exportBugreportLauncher = rememberLauncherForActivityResult(
-                ActivityResultContracts.CreateDocument("application/gzip")
-            ) { uri: Uri? ->
-                if (uri == null) return@rememberLauncherForActivityResult
-                scope.launch(Dispatchers.IO) {
-                    loadingDialog.show()
-                    context.contentResolver.openOutputStream(uri)?.use { output ->
-                        getBugreportFile(context).inputStream().use {
-                            it.copyTo(output)
-                        }
-                    }
-                    loadingDialog.hide()
-                    snackBarHost.showSnackbar(context.getString(R.string.log_saved))
-                }
-            }
-
-            val profileTemplate = stringResource(id = R.string.settings_profile_template)
-            KsuIsValid() {
-                ListItem(
-                    leadingContent = { Icon(Icons.Filled.Fence, profileTemplate) },
-                    headlineContent = { Text(profileTemplate) },
-                    supportingContent = { Text(stringResource(id = R.string.settings_profile_template_summary)) },
-                    modifier = Modifier.clickable {
-                        navigator.navigate(AppProfileTemplateScreenDestination)
-                    }
-                )
-            }
-
-            var umountChecked by rememberSaveable {
-                mutableStateOf(Natives.isDefaultUmountModules())
-            }
-            
-            KsuIsValid() {
-                SwitchItem(
-                    icon = Icons.Filled.FolderDelete,
-                    title = stringResource(id = R.string.settings_umount_modules_default),
-                    summary = stringResource(id = R.string.settings_umount_modules_default_summary),
-                    checked = umountChecked
+            item {
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth(),
                 ) {
-                    if (Natives.setDefaultUmountModules(it)) {
-                        umountChecked = it
-                    }
-                }
-            }
-            
-            KsuIsValid() {
-                if (Natives.version >= Natives.MINIMAL_SUPPORTED_SU_COMPAT) {
-                    var isSuDisabled by rememberSaveable {
-                        mutableStateOf(!Natives.isSuEnabled())
-                    }
-                    SwitchItem(
-                        icon = Icons.Filled.RemoveModerator,
-                        title = stringResource(id = R.string.settings_disable_su),
-                        summary = stringResource(id = R.string.settings_disable_su_summary),
-                        checked = isSuDisabled,
-                    ) { checked ->
-                        val shouldEnable = !checked
-                        if (Natives.setSuEnabled(shouldEnable)) {
-                            isSuDisabled = !shouldEnable
-                        }
-                    }
-                }
-            }
+                    val context = LocalContext.current
+                    val scope = rememberCoroutineScope()
 
-            val prefs = context.getSharedPreferences("settings", Context.MODE_PRIVATE)
-            var checkUpdate by rememberSaveable {
-                mutableStateOf(
-                    prefs.getBoolean("check_update", true)
-                )
-            }
-            SwitchItem(
-                icon = Icons.Filled.Update,
-                title = stringResource(id = R.string.settings_check_update),
-                summary = stringResource(id = R.string.settings_check_update_summary),
-                checked = checkUpdate
-            ) {
-                prefs.edit().putBoolean("check_update", it).apply()
-                checkUpdate = it
-            }
-
-            var enableWebDebugging by rememberSaveable {
-                mutableStateOf(
-                    prefs.getBoolean("enable_web_debugging", false)
-                )
-            }
-            
-            KsuIsValid() {
-                SwitchItem(
-                    icon = Icons.Filled.DeveloperMode,
-                    title = stringResource(id = R.string.enable_web_debugging),
-                    summary = stringResource(id = R.string.enable_web_debugging_summary),
-                    checked = enableWebDebugging
-                ) {
-                    prefs.edit().putBoolean("enable_web_debugging", it).apply()
-                    enableWebDebugging = it
-                }
-            }
-
-            var showBottomsheet by remember { mutableStateOf(false) }
-
-            ListItem(
-                leadingContent = {
-                    Icon(
-                        Icons.Filled.BugReport,
-                        stringResource(id = R.string.send_log)
-                    )
-                },
-                headlineContent = { Text(stringResource(id = R.string.send_log)) },
-                modifier = Modifier.clickable {
-                    showBottomsheet = true
-                }
-            )
-            if (showBottomsheet) {
-                ModalBottomSheet(
-                    onDismissRequest = { showBottomsheet = false },
-                    content = {
-                        Row(
-                            modifier = Modifier
-                                .padding(10.dp)
-                                .align(Alignment.CenterHorizontally)
-
-                        ) {
-                            Box {
-                                Column(
-                                    modifier = Modifier
-                                        .padding(16.dp)
-                                        .clickable {
-                                            val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd_HH_mm")
-                                            val current = LocalDateTime.now().format(formatter)
-                                            exportBugreportLauncher.launch("KernelSU_bugreport_${current}.tar.gz")
-                                            showBottomsheet = false
-                                        }
-                                ) {
-                                    Icon(
-                                        Icons.Filled.Save,
-                                        contentDescription = null,
-                                        modifier = Modifier.align(Alignment.CenterHorizontally)
-                                    )
-                                    Text(
-                                        text = stringResource(id = R.string.save_log),
-                                        modifier = Modifier.padding(top = 16.dp),
-                                        textAlign = TextAlign.Center.also {
-                                            LineHeightStyle(
-                                                alignment = LineHeightStyle.Alignment.Center,
-                                                trim = LineHeightStyle.Trim.None
-                                            )
-                                        }
-
-                                    )
+                    val exportBugreportLauncher = rememberLauncherForActivityResult(
+                        ActivityResultContracts.CreateDocument("application/gzip")
+                    ) { uri: Uri? ->
+                        if (uri == null) return@rememberLauncherForActivityResult
+                        scope.launch(Dispatchers.IO) {
+                            loadingDialog.show()
+                            context.contentResolver.openOutputStream(uri)?.use { output ->
+                                getBugreportFile(context).inputStream().use {
+                                    it.copyTo(output)
                                 }
                             }
-                            Box {
-                                Column(
+                            loadingDialog.hide()
+                            snackBarHost.showSnackbar(context.getString(R.string.log_saved))
+                        }
+                    }
+
+                    val profileTemplate = stringResource(id = R.string.settings_profile_template)
+                    KsuIsValid {
+                        SuperArrow(
+                            leftAction = {
+                                Icon(
+                                    Icons.Filled.Fence,
+                                    modifier = Modifier.padding(end = 16.dp),
+                                    contentDescription = profileTemplate
+                                )
+                            },
+                            title = profileTemplate,
+                            summary = stringResource(id = R.string.settings_profile_template_summary),
+                            onClick = {
+                                navigator.navigate(AppProfileTemplateScreenDestination)
+                            }
+                        )
+                    }
+
+                    var umountChecked by rememberSaveable {
+                        mutableStateOf(Natives.isDefaultUmountModules())
+                    }
+
+                    KsuIsValid {
+                        SuperSwitch(
+                            leftAction = {
+                                Icon(
+                                    Icons.Filled.FolderDelete,
+                                    modifier = Modifier.padding(end = 16.dp),
+                                    contentDescription = stringResource(id = R.string.settings_umount_modules_default)
+                                )
+                            },
+                            title = stringResource(id = R.string.settings_umount_modules_default),
+                            summary = stringResource(id = R.string.settings_umount_modules_default_summary),
+                            checked = umountChecked,
+                            onCheckedChange = { it ->
+                                if (Natives.setDefaultUmountModules(it)) {
+                                    umountChecked = it
+                                }
+                            }
+                        )
+                    }
+
+                    KsuIsValid {
+                        if (Natives.version >= Natives.MINIMAL_SUPPORTED_SU_COMPAT) {
+                            var isSuDisabled by rememberSaveable {
+                                mutableStateOf(!Natives.isSuEnabled())
+                            }
+                            SuperSwitch(
+                                leftAction = {
+                                    Icon(
+                                        Icons.Filled.RemoveModerator,
+                                        modifier = Modifier.padding(end = 16.dp),
+                                        contentDescription = stringResource(id = R.string.settings_disable_su)
+                                    )
+                                },
+                                title = stringResource(id = R.string.settings_disable_su),
+                                summary = stringResource(id = R.string.settings_disable_su_summary),
+                                checked = isSuDisabled,
+                                onCheckedChange = { checked: Boolean ->
+                                    val shouldEnable = !checked
+                                    if (Natives.setSuEnabled(shouldEnable)) {
+                                        isSuDisabled = !shouldEnable
+                                    }
+                                }
+                            )
+                        }
+                    }
+
+                    val prefs = context.getSharedPreferences("settings", Context.MODE_PRIVATE)
+                    var checkUpdate by rememberSaveable {
+                        mutableStateOf(
+                            prefs.getBoolean("check_update", true)
+                        )
+                    }
+                    SuperSwitch(
+                        leftAction = {
+                            Icon(
+                                Icons.Filled.Update,
+                                modifier = Modifier.padding(end = 16.dp),
+                                contentDescription = stringResource(id = R.string.settings_check_update)
+                            )
+                        },
+                        title = stringResource(id = R.string.settings_check_update),
+                        summary = stringResource(id = R.string.settings_check_update_summary),
+                        checked = checkUpdate,
+                        onCheckedChange = { it ->
+                            prefs.edit { putBoolean("check_update", it) }
+                            checkUpdate = it
+                        }
+                    )
+
+                    var enableWebDebugging by rememberSaveable {
+                        mutableStateOf(
+                            prefs.getBoolean("enable_web_debugging", false)
+                        )
+                    }
+
+                    KsuIsValid {
+                        SuperSwitch(
+                            leftAction = {
+                                Icon(
+                                    Icons.Filled.DeveloperMode,
+                                    modifier = Modifier.padding(end = 16.dp),
+                                    contentDescription = stringResource(id = R.string.enable_web_debugging)
+                                )
+                            },
+                            title = stringResource(id = R.string.enable_web_debugging),
+                            summary = stringResource(id = R.string.enable_web_debugging_summary),
+                            checked = enableWebDebugging,
+                            onCheckedChange = { it ->
+                                prefs.edit { putBoolean("enable_web_debugging", it) }
+                                enableWebDebugging = it
+                            }
+                        )
+                    }
+
+                    var showBottomsheet by remember { mutableStateOf(false) }
+
+                    SuperArrow(
+                        leftAction = {
+                            Icon(
+                                Icons.Filled.BugReport,
+                                modifier = Modifier.padding(end = 16.dp),
+                                contentDescription = stringResource(id = R.string.send_log)
+                            )
+                        },
+                        title = stringResource(id = R.string.send_log),
+                        onClick = {
+                            showBottomsheet = true
+                        },
+                    )
+                    if (showBottomsheet) {
+                        ModalBottomSheet(
+                            onDismissRequest = { showBottomsheet = false },
+                            content = {
+                                Row(
                                     modifier = Modifier
-                                        .padding(16.dp)
-                                        .clickable {
-                                            scope.launch {
-                                                val bugreport = loadingDialog.withLoading {
-                                                    withContext(Dispatchers.IO) {
-                                                        getBugreportFile(context)
+                                        .padding(10.dp)
+                                        .align(Alignment.CenterHorizontally)
+
+                                ) {
+                                    Box {
+                                        Column(
+                                            modifier = Modifier
+                                                .padding(16.dp)
+                                                .clickable {
+                                                    val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd_HH_mm")
+                                                    val current = LocalDateTime.now().format(formatter)
+                                                    exportBugreportLauncher.launch("KernelSU_bugreport_${current}.tar.gz")
+                                                    showBottomsheet = false
+                                                }
+                                        ) {
+                                            Icon(
+                                                Icons.Filled.Save,
+                                                contentDescription = null,
+                                                modifier = Modifier.align(Alignment.CenterHorizontally)
+                                            )
+                                            Text(
+                                                text = stringResource(id = R.string.save_log),
+                                                modifier = Modifier.padding(top = 16.dp),
+                                                textAlign = TextAlign.Center.also {
+                                                    LineHeightStyle(
+                                                        alignment = LineHeightStyle.Alignment.Center,
+                                                        trim = LineHeightStyle.Trim.None
+                                                    )
+                                                }
+
+                                            )
+                                        }
+                                    }
+                                    Box {
+                                        Column(
+                                            modifier = Modifier
+                                                .padding(16.dp)
+                                                .clickable {
+                                                    scope.launch {
+                                                        val bugreport = loadingDialog.withLoading {
+                                                            withContext(Dispatchers.IO) {
+                                                                getBugreportFile(context)
+                                                            }
+                                                        }
+
+                                                        val uri: Uri =
+                                                            FileProvider.getUriForFile(
+                                                                context,
+                                                                "${BuildConfig.APPLICATION_ID}.fileprovider",
+                                                                bugreport
+                                                            )
+
+                                                        val shareIntent = Intent(Intent.ACTION_SEND).apply {
+                                                            putExtra(Intent.EXTRA_STREAM, uri)
+                                                            setDataAndType(uri, "application/gzip")
+                                                            addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                                                        }
+
+                                                        context.startActivity(
+                                                            Intent.createChooser(
+                                                                shareIntent,
+                                                                context.getString(R.string.send_log)
+                                                            )
+                                                        )
                                                     }
                                                 }
-
-                                                val uri: Uri =
-                                                    FileProvider.getUriForFile(
-                                                        context,
-                                                        "${BuildConfig.APPLICATION_ID}.fileprovider",
-                                                        bugreport
+                                        ) {
+                                            Icon(
+                                                Icons.Filled.Share,
+                                                contentDescription = null,
+                                                modifier = Modifier.align(Alignment.CenterHorizontally)
+                                            )
+                                            Text(
+                                                text = stringResource(id = R.string.send_log),
+                                                modifier = Modifier.padding(top = 16.dp),
+                                                textAlign = TextAlign.Center.also {
+                                                    LineHeightStyle(
+                                                        alignment = LineHeightStyle.Alignment.Center,
+                                                        trim = LineHeightStyle.Trim.None
                                                     )
-
-                                                val shareIntent = Intent(Intent.ACTION_SEND).apply {
-                                                    putExtra(Intent.EXTRA_STREAM, uri)
-                                                    setDataAndType(uri, "application/gzip")
-                                                    addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
                                                 }
-
-                                                context.startActivity(
-                                                    Intent.createChooser(
-                                                        shareIntent,
-                                                        context.getString(R.string.send_log)
-                                                    )
-                                                )
-                                            }
-                                        }
-                                ) {
-                                    Icon(
-                                        Icons.Filled.Share,
-                                        contentDescription = null,
-                                        modifier = Modifier.align(Alignment.CenterHorizontally)
-                                    )
-                                    Text(
-                                        text = stringResource(id = R.string.send_log),
-                                        modifier = Modifier.padding(top = 16.dp),
-                                        textAlign = TextAlign.Center.also {
-                                            LineHeightStyle(
-                                                alignment = LineHeightStyle.Alignment.Center,
-                                                trim = LineHeightStyle.Trim.None
                                             )
                                         }
-                                    )
+                                    }
                                 }
                             }
-                        }
-                    }
-                )
-            }
-
-            val shrink = stringResource(id = R.string.shrink_sparse_image)
-            val shrinkMessage = stringResource(id = R.string.shrink_sparse_image_message)
-            KsuIsValid() {
-                ListItem(
-                    leadingContent = {
-                        Icon(
-                            Icons.Filled.Compress,
-                            shrink
                         )
-                    },
-                    headlineContent = { Text(shrink) },
-                    modifier = Modifier.clickable {
-                        scope.launch {
-                            val result = shrinkDialog.awaitConfirm(title = shrink, content = shrinkMessage)
-                            if (result == ConfirmResult.Confirmed) {
-                                loadingDialog.withLoading {
-                                    shrinkModules()
+                    }
+
+                    val shrink = stringResource(id = R.string.shrink_sparse_image)
+                    val shrinkMessage = shrink
+                    KsuIsValid {
+                        SuperArrow(
+                            leftAction = {
+                                Icon(
+                                    Icons.Filled.Compress,
+                                    modifier = Modifier.padding(end = 16.dp),
+                                    contentDescription = shrink
+                                )
+                            },
+                            title = shrink,
+                            onClick = {
+                                scope.launch {
+                                    val result = shrinkDialog.awaitConfirm(title = shrink, content = shrinkMessage)
+                                    if (result == ConfirmResult.Confirmed) {
+                                        loadingDialog.withLoading {
+                                            shrinkModules()
+                                        }
+                                    }
                                 }
-                            }
+                            },
+                        )
+                    }
+
+                    val lkmMode = Natives.version >= Natives.MINIMAL_SUPPORTED_KERNEL_LKM && Natives.isLkmMode
+                    if (lkmMode) {
+                        UninstallItem(navigator) {
+                            loadingDialog.withLoading(it)
                         }
                     }
+
+                    val about = stringResource(id = R.string.about)
+                    SuperArrow(
+                        leftAction = {
+                            Icon(
+                                Icons.Filled.ContactPage,
+                                modifier = Modifier.padding(end = 16.dp),
+                                contentDescription = about
+                            )
+                        },
+                        title = about,
+                        onClick = {
+                            aboutDialog.show()
+                        }
+                    )
+                }
+                Spacer(
+                    Modifier.height(
+                        WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
+                                + WindowInsets.captionBar.asPaddingValues().calculateBottomPadding()
+                    )
                 )
             }
-
-            val lkmMode = Natives.version >= Natives.MINIMAL_SUPPORTED_KERNEL_LKM && Natives.isLkmMode
-            if (lkmMode) {
-                UninstallItem(navigator) {
-                    loadingDialog.withLoading(it)
-                }
-            }
-
-            val about = stringResource(id = R.string.about)
-            ListItem(
-                leadingContent = {
-                    Icon(
-                        Icons.Filled.ContactPage,
-                        about
-                    )
-                },
-                headlineContent = { Text(about) },
-                modifier = Modifier.clickable {
-                    aboutDialog.show()
-                }
-            )
         }
     }
 }
@@ -413,9 +473,11 @@ fun UninstallItem(
                         UninstallType.PERMANENT -> navigator.navigate(
                             FlashScreenDestination(FlashIt.FlashUninstall)
                         )
+
                         UninstallType.RESTORE_STOCK_IMAGE -> navigator.navigate(
                             FlashScreenDestination(FlashIt.FlashRestore)
                         )
+
                         UninstallType.NONE -> Unit
                     }
                 }
@@ -423,15 +485,16 @@ fun UninstallItem(
         }
     }
     val uninstall = stringResource(id = R.string.settings_uninstall)
-    ListItem(
-        leadingContent = {
+    SuperArrow(
+        leftAction = {
             Icon(
                 Icons.Filled.Delete,
-                uninstall
+                modifier = Modifier.padding(end = 16.dp),
+                contentDescription = uninstall
             )
         },
-        headlineContent = { Text(uninstall) },
-        modifier = Modifier.clickable {
+        title = uninstall,
+        onClick = {
             uninstallDialog.show()
         }
     )
@@ -474,20 +537,21 @@ fun rememberUninstallDialog(onSelected: (UninstallType) -> Unit): DialogHandle {
         }
 
         var selection = UninstallType.NONE
-        ListDialog(state = rememberUseCaseState(visible = true, onFinishedRequest = {
-            if (selection != UninstallType.NONE) {
-                onSelected(selection)
-            }
-        }, onCloseRequest = {
-            dismiss()
-        }), header = Header.Default(
-            title = stringResource(R.string.settings_uninstall),
-        ), selection = ListSelection.Single(
-            showRadioButtons = false,
-            options = listOptions,
-        ) { index, _ ->
-            selection = options[index]
-        })
+        ListDialog(
+            state = rememberUseCaseState(visible = true, onFinishedRequest = {
+                if (selection != UninstallType.NONE) {
+                    onSelected(selection)
+                }
+            }, onCloseRequest = {
+                dismiss()
+            }), header = Header.Default(
+                title = stringResource(R.string.settings_uninstall),
+            ), selection = ListSelection.Single(
+                showRadioButtons = false,
+                options = listOptions,
+            ) { index, _ ->
+                selection = options[index]
+            })
     }
 }
 
@@ -495,18 +559,18 @@ fun rememberUninstallDialog(onSelected: (UninstallType) -> Unit): DialogHandle {
 @Composable
 private fun TopBar(
     onBack: () -> Unit = {},
-    scrollBehavior: TopAppBarScrollBehavior? = null
+    scrollBehavior: ScrollBehavior? = null
 ) {
     TopAppBar(
-        title = { Text(stringResource(R.string.settings)) },
+        title = stringResource(R.string.settings),
         navigationIcon = {
             IconButton(
+                modifier = Modifier.padding(start = 16.dp),
                 onClick = onBack
             ) {
                 Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = null)
             }
         },
-        windowInsets = WindowInsets.safeDrawing.only(WindowInsetsSides.Top + WindowInsetsSides.Horizontal),
         scrollBehavior = scrollBehavior
     )
 }

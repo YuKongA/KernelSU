@@ -14,6 +14,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import me.weishu.kernelsu.Natives
 import me.weishu.kernelsu.R
 import me.weishu.kernelsu.ui.component.SwitchItem
+import top.yukonga.miuix.kmp.basic.TextField
+import top.yukonga.miuix.kmp.extra.SuperSwitch
 
 @Composable
 fun AppProfileConfig(
@@ -25,14 +27,15 @@ fun AppProfileConfig(
 ) {
     Column(modifier = modifier) {
         if (!fixedName) {
-            OutlinedTextField(
-                label = { Text(stringResource(R.string.profile_name)) },
+            TextField(
+                label = stringResource(R.string.profile_name),
+                useLabelAsPlaceholder = true,
                 value = profile.name,
                 onValueChange = { onProfileChange(profile.copy(name = it)) }
             )
         }
 
-        SwitchItem(
+        SuperSwitch(
             title = stringResource(R.string.profile_umount_modules),
             summary = stringResource(R.string.profile_umount_modules_summary),
             checked = if (enabled) {
