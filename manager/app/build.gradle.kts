@@ -2,34 +2,49 @@
 
 import com.android.build.gradle.internal.api.BaseVariantOutputImpl
 import com.android.build.gradle.tasks.PackageAndroidArtifact
+import java.util.Properties
 
 plugins {
     alias(libs.plugins.agp.app)
     alias(libs.plugins.kotlin)
     alias(libs.plugins.compose.compiler)
     alias(libs.plugins.ksp)
-    alias(libs.plugins.lsplugin.apksign)
     id("kotlin-parcelize")
 }
 
 val managerVersionCode: Int by rootProject.extra
 val managerVersionName: String by rootProject.extra
 
-apksign {
-    storeFileProperty = "KEYSTORE_FILE"
-    storePasswordProperty = "KEYSTORE_PASSWORD"
-    keyAliasProperty = "KEY_ALIAS"
-    keyPasswordProperty = "KEY_PASSWORD"
-}
-
 android {
     namespace = "me.weishu.kernelsu"
+
+    val properties = Properties()
+    runCatching { properties.load(project.rootProject.file("local.properties").inputStream()) }
+    val keystorePath = properties.getProperty("KEYSTORE") ?: System.getenv("KEYSTORE")
+    val keystorePwd = properties.getProperty("KEYSTORE_PASSWORD") ?: System.getenv("KEYSTORE_PASSWORD")
+    val alias = properties.getProperty("KEY_ALIAS") ?: System.getenv("KEY_ALIAS")
+    val pwd = properties.getProperty("KEY_PASSWORD") ?: System.getenv("KEY_PASSWORD")
+    if (keystorePath != null) {
+        signingConfigs {
+            create("release") {
+                storeFile = file(keystorePath)
+                storePassword = keystorePwd
+                keyAlias = alias
+                keyPassword = pwd
+                enableV2Signing = true
+                enableV3Signing = true
+                enableV4Signing = true
+            }
+        }
+    }
 
     buildTypes {
         release {
             isMinifyEnabled = true
             isShrinkResources = true
+            vcsInfo.include = false
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
+            if (keystorePath != null) signingConfig = signingConfigs.getByName("release")
         }
     }
 

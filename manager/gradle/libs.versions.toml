@@ -15,7 +15,6 @@ webkit = "1.14.0"
 appiconloader-coil = "1.5.0"
 parcelablelist = "2.0.1"
 libsu = "6.0.0"
-apksign = "1.4"
 cmaker = "1.2"
 miuix = "0.4.7"
 haze = "1.6.8"
@@ -29,7 +28,6 @@ compose-compiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "
 
 ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
 
-lsplugin-apksign = { id = "org.lsposed.lsplugin.apksign", version.ref = "apksign" }
 lsplugin-cmaker = { id = "org.lsposed.lsplugin.cmaker", version.ref = "cmaker" }
 
 [libraries]
