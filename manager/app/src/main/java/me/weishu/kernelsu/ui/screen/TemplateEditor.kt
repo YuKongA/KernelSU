@@ -23,9 +23,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.material3.rememberTopAppBarState
@@ -56,6 +54,11 @@ import me.weishu.kernelsu.ui.util.getAppProfileTemplate
 import me.weishu.kernelsu.ui.util.setAppProfileTemplate
 import me.weishu.kernelsu.ui.viewmodel.TemplateViewModel
 import me.weishu.kernelsu.ui.viewmodel.toJSON
+import top.yukonga.miuix.kmp.basic.MiuixScrollBehavior
+import top.yukonga.miuix.kmp.basic.Scaffold
+import top.yukonga.miuix.kmp.basic.ScrollBehavior
+import top.yukonga.miuix.kmp.basic.TopAppBar
+import top.yukonga.miuix.kmp.theme.MiuixTheme
 
 /**
  * @author weishu
@@ -77,7 +80,7 @@ fun TemplateEditorScreen(
         mutableStateOf(initialTemplate)
     }
 
-    val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior(rememberTopAppBarState())
+    val scrollBehavior = MiuixScrollBehavior()
 
     BackHandler {
         navigator.navigateBack(result = !readOnly)
@@ -257,23 +260,28 @@ private fun TopBar(
     onBack: () -> Unit,
     onDelete: () -> Unit = {},
     onSave: () -> Unit = {},
-    scrollBehavior: TopAppBarScrollBehavior? = null
+    scrollBehavior: ScrollBehavior
 ) {
+//    Column {
+//        Text(title)
+//        if (summary.isNotBlank()) {
+//            Text(
+//                text = summary,
+//                style = MaterialTheme.typography.bodyMedium,
+//            )
+//        }
+//    }
+//}
     TopAppBar(
-        title = {
-            Column {
-                Text(title)
-                if (summary.isNotBlank()) {
-                    Text(
-                        text = summary,
-                        style = MaterialTheme.typography.bodyMedium,
-                    )
-                }
-            }
-        }, navigationIcon = {
+        title = title, navigationIcon = {
             IconButton(
                 onClick = onBack
-            ) { Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = null) }
+            ) {
+                Icon(Icons.AutoMirrored.Filled.ArrowBack,
+                    contentDescription = null,
+                    tint = MiuixTheme.colorScheme.onBackground
+                )
+            }
         }, actions = {
             if (readOnly) {
                 return@TopAppBar
@@ -281,17 +289,18 @@ private fun TopBar(
             IconButton(onClick = onDelete) {
                 Icon(
                     Icons.Filled.DeleteForever,
-                    contentDescription = stringResource(id = R.string.app_profile_template_delete)
+                    contentDescription = stringResource(id = R.string.app_profile_template_delete),
+                    tint = MiuixTheme.colorScheme.onBackground
                 )
             }
             IconButton(onClick = onSave) {
                 Icon(
                     imageVector = Icons.Filled.Save,
-                    contentDescription = stringResource(id = R.string.app_profile_template_save)
+                    contentDescription = stringResource(id = R.string.app_profile_template_save),
+                    tint = MiuixTheme.colorScheme.onBackground
                 )
             }
         },
-        windowInsets = WindowInsets.safeDrawing.only(WindowInsetsSides.Top + WindowInsetsSides.Horizontal),
         scrollBehavior = scrollBehavior
     )
 }

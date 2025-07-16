@@ -28,9 +28,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
@@ -49,6 +47,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.dropUnlessResumed
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.ramcosta.composedestinations.annotation.Destination
@@ -61,6 +60,12 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import me.weishu.kernelsu.R
 import me.weishu.kernelsu.ui.viewmodel.TemplateViewModel
+import top.yukonga.miuix.kmp.basic.MiuixScrollBehavior
+import top.yukonga.miuix.kmp.basic.Scaffold
+import top.yukonga.miuix.kmp.basic.ScrollBehavior
+import top.yukonga.miuix.kmp.basic.TopAppBar
+import top.yukonga.miuix.kmp.theme.MiuixTheme
+import top.yukonga.miuix.kmp.theme.MiuixTheme.colorScheme
 
 /**
  * @author weishu
@@ -76,7 +81,7 @@ fun AppProfileTemplateScreen(
 ) {
     val viewModel = viewModel<TemplateViewModel>()
     val scope = rememberCoroutineScope()
-    val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior(rememberTopAppBarState())
+    val scrollBehavior = MiuixScrollBehavior()
 
     LaunchedEffect(Unit) {
         if (viewModel.templateList.isEmpty()) {
@@ -146,8 +151,9 @@ fun AppProfileTemplateScreen(
                         )
                     )
                 },
-                icon = { Icon(Icons.Filled.Add, null) },
-                text = { Text(stringResource(id = R.string.app_profile_template_create)) },
+                containerColor = colorScheme.surface,
+                icon = { Icon(Icons.Filled.Add, null, tint = colorScheme.onBackground) },
+                text = { Text(stringResource(id = R.string.app_profile_template_create), color = colorScheme.onBackground) },
             )
         },
         contentWindowInsets = WindowInsets.safeDrawing.only(WindowInsetsSides.Top + WindowInsetsSides.Horizontal)
@@ -192,7 +198,8 @@ private fun TemplateItem(
                 Text(
                     text = "${template.id}${if (template.author.isEmpty()) "" else "@${template.author}"}",
                     style = MaterialTheme.typography.bodySmall,
-                    fontSize = MaterialTheme.typography.bodySmall.fontSize,
+                    color = colorScheme.onBackground,
+                    fontSize = 12.sp,
                 )
                 Text(template.description)
                 FlowRow {
@@ -217,12 +224,10 @@ private fun TopBar(
     onSync: () -> Unit = {},
     onImport: () -> Unit = {},
     onExport: () -> Unit = {},
-    scrollBehavior: TopAppBarScrollBehavior? = null
+    scrollBehavior: ScrollBehavior
 ) {
     TopAppBar(
-        title = {
-            Text(stringResource(R.string.settings_profile_template))
-        },
+        title = stringResource(R.string.settings_profile_template),
         navigationIcon = {
             IconButton(
                 onClick = onBack
@@ -232,7 +237,8 @@ private fun TopBar(
             IconButton(onClick = onSync) {
                 Icon(
                     Icons.Filled.Sync,
-                    contentDescription = stringResource(id = R.string.app_profile_template_sync)
+                    contentDescription = stringResource(id = R.string.app_profile_template_sync),
+                    tint = MiuixTheme.colorScheme.onBackground
                 )
             }
 
@@ -242,20 +248,26 @@ private fun TopBar(
             }) {
                 Icon(
                     imageVector = Icons.Filled.ImportExport,
-                    contentDescription = stringResource(id = R.string.app_profile_import_export)
+                    contentDescription = stringResource(id = R.string.app_profile_import_export),
+                    tint = MiuixTheme.colorScheme.onBackground
                 )
 
                 DropdownMenu(expanded = showDropdown, onDismissRequest = {
                     showDropdown = false
                 }) {
                     DropdownMenuItem(text = {
-                        Text(stringResource(id = R.string.app_profile_import_from_clipboard))
+                        Text(
+                            stringResource(id = R.string.app_profile_import_from_clipboard),
+                            color = MiuixTheme.colorScheme.onBackground)
                     }, onClick = {
                         onImport()
                         showDropdown = false
                     })
                     DropdownMenuItem(text = {
-                        Text(stringResource(id = R.string.app_profile_export_to_clipboard))
+                        Text(
+                            stringResource(id = R.string.app_profile_export_to_clipboard),
+                            color = MiuixTheme.colorScheme.onBackground
+                        )
                     }, onClick = {
                         onExport()
                         showDropdown = false
@@ -263,7 +275,6 @@ private fun TopBar(
                 }
             }
         },
-        windowInsets = WindowInsets.safeDrawing.only(WindowInsetsSides.Top + WindowInsetsSides.Horizontal),
         scrollBehavior = scrollBehavior
     )
 }

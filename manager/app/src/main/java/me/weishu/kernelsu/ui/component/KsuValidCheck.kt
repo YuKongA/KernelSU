@@ -10,7 +10,7 @@ fun KsuIsValid(
 ) {
     val isManager = Natives.becomeManager(ksuApp.packageName)
     val ksuVersion = if (isManager) Natives.version else null
-     
+
     if (ksuVersion != null) {
         content()
     }
