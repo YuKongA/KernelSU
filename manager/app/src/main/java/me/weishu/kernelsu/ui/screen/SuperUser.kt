@@ -5,13 +5,19 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowColumn
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -21,6 +27,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.MoreVert
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -34,6 +41,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
@@ -42,6 +50,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -56,7 +65,6 @@ import kotlinx.coroutines.launch
 import me.weishu.kernelsu.Natives
 import me.weishu.kernelsu.R
 import me.weishu.kernelsu.ui.viewmodel.SuperUserViewModel
-import top.yukonga.miuix.kmp.basic.BasicComponent
 import top.yukonga.miuix.kmp.basic.Card
 import top.yukonga.miuix.kmp.basic.Icon
 import top.yukonga.miuix.kmp.basic.IconButton
@@ -267,32 +275,20 @@ fun SuperUserScreen(navigator: DestinationsNavigator) {
     }
 }
 
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun AppItem(
     app: SuperUserViewModel.AppInfo,
     onClickListener: () -> Unit,
 ) {
     Card(
-        modifier = Modifier.padding(horizontal = 16.dp)
+        modifier = Modifier.padding(horizontal = 16.dp, vertical = 6.dp),
     ) {
-        BasicComponent(
-            title = app.label,
-            summary = app.packageName,
-            rightActions = {
-                FlowRow {
-                    if (app.allowSu) {
-                        LabelText(label = "ROOT")
-                    } else {
-                        if (Natives.uidShouldUmount(app.uid)) {
-                            LabelText(label = "UMOUNT")
-                        }
-                    }
-                    if (app.hasCustomProfile) {
-                        LabelText(label = "CUSTOM")
-                    }
-                }
-            },
-            leftAction = {
+        Column(modifier = Modifier.clickable(onClick = onClickListener)) {
+            Row(
+                modifier = Modifier.padding(16.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
                 AsyncImage(
                     model = ImageRequest.Builder(LocalContext.current)
                         .data(app.packageInfo)
@@ -300,17 +296,77 @@ private fun AppItem(
                         .build(),
                     contentDescription = app.label,
                     modifier = Modifier
-                        .padding(end = 8.dp)
-                        .width(48.dp)
-                        .height(48.dp)
+                        .size(48.dp)
                 )
-            },
-            onClick = {
-                onClickListener()
-            },
+
+                Spacer(modifier = Modifier.width(16.dp))
+
+                Column(
+                    modifier = Modifier.weight(1f),
+                    verticalArrangement = Arrangement.Center
+                ) {
+                    Text(
+                        text = app.label,
+                        fontWeight = FontWeight.SemiBold,
+                        style = MaterialTheme.typography.bodyLarge
+                    )
+                    Spacer(modifier = Modifier.height(2.dp))
+                    Text(
+                        text = app.packageName,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = colorScheme.onSurfaceSecondary,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                }
+
+                Spacer(modifier = Modifier.width(8.dp))
+
+                FlowColumn(
+                    horizontalArrangement = Arrangement.End,
+                    itemHorizontalAlignment = Alignment.End,
+                    verticalArrangement = Arrangement.spacedBy(4.dp)
+                ) {
+                    if (app.allowSu) {
+                        StatusTag(label = "ROOT", backgroundColor = colorScheme.tertiaryContainer, contentColor = colorScheme.onTertiaryContainer)
+                    } else {
+                        if (Natives.uidShouldUmount(app.uid)) {
+                            StatusTag(label = "UMOUNT", backgroundColor = colorScheme.secondaryContainer, contentColor = colorScheme.onSecondaryContainer)
+                        }
+                    }
+                    if (app.hasCustomProfile) {
+                        StatusTag(label = "CUSTOM", backgroundColor = colorScheme.primaryContainer, contentColor = colorScheme.onPrimaryContainer)
+                    }
+                }
+
+                Icon(
+                    imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
+                    contentDescription = null,
+                    tint = colorScheme.onSurfaceSecondary.copy(alpha = 0.6f),
+                    modifier = Modifier.padding(start = 4.dp)
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun StatusTag(label: String, backgroundColor: Color, contentColor: Color) {
+    Box(
+        modifier = Modifier
+            .background(
+                color = backgroundColor.copy(alpha = 0.8f),
+                shape = RoundedCornerShape(6.dp)
+            )
+            .padding(horizontal = 6.dp, vertical = 3.dp)
+    ) {
+        Text(
+            text = label,
+            color = contentColor,
+            fontSize = 10.sp,
+            fontWeight = FontWeight.Bold
         )
     }
-    Spacer(modifier = Modifier.height(12.dp))
 }
 
 @Composable
