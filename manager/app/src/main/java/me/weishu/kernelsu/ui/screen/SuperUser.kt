@@ -306,9 +306,12 @@ private fun AppItem(
                 )
             },
             rightActions = {
-                Row {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
                     FlowColumn(
-                        verticalArrangement = Arrangement.spacedBy(4.dp)
+                        verticalArrangement = Arrangement.spacedBy(4.dp),
+                        itemHorizontalAlignment = Alignment.End
                     ) {
                         if (app.allowSu) {
                             StatusTag(
@@ -355,9 +358,9 @@ private fun StatusTag(label: String, backgroundColor: Color, contentColor: Color
                 color = backgroundColor.copy(alpha = 0.8f),
                 shape = RoundedCornerShape(6.dp)
             )
-            .padding(horizontal = 6.dp, vertical = 3.dp)
     ) {
         Text(
+            modifier = Modifier.padding(horizontal = 6.dp, vertical = 3.dp),
             text = label,
             color = contentColor,
             fontSize = 10.sp,
