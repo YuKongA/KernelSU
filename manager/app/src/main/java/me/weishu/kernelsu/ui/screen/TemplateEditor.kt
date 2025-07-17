@@ -14,21 +14,16 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.DeleteForever
-import androidx.compose.material.icons.filled.Save
+import androidx.compose.material.icons.automirrored.rounded.ArrowBack
+import androidx.compose.material.icons.rounded.DeleteForever
+import androidx.compose.material.icons.rounded.Save
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
-import androidx.compose.material3.TopAppBarScrollBehavior
-import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -56,6 +51,11 @@ import me.weishu.kernelsu.ui.util.getAppProfileTemplate
 import me.weishu.kernelsu.ui.util.setAppProfileTemplate
 import me.weishu.kernelsu.ui.viewmodel.TemplateViewModel
 import me.weishu.kernelsu.ui.viewmodel.toJSON
+import top.yukonga.miuix.kmp.basic.MiuixScrollBehavior
+import top.yukonga.miuix.kmp.basic.Scaffold
+import top.yukonga.miuix.kmp.basic.ScrollBehavior
+import top.yukonga.miuix.kmp.basic.TopAppBar
+import top.yukonga.miuix.kmp.theme.MiuixTheme
 
 /**
  * @author weishu
@@ -77,7 +77,7 @@ fun TemplateEditorScreen(
         mutableStateOf(initialTemplate)
     }
 
-    val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior(rememberTopAppBarState())
+    val scrollBehavior = MiuixScrollBehavior()
 
     BackHandler {
         navigator.navigateBack(result = !readOnly)
@@ -186,7 +186,8 @@ fun TemplateEditorScreen(
                 }
             }
 
-            RootProfileConfig(fixedName = true,
+            RootProfileConfig(
+                fixedName = true,
                 profile = toNativeProfile(template),
                 onProfileChange = {
                     template.copy(
@@ -212,7 +213,8 @@ fun TemplateEditorScreen(
 }
 
 fun toNativeProfile(templateInfo: TemplateViewModel.TemplateInfo): Natives.Profile {
-    return Natives.Profile().copy(rootTemplate = templateInfo.id,
+    return Natives.Profile().copy(
+        rootTemplate = templateInfo.id,
         uid = templateInfo.uid,
         gid = templateInfo.gid,
         groups = templateInfo.groups,
@@ -257,41 +259,48 @@ private fun TopBar(
     onBack: () -> Unit,
     onDelete: () -> Unit = {},
     onSave: () -> Unit = {},
-    scrollBehavior: TopAppBarScrollBehavior? = null
+    scrollBehavior: ScrollBehavior
 ) {
+//    Column {
+//        Text(title)
+//        if (summary.isNotBlank()) {
+//            Text(
+//                text = summary,
+//                style = MaterialTheme.typography.bodyMedium,
+//            )
+//        }
+//    }
+//}
     TopAppBar(
-        title = {
-            Column {
-                Text(title)
-                if (summary.isNotBlank()) {
-                    Text(
-                        text = summary,
-                        style = MaterialTheme.typography.bodyMedium,
-                    )
-                }
-            }
-        }, navigationIcon = {
+        title = title, navigationIcon = {
             IconButton(
                 onClick = onBack
-            ) { Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = null) }
+            ) {
+                Icon(
+                    Icons.AutoMirrored.Rounded.ArrowBack,
+                    contentDescription = null,
+                    tint = MiuixTheme.colorScheme.onBackground
+                )
+            }
         }, actions = {
             if (readOnly) {
                 return@TopAppBar
             }
             IconButton(onClick = onDelete) {
                 Icon(
-                    Icons.Filled.DeleteForever,
-                    contentDescription = stringResource(id = R.string.app_profile_template_delete)
+                    Icons.Rounded.DeleteForever,
+                    contentDescription = stringResource(id = R.string.app_profile_template_delete),
+                    tint = MiuixTheme.colorScheme.onBackground
                 )
             }
             IconButton(onClick = onSave) {
                 Icon(
-                    imageVector = Icons.Filled.Save,
-                    contentDescription = stringResource(id = R.string.app_profile_template_save)
+                    imageVector = Icons.Rounded.Save,
+                    contentDescription = stringResource(id = R.string.app_profile_template_save),
+                    tint = MiuixTheme.colorScheme.onBackground
                 )
             }
         },
-        windowInsets = WindowInsets.safeDrawing.only(WindowInsetsSides.Top + WindowInsetsSides.Horizontal),
         scrollBehavior = scrollBehavior
     )
 }

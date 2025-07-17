@@ -32,8 +32,6 @@ android {
                 keyAlias = alias
                 keyPassword = pwd
                 enableV2Signing = true
-                enableV3Signing = true
-                enableV4Signing = true
             }
         }
     }
@@ -44,6 +42,9 @@ android {
             isShrinkResources = true
             vcsInfo.include = false
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
+            if (keystorePath != null) signingConfig = signingConfigs.getByName("release")
+        }
+        debug {
             if (keystorePath != null) signingConfig = signingConfigs.getByName("release")
         }
     }

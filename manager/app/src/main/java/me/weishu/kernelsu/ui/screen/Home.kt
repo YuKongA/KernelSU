@@ -30,13 +30,13 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Archive
-import androidx.compose.material.icons.filled.Refresh
-import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.outlined.Block
-import androidx.compose.material.icons.outlined.Warning
+import androidx.compose.material.icons.rounded.Archive
 import androidx.compose.material.icons.rounded.CheckCircleOutline
 import androidx.compose.material.icons.rounded.Link
+import androidx.compose.material.icons.rounded.Refresh
+import androidx.compose.material.icons.rounded.Settings
+import androidx.compose.material.icons.rounded.Warning
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
@@ -125,7 +125,7 @@ fun HomeScreen(navigator: DestinationsNavigator) {
                 .height(getWindowSize().height.dp)
                 .overScrollVertical()
                 .nestedScroll(scrollBehavior.nestedScrollConnection)
-                .padding(horizontal = 16.dp),
+                .padding(horizontal = 12.dp),
             contentPadding = PaddingValues(top = innerPadding.calculateTopPadding()),
             overscrollEffect = null,
         ) {
@@ -137,21 +137,10 @@ fun HomeScreen(navigator: DestinationsNavigator) {
                 }
 
                 Column(
+                    modifier = Modifier.padding(top = 12.dp),
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.spacedBy(12.dp),
                 ) {
-                    StatusCard(
-                        kernelVersion, ksuVersion, lkmMode,
-                        onClickInstall = {
-                            navigator.navigate(InstallScreenDestination)
-                        },
-                        onClickSuperuser = {
-                            navigator.navigate(SuperUserScreenDestination)
-                        },
-                        onclickModule = {
-                            navigator.navigate(ModuleScreenDestination)
-                        }
-                    )
                     if (isManager && Natives.requireNewKernel()) {
                         WarningCard(
                             stringResource(id = R.string.require_kernel_version).format(
@@ -164,6 +153,20 @@ fun HomeScreen(navigator: DestinationsNavigator) {
                             stringResource(id = R.string.grant_root_failed)
                         )
                     }
+                    StatusCard(
+                        kernelVersion, ksuVersion, lkmMode,
+                        onClickInstall = {
+                            navigator.navigate(InstallScreenDestination)
+                        },
+                        onClickSuperuser = {
+                            navigator.navigate(SuperUserScreenDestination)
+                        },
+                        onclickModule = {
+                            navigator.navigate(ModuleScreenDestination)
+                        }
+                    )
+
+
                     val checkUpdate =
                         LocalContext.current.getSharedPreferences("settings", Context.MODE_PRIVATE)
                             .getBoolean("check_update", true)
@@ -263,8 +266,10 @@ private fun TopBar(
                 onClick = onSettingsClick
             ) {
                 Icon(
-                    imageVector = Icons.Filled.Settings,
-                    contentDescription = stringResource(id = R.string.settings)
+                    imageVector = Icons.Rounded.Settings,
+                    contentDescription = stringResource(id = R.string.settings),
+                    tint = colorScheme.onBackground
+
                 )
             }
         },
@@ -275,8 +280,9 @@ private fun TopBar(
                     onClick = onInstallClick,
                 ) {
                     Icon(
-                        imageVector = Icons.Filled.Archive,
-                        contentDescription = stringResource(id = R.string.install)
+                        imageVector = Icons.Rounded.Archive,
+                        contentDescription = stringResource(id = R.string.install),
+                        tint = colorScheme.onBackground
                     )
                 }
             }
@@ -288,8 +294,9 @@ private fun TopBar(
                     holdDownState = showTopPopup.value
                 ) {
                     Icon(
-                        imageVector = Icons.Filled.Refresh,
-                        contentDescription = stringResource(id = R.string.reboot)
+                        imageVector = Icons.Rounded.Refresh,
+                        contentDescription = stringResource(id = R.string.reboot),
+                        tint = colorScheme.onBackground
                     )
                 }
                 ListPopup(
@@ -370,7 +377,7 @@ private fun StatusCard(
     onclickModule: () -> Unit = {},
 ) {
     Column(
-        modifier = Modifier.padding(top = 12.dp)
+        modifier = Modifier
     ) {
         when {
             ksuVersion != null -> {
@@ -411,7 +418,7 @@ private fun StatusCard(
                             Column(
                                 modifier = Modifier
                                     .fillMaxSize()
-                                    .padding(all = 18.dp)
+                                    .padding(all = 16.dp)
                             ) {
                                 Text(
                                     modifier = Modifier.fillMaxWidth(),
@@ -453,7 +460,7 @@ private fun StatusCard(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .weight(1f),
-                            insideMargin = PaddingValues(18.dp),
+                            insideMargin = PaddingValues(16.dp),
                             onClick = { onClickSuperuser() },
                             showIndication = true,
                             pressFeedbackType = PressFeedbackType.Tilt
@@ -479,7 +486,7 @@ private fun StatusCard(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .weight(1f),
-                            insideMargin = PaddingValues(18.dp),
+                            insideMargin = PaddingValues(16.dp),
                             onClick = { onclickModule() },
                             showIndication = true,
                             pressFeedbackType = PressFeedbackType.Tilt
@@ -506,7 +513,7 @@ private fun StatusCard(
             kernelVersion.isGKI() -> {
                 Card(
                     modifier = Modifier.fillMaxWidth(),
-                    insideMargin = PaddingValues(18.dp),
+                    insideMargin = PaddingValues(16.dp),
                     onClick = {
                         if (kernelVersion.isGKI()) onClickInstall()
                     },
@@ -514,18 +521,24 @@ private fun StatusCard(
                     pressFeedbackType = PressFeedbackType.Tilt
                 ) {
                     Row(
+                        modifier = Modifier.padding(start = 2.dp),
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
-                        Icon(Icons.Outlined.Warning, stringResource(R.string.home_not_installed))
-                        Column(Modifier.padding(start = 20.dp)) {
+                        Icon(
+                            Icons.Rounded.Warning,
+                            stringResource(R.string.home_not_installed),
+                            tint = colorScheme.onBackground,
+                        )
+                        Column(Modifier.padding(start = 16.dp)) {
                             Text(
                                 text = stringResource(R.string.home_not_installed),
-                                fontSize = 20.sp,
-                                fontWeight = FontWeight.SemiBold,
+                                fontSize = 18.sp,
+                                fontWeight = FontWeight(550),
                             )
-                            Spacer(Modifier.height(4.dp))
+                            Spacer(Modifier.height(2.dp))
                             Text(
                                 text = stringResource(R.string.home_click_to_install),
+                                fontSize = 14.sp
                             )
                         }
                     }
@@ -535,7 +548,7 @@ private fun StatusCard(
             else -> {
                 Card(
                     modifier = Modifier.fillMaxWidth(),
-                    insideMargin = PaddingValues(18.dp),
+                    insideMargin = PaddingValues(16.dp),
                     onClick = {
                         if (kernelVersion.isGKI()) onClickInstall()
                     },
@@ -545,7 +558,11 @@ private fun StatusCard(
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
-                        Icon(Icons.Outlined.Block, stringResource(R.string.home_unsupported))
+                        Icon(
+                            Icons.Outlined.Block,
+                            stringResource(R.string.home_unsupported),
+                            tint = colorScheme.onBackground
+                        )
                         Column(Modifier.padding(start = 20.dp)) {
                             Text(
                                 text = stringResource(R.string.home_unsupported),
@@ -566,7 +583,7 @@ private fun StatusCard(
 
 @Composable
 fun WarningCard(
-    message: String, color: Color = Color(red = 220, green = 54, blue = 46), onClick: (() -> Unit)? = null
+    message: String, color: Color = if (isSystemInDarkTheme()) Color(0XFF310808) else Color(0xFFF8E2E2), onClick: (() -> Unit)? = null
 ) {
     Card(
         color = color,
@@ -579,10 +596,12 @@ fun WarningCard(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(24.dp)
+                .padding(16.dp)
         ) {
             Text(
-                text = message
+                text = message,
+                color = Color(0xFFF72727),
+                fontSize = 14.sp
             )
         }
     }
@@ -610,8 +629,7 @@ fun LearnMoreCard() {
             },
             onClick = {
                 uriHandler.openUri(url)
-            },
-            insideMargin = PaddingValues(18.dp)
+            }
         )
     }
 }
@@ -669,7 +687,7 @@ private fun InfoCard() {
         val uname = Os.uname()
         val managerVersion = getManagerVersion(context)
         Column(
-            modifier = Modifier.padding(18.dp)
+            modifier = Modifier.padding(16.dp)
         ) {
             InfoText(
                 title = stringResource(R.string.home_kernel),

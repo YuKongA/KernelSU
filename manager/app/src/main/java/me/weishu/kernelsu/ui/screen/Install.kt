@@ -22,8 +22,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.selection.toggleable
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.FileUpload
+import androidx.compose.material.icons.automirrored.rounded.ArrowBack
+import androidx.compose.material.icons.rounded.FileUpload
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -71,6 +71,7 @@ import top.yukonga.miuix.kmp.basic.Text
 import top.yukonga.miuix.kmp.basic.TopAppBar
 import top.yukonga.miuix.kmp.extra.SuperCheckbox
 import top.yukonga.miuix.kmp.theme.MiuixTheme
+import top.yukonga.miuix.kmp.theme.MiuixTheme.colorScheme
 import top.yukonga.miuix.kmp.utils.getWindowSize
 import top.yukonga.miuix.kmp.utils.overScrollVertical
 
@@ -186,7 +187,7 @@ fun InstallScreen(navigator: DestinationsNavigator) {
                     ) {
                         Text(
                             stringResource(id = R.string.install_next),
-                            color = MiuixTheme.colorScheme.onPrimary,
+                            color = colorScheme.onPrimary,
                             fontSize = MiuixTheme.textStyles.body1.fontSize
                         )
                     }
@@ -353,7 +354,11 @@ private fun TopBar(
                 modifier = Modifier.padding(start = 16.dp),
                 onClick = onBack
             ) {
-                Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = null)
+                Icon(
+                    Icons.AutoMirrored.Rounded.ArrowBack,
+                    tint = colorScheme.onSurface,
+                    contentDescription = null,
+                )
             }
         },
         actions = {
@@ -361,7 +366,11 @@ private fun TopBar(
                 modifier = Modifier.padding(end = 16.dp),
                 onClick = onLkmUpload
             ) {
-                Icon(Icons.Filled.FileUpload, contentDescription = null)
+                Icon(
+                    Icons.Rounded.FileUpload,
+                    tint = colorScheme.onSurface,
+                    contentDescription = null
+                )
             }
         },
         scrollBehavior = scrollBehavior
