@@ -30,13 +30,12 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.Block
 import androidx.compose.material.icons.rounded.Archive
 import androidx.compose.material.icons.rounded.CheckCircleOutline
+import androidx.compose.material.icons.rounded.ErrorOutline
 import androidx.compose.material.icons.rounded.Link
 import androidx.compose.material.icons.rounded.Refresh
 import androidx.compose.material.icons.rounded.Settings
-import androidx.compose.material.icons.rounded.Warning
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
@@ -396,7 +395,7 @@ private fun StatusCard(
 
                 Row(
                     modifier = Modifier
-                        .height(200.dp)
+                        .height(180.dp)
                         .fillMaxWidth(),
                     horizontalArrangement = Arrangement.Center,
                     verticalAlignment = Alignment.CenterVertically,
@@ -445,11 +444,8 @@ private fun StatusCard(
                                     tint = Color(0xFF36D167),
                                     contentDescription = null
                                 )
-
                             }
-
                         }
-
                     }
                     Column(
                         modifier = Modifier
@@ -475,7 +471,7 @@ private fun StatusCard(
                                 Text(
                                     text = getSuperuserCount().toString(),
                                     fontSize = 26.sp,
-                                    fontWeight = FontWeight.Bold,
+                                    fontWeight = FontWeight.SemiBold,
                                     color = colorScheme.onSurface
                                 )
                             }
@@ -501,7 +497,7 @@ private fun StatusCard(
                                 Text(
                                     text = getModuleCount().toString(),
                                     fontSize = 26.sp,
-                                    fontWeight = FontWeight.Bold,
+                                    fontWeight = FontWeight.SemiBold,
                                     color = colorScheme.onSurface
                                 )
                             }
@@ -512,69 +508,49 @@ private fun StatusCard(
 
             kernelVersion.isGKI() -> {
                 Card(
-                    modifier = Modifier.fillMaxWidth(),
-                    insideMargin = PaddingValues(16.dp),
                     onClick = {
                         if (kernelVersion.isGKI()) onClickInstall()
                     },
                     showIndication = true,
-                    pressFeedbackType = PressFeedbackType.Tilt
+                    pressFeedbackType = PressFeedbackType.Sink
                 ) {
-                    Row(
-                        modifier = Modifier.padding(start = 2.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                    ) {
-                        Icon(
-                            Icons.Rounded.Warning,
-                            stringResource(R.string.home_not_installed),
-                            tint = colorScheme.onBackground,
-                        )
-                        Column(Modifier.padding(start = 16.dp)) {
-                            Text(
-                                text = stringResource(R.string.home_not_installed),
-                                fontSize = 18.sp,
-                                fontWeight = FontWeight(550),
-                            )
-                            Spacer(Modifier.height(2.dp))
-                            Text(
-                                text = stringResource(R.string.home_click_to_install),
-                                fontSize = 14.sp
+                    BasicComponent(
+                        title = stringResource(R.string.home_not_installed),
+                        summary = stringResource(R.string.home_click_to_install),
+                        leftAction = {
+                            Icon(
+                                Icons.Rounded.ErrorOutline,
+                                stringResource(R.string.home_not_installed),
+                                modifier = Modifier
+                                    .padding(end = 16.dp),
+                                tint = colorScheme.onBackground,
                             )
                         }
-                    }
+                    )
                 }
             }
 
             else -> {
                 Card(
-                    modifier = Modifier.fillMaxWidth(),
-                    insideMargin = PaddingValues(16.dp),
                     onClick = {
                         if (kernelVersion.isGKI()) onClickInstall()
                     },
                     showIndication = true,
-                    pressFeedbackType = PressFeedbackType.Tilt
+                    pressFeedbackType = PressFeedbackType.Sink
                 ) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                    ) {
-                        Icon(
-                            Icons.Outlined.Block,
-                            stringResource(R.string.home_unsupported),
-                            tint = colorScheme.onBackground
-                        )
-                        Column(Modifier.padding(start = 20.dp)) {
-                            Text(
-                                text = stringResource(R.string.home_unsupported),
-                                fontSize = 20.sp,
-                                fontWeight = FontWeight.SemiBold,
-                            )
-                            Spacer(Modifier.height(4.dp))
-                            Text(
-                                text = stringResource(R.string.home_unsupported_reason),
+                    BasicComponent(
+                        title = stringResource(R.string.home_unsupported),
+                        summary = stringResource(R.string.home_unsupported_reason),
+                        leftAction = {
+                            Icon(
+                                Icons.Rounded.ErrorOutline,
+                                stringResource(R.string.home_unsupported),
+                                modifier = Modifier
+                                    .padding(end = 16.dp),
+                                tint = colorScheme.onBackground,
                             )
                         }
-                    }
+                    )
                 }
             }
         }
@@ -583,7 +559,9 @@ private fun StatusCard(
 
 @Composable
 fun WarningCard(
-    message: String, color: Color = if (isSystemInDarkTheme()) Color(0XFF310808) else Color(0xFFF8E2E2), onClick: (() -> Unit)? = null
+    message: String,
+    color: Color = if (isSystemInDarkTheme()) Color(0XFF310808) else Color(0xFFF8E2E2),
+    onClick: (() -> Unit)? = null
 ) {
     Card(
         color = color,
@@ -667,7 +645,7 @@ private fun InfoCard() {
     fun InfoText(
         title: String,
         content: String,
-        bottomPadding: Dp = 23.dp
+        bottomPadding: Dp = 24.dp
     ) {
         Text(
             text = title,

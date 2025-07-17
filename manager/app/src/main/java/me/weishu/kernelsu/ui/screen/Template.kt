@@ -1,7 +1,6 @@
 package me.weishu.kernelsu.ui.screen
 
 import android.widget.Toast
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
@@ -12,23 +11,27 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ArrowBack
+import androidx.compose.material.icons.outlined.Fingerprint
+import androidx.compose.material.icons.outlined.Group
+import androidx.compose.material.icons.outlined.Shield
 import androidx.compose.material.icons.rounded.Add
 import androidx.compose.material.icons.rounded.ImportExport
 import androidx.compose.material.icons.rounded.Sync
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.ListItem
-import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -40,6 +43,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
@@ -47,7 +51,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.dropUnlessResumed
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.ramcosta.composedestinations.annotation.Destination
@@ -62,6 +65,7 @@ import me.weishu.kernelsu.R
 import me.weishu.kernelsu.ui.viewmodel.TemplateViewModel
 import top.yukonga.miuix.kmp.basic.Card
 import top.yukonga.miuix.kmp.basic.FloatingActionButton
+import top.yukonga.miuix.kmp.basic.HorizontalDivider
 import top.yukonga.miuix.kmp.basic.Icon
 import top.yukonga.miuix.kmp.basic.IconButton
 import top.yukonga.miuix.kmp.basic.MiuixScrollBehavior
@@ -72,7 +76,9 @@ import top.yukonga.miuix.kmp.basic.Text
 import top.yukonga.miuix.kmp.basic.TopAppBar
 import top.yukonga.miuix.kmp.basic.rememberPullToRefreshState
 import top.yukonga.miuix.kmp.theme.MiuixTheme.colorScheme
+import top.yukonga.miuix.kmp.utils.PressFeedbackType
 import top.yukonga.miuix.kmp.utils.SmoothRoundedCornerShape
+import top.yukonga.miuix.kmp.utils.getWindowSize
 import top.yukonga.miuix.kmp.utils.overScrollVertical
 
 /**
@@ -159,7 +165,7 @@ fun AppProfileTemplateScreen(
                         )
                     )
                 },
-                shape = SmoothRoundedCornerShape(22.dp),
+                shape = SmoothRoundedCornerShape(20.dp),
                 content = {
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
@@ -194,14 +200,15 @@ fun AppProfileTemplateScreen(
         ) {
             LazyColumn(
                 modifier = Modifier
-                    .fillMaxSize()
+                    .height(getWindowSize().height.dp)
                     .overScrollVertical()
                     .nestedScroll(scrollBehavior.nestedScrollConnection)
                     .padding(horizontal = 16.dp),
                 contentPadding = PaddingValues(
                     top = innerPadding.calculateTopPadding(),
                     bottom = 56.dp + 16.dp /* Scaffold Fab Spacing + Fab container height */
-                )
+                ),
+                overscrollEffect = null
             ) {
                 item {
                     Spacer(Modifier.height(12.dp))
@@ -221,40 +228,100 @@ private fun TemplateItem(
     template: TemplateViewModel.TemplateInfo
 ) {
     Card(
-        modifier = Modifier.padding(bottom = 12.dp)
+        modifier = Modifier.padding(bottom = 12.dp),
+        onClick = {
+            navigator.navigate(TemplateEditorScreenDestination(template, !template.local))
+        },
+        showIndication = true,
+        pressFeedbackType = PressFeedbackType.Sink
     ) {
-        ListItem(
+        Column(
             modifier = Modifier
-                .clickable {
-                    navigator.navigate(TemplateEditorScreenDestination(template, !template.local))
-                },
-            colors = ListItemDefaults.colors(
-                containerColor = colorScheme.surface,
-                headlineColor = colorScheme.onSurface,
-                supportingColor = colorScheme.onSurfaceVariantSummary,
-            ),
-            headlineContent = { Text(template.name) },
-            supportingContent = {
-                Column {
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp, vertical = 14.dp)
+        ) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text(
+                    text = template.name,
+                    fontWeight = FontWeight.SemiBold,
+                    style = MaterialTheme.typography.titleMedium
+                )
+                Spacer(modifier = Modifier.weight(1f))
+                if (template.local) {
                     Text(
-                        text = "${template.id}${if (template.author.isEmpty()) "" else "@${template.author}"}",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = colorScheme.onSurface,
-                        fontSize = 12.sp,
+                        text = "LOCAL",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = colorScheme.onTertiaryContainer,
+                        fontWeight = FontWeight.Bold
                     )
-                    Text(template.description)
-                    FlowRow {
-                        LabelText(label = "UID: ${template.uid}")
-                        LabelText(label = "GID: ${template.gid}")
-                        LabelText(label = template.context)
-                        if (template.local) {
-                            LabelText(label = "local")
-                        } else {
-                            LabelText(label = "remote")
-                        }
-                    }
+                } else {
+                    Text(
+                        text = "REMOTE",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = colorScheme.onSurfaceSecondary,
+                        fontWeight = FontWeight.Bold
+                    )
                 }
-            },
+            }
+
+            Text(
+                text = "${template.id}${if (template.author.isEmpty()) "" else " by @${template.author}"}",
+                style = MaterialTheme.typography.bodySmall,
+                color = colorScheme.onSurfaceSecondary
+            )
+
+            Spacer(modifier = Modifier.height(4.dp))
+
+            Text(
+                text = template.description,
+                style = MaterialTheme.typography.bodyMedium,
+                color = colorScheme.onSurface
+            )
+
+            HorizontalDivider(
+                modifier = Modifier.padding(vertical = 12.dp),
+                thickness = 0.5.dp,
+                color = colorScheme.outline.copy(alpha = 0.5f)
+            )
+
+            FlowRow(
+                horizontalArrangement = Arrangement.spacedBy(16.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp),
+            ) {
+                InfoChip(
+                    icon = Icons.Outlined.Fingerprint,
+                    text = "UID: ${template.uid}"
+                )
+                InfoChip(
+                    icon = Icons.Outlined.Group,
+                    text = "GID: ${template.gid}"
+                )
+                InfoChip(
+                    icon = Icons.Outlined.Shield,
+                    text = template.context
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun InfoChip(icon: ImageVector, text: String) {
+    Row(verticalAlignment = Alignment.CenterVertically) {
+        Icon(
+            imageVector = icon,
+            contentDescription = null,
+            modifier = Modifier.size(14.dp),
+            tint = colorScheme.onSurfaceSecondary.copy(alpha = 0.8f)
+        )
+        Spacer(modifier = Modifier.width(6.dp))
+        Text(
+            text = text,
+            style = MaterialTheme.typography.bodySmall,
+            color = colorScheme.onSurfaceSecondary
         )
     }
 }

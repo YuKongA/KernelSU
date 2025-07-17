@@ -221,7 +221,6 @@ private fun AppProfileInner(
                         .padding(bottom = 12.dp),
                 ) {
                     if (current) {
-
                         val initialMode = if (profile.rootUseDefault) {
                             Mode.Default
                         } else if (profile.rootTemplate != null) {
@@ -317,7 +316,7 @@ private fun ProfileBox(
         leftAction = {
             Icon(
                 Icons.Rounded.AccountCircle,
-                modifier = Modifier.padding(end = 8.dp),
+                modifier = Modifier.padding(end = 16.dp),
                 contentDescription = null
             )
         },

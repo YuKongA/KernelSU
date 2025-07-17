@@ -158,6 +158,8 @@ fun SettingScreen(navigator: DestinationsNavigator) {
                     val profileTemplate = stringResource(id = R.string.settings_profile_template)
                     KsuIsValid {
                         SuperArrow(
+                            title = profileTemplate,
+                            summary = stringResource(id = R.string.settings_profile_template_summary),
                             leftAction = {
                                 Icon(
                                     Icons.Rounded.Fence,
@@ -166,8 +168,6 @@ fun SettingScreen(navigator: DestinationsNavigator) {
                                     tint = colorScheme.onBackground
                                 )
                             },
-                            title = profileTemplate,
-                            summary = stringResource(id = R.string.settings_profile_template_summary),
                             onClick = {
                                 navigator.navigate(AppProfileTemplateScreenDestination)
                             }
@@ -180,6 +180,8 @@ fun SettingScreen(navigator: DestinationsNavigator) {
 
                     KsuIsValid {
                         SuperSwitch(
+                            title = stringResource(id = R.string.settings_umount_modules_default),
+                            summary = stringResource(id = R.string.settings_umount_modules_default_summary),
                             leftAction = {
                                 Icon(
                                     Icons.Rounded.FolderDelete,
@@ -188,8 +190,6 @@ fun SettingScreen(navigator: DestinationsNavigator) {
                                     tint = colorScheme.onBackground
                                 )
                             },
-                            title = stringResource(id = R.string.settings_umount_modules_default),
-                            summary = stringResource(id = R.string.settings_umount_modules_default_summary),
                             checked = umountChecked,
                             onCheckedChange = { it ->
                                 if (Natives.setDefaultUmountModules(it)) {
@@ -205,6 +205,8 @@ fun SettingScreen(navigator: DestinationsNavigator) {
                                 mutableStateOf(!Natives.isSuEnabled())
                             }
                             SuperSwitch(
+                                title = stringResource(id = R.string.settings_disable_su),
+                                summary = stringResource(id = R.string.settings_disable_su_summary),
                                 leftAction = {
                                     Icon(
                                         Icons.Rounded.RemoveModerator,
@@ -213,8 +215,6 @@ fun SettingScreen(navigator: DestinationsNavigator) {
                                         tint = colorScheme.onBackground
                                     )
                                 },
-                                title = stringResource(id = R.string.settings_disable_su),
-                                summary = stringResource(id = R.string.settings_disable_su_summary),
                                 checked = isSuDisabled,
                                 onCheckedChange = { checked: Boolean ->
                                     val shouldEnable = !checked
@@ -233,6 +233,8 @@ fun SettingScreen(navigator: DestinationsNavigator) {
                         )
                     }
                     SuperSwitch(
+                        title = stringResource(id = R.string.settings_check_update),
+                        summary = stringResource(id = R.string.settings_check_update_summary),
                         leftAction = {
                             Icon(
                                 Icons.Rounded.Update,
@@ -241,8 +243,6 @@ fun SettingScreen(navigator: DestinationsNavigator) {
                                 tint = colorScheme.onBackground
                             )
                         },
-                        title = stringResource(id = R.string.settings_check_update),
-                        summary = stringResource(id = R.string.settings_check_update_summary),
                         checked = checkUpdate,
                         onCheckedChange = { it ->
                             prefs.edit { putBoolean("check_update", it) }
@@ -258,6 +258,8 @@ fun SettingScreen(navigator: DestinationsNavigator) {
 
                     KsuIsValid {
                         SuperSwitch(
+                            title = stringResource(id = R.string.enable_web_debugging),
+                            summary = stringResource(id = R.string.enable_web_debugging_summary),
                             leftAction = {
                                 Icon(
                                     Icons.Rounded.DeveloperMode,
@@ -266,8 +268,6 @@ fun SettingScreen(navigator: DestinationsNavigator) {
                                     tint = colorScheme.onBackground
                                 )
                             },
-                            title = stringResource(id = R.string.enable_web_debugging),
-                            summary = stringResource(id = R.string.enable_web_debugging_summary),
                             checked = enableWebDebugging,
                             onCheckedChange = { it ->
                                 prefs.edit { putBoolean("enable_web_debugging", it) }
@@ -279,6 +279,7 @@ fun SettingScreen(navigator: DestinationsNavigator) {
                     var showBottomsheet by remember { mutableStateOf(false) }
 
                     SuperArrow(
+                        title = stringResource(id = R.string.send_log),
                         leftAction = {
                             Icon(
                                 Icons.Rounded.BugReport,
@@ -287,7 +288,6 @@ fun SettingScreen(navigator: DestinationsNavigator) {
                                 tint = colorScheme.onBackground
                             )
                         },
-                        title = stringResource(id = R.string.send_log),
                         onClick = {
                             showBottomsheet = true
                         },
@@ -392,6 +392,7 @@ fun SettingScreen(navigator: DestinationsNavigator) {
                     val shrink = stringResource(id = R.string.shrink_sparse_image)
                     KsuIsValid {
                         SuperArrow(
+                            title = shrink,
                             leftAction = {
                                 Icon(
                                     Icons.Rounded.Compress,
@@ -400,7 +401,6 @@ fun SettingScreen(navigator: DestinationsNavigator) {
                                     tint = colorScheme.onBackground
                                 )
                             },
-                            title = shrink,
                             onClick = {
                                 scope.launch {
                                     val result = shrinkDialog.awaitConfirm(title = shrink)
@@ -418,6 +418,7 @@ fun SettingScreen(navigator: DestinationsNavigator) {
                     if (lkmMode) {
                         val uninstall = stringResource(id = R.string.settings_uninstall)
                         SuperArrow(
+                            title = uninstall,
                             leftAction = {
                                 Icon(
                                     Icons.Rounded.Delete,
@@ -426,7 +427,6 @@ fun SettingScreen(navigator: DestinationsNavigator) {
                                     tint = colorScheme.onBackground,
                                 )
                             },
-                            title = uninstall,
                             onClick = {
                                 showUninstallDialog.value = true
                                 uninstallDialog
@@ -435,6 +435,7 @@ fun SettingScreen(navigator: DestinationsNavigator) {
                     }
                     val about = stringResource(id = R.string.about)
                     SuperArrow(
+                        title = about,
                         leftAction = {
                             Icon(
                                 Icons.Rounded.ContactPage,
@@ -443,7 +444,6 @@ fun SettingScreen(navigator: DestinationsNavigator) {
                                 tint = colorScheme.onBackground
                             )
                         },
-                        title = about,
                         onClick = {
                             showAboutDialog.value = true
                             aboutDialog

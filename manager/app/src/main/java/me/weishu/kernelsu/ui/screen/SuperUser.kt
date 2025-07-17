@@ -3,16 +3,19 @@ package me.weishu.kernelsu.ui.screen
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowColumn
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -34,6 +37,8 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
@@ -74,8 +79,10 @@ import top.yukonga.miuix.kmp.basic.TopAppBar
 import top.yukonga.miuix.kmp.basic.rememberPullToRefreshState
 import top.yukonga.miuix.kmp.extra.DropdownImpl
 import top.yukonga.miuix.kmp.icon.MiuixIcons
+import top.yukonga.miuix.kmp.icon.icons.basic.ArrowRight
 import top.yukonga.miuix.kmp.icon.icons.basic.SearchCleanup
 import top.yukonga.miuix.kmp.theme.MiuixTheme.colorScheme
+import top.yukonga.miuix.kmp.utils.PressFeedbackType
 import top.yukonga.miuix.kmp.utils.getWindowSize
 import top.yukonga.miuix.kmp.utils.overScrollVertical
 
@@ -267,31 +274,25 @@ fun SuperUserScreen(navigator: DestinationsNavigator) {
     }
 }
 
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun AppItem(
     app: SuperUserViewModel.AppInfo,
     onClickListener: () -> Unit,
 ) {
     Card(
-        modifier = Modifier.padding(horizontal = 16.dp)
+        modifier = Modifier
+            .padding(horizontal = 16.dp)
+            .padding(bottom = 12.dp),
+        onClick = {
+            onClickListener()
+        },
+        pressFeedbackType = PressFeedbackType.Sink,
+        showIndication = true,
     ) {
         BasicComponent(
             title = app.label,
             summary = app.packageName,
-            rightActions = {
-                FlowRow {
-                    if (app.allowSu) {
-                        LabelText(label = "ROOT")
-                    } else {
-                        if (Natives.uidShouldUmount(app.uid)) {
-                            LabelText(label = "UMOUNT")
-                        }
-                    }
-                    if (app.hasCustomProfile) {
-                        LabelText(label = "CUSTOM")
-                    }
-                }
-            },
             leftAction = {
                 AsyncImage(
                     model = ImageRequest.Builder(LocalContext.current)
@@ -300,35 +301,67 @@ private fun AppItem(
                         .build(),
                     contentDescription = app.label,
                     modifier = Modifier
-                        .padding(end = 8.dp)
-                        .width(48.dp)
-                        .height(48.dp)
+                        .padding(end = 16.dp)
+                        .size(48.dp)
                 )
             },
-            onClick = {
-                onClickListener()
-            },
+            rightActions = {
+                Row {
+                    FlowColumn(
+                        verticalArrangement = Arrangement.spacedBy(4.dp)
+                    ) {
+                        if (app.allowSu) {
+                            StatusTag(
+                                label = "ROOT",
+                                backgroundColor = colorScheme.tertiaryContainer,
+                                contentColor = colorScheme.onTertiaryContainer
+                            )
+                        } else {
+                            if (Natives.uidShouldUmount(app.uid)) {
+                                StatusTag(
+                                    label = "UMOUNT",
+                                    backgroundColor = colorScheme.secondaryContainer,
+                                    contentColor = colorScheme.onSecondaryContainer
+                                )
+                            }
+                        }
+                        if (app.hasCustomProfile) {
+                            StatusTag(
+                                label = "CUSTOM",
+                                backgroundColor = colorScheme.primaryContainer,
+                                contentColor = colorScheme.onPrimaryContainer
+                            )
+                        }
+                    }
+                    Image(
+                        modifier = Modifier
+                            .padding(start = 8.dp)
+                            .size(10.dp, 16.dp),
+                        imageVector = MiuixIcons.Basic.ArrowRight,
+                        contentDescription = null,
+                        colorFilter = ColorFilter.tint(colorScheme.onSurfaceVariantActions),
+                    )
+                }
+            }
         )
     }
-    Spacer(modifier = Modifier.height(12.dp))
 }
 
 @Composable
-fun LabelText(label: String) {
+private fun StatusTag(label: String, backgroundColor: Color, contentColor: Color) {
     Box(
         modifier = Modifier
-            .padding(top = 4.dp, end = 4.dp)
             .background(
-                color = colorScheme.onBackground,
-                shape = RoundedCornerShape(4.dp)
+                color = backgroundColor.copy(alpha = 0.8f),
+                shape = RoundedCornerShape(6.dp)
             )
+            .padding(horizontal = 6.dp, vertical = 3.dp)
     ) {
         Text(
             text = label,
-            modifier = Modifier.padding(vertical = 2.dp, horizontal = 5.dp),
-            color = colorScheme.background,
-            fontSize = 8.sp,
-            fontWeight = FontWeight.SemiBold,
+            color = contentColor,
+            fontSize = 10.sp,
+            fontWeight = FontWeight.Bold
         )
     }
 }

@@ -2,17 +2,15 @@ package me.weishu.kernelsu.ui.screen
 
 import android.widget.Toast
 import androidx.activity.compose.BackHandler
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.only
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
-import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ArrowBack
 import androidx.compose.material.icons.rounded.DeleteForever
@@ -39,6 +37,7 @@ import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.dropUnlessResumed
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootGraph
@@ -56,6 +55,8 @@ import top.yukonga.miuix.kmp.basic.Scaffold
 import top.yukonga.miuix.kmp.basic.ScrollBehavior
 import top.yukonga.miuix.kmp.basic.TopAppBar
 import top.yukonga.miuix.kmp.theme.MiuixTheme
+import top.yukonga.miuix.kmp.utils.getWindowSize
+import top.yukonga.miuix.kmp.utils.overScrollVertical
 
 /**
  * @author weishu
@@ -124,81 +125,46 @@ fun TemplateEditorScreen(
         },
         contentWindowInsets = WindowInsets.safeDrawing.only(WindowInsetsSides.Top + WindowInsetsSides.Horizontal)
     ) { innerPadding ->
-        Column(
+        LazyColumn(
             modifier = Modifier
-                .padding(innerPadding)
+                .height(getWindowSize().height.dp)
+                .overScrollVertical()
                 .nestedScroll(scrollBehavior.nestedScrollConnection)
-                .verticalScroll(rememberScrollState())
                 .pointerInteropFilter {
                     // disable click and ripple if readOnly
                     readOnly
-                }
+                },
+            contentPadding = innerPadding
         ) {
-            if (isCreation) {
-                var errorHint by remember {
-                    mutableStateOf("")
+            item {
+                if (isCreation) {
+                    var errorHint by remember {
+                        mutableStateOf("")
+                    }
+                    val idConflictError = stringResource(id = R.string.app_profile_template_id_exist)
+                    val idInvalidError = stringResource(id = R.string.app_profile_template_id_invalid)
+                    TextEdit(
+                        label = stringResource(id = R.string.app_profile_template_id),
+                        text = template.id,
+                        errorHint = errorHint,
+                        isError = errorHint.isNotEmpty()
+                    ) { value ->
+                        errorHint = if (isTemplateExist(value)) {
+                            idConflictError
+                        } else if (!isValidTemplateId(value)) {
+                            idInvalidError
+                        } else {
+                            ""
+                        }
+                        template = template.copy(id = value)
+                    }
                 }
-                val idConflictError = stringResource(id = R.string.app_profile_template_id_exist)
-                val idInvalidError = stringResource(id = R.string.app_profile_template_id_invalid)
+
                 TextEdit(
-                    label = stringResource(id = R.string.app_profile_template_id),
-                    text = template.id,
-                    errorHint = errorHint,
-                    isError = errorHint.isNotEmpty()
+                    label = stringResource(id = R.string.app_profile_template_name),
+                    text = template.name
                 ) { value ->
-                    errorHint = if (isTemplateExist(value)) {
-                        idConflictError
-                    } else if (!isValidTemplateId(value)) {
-                        idInvalidError
-                    } else {
-                        ""
-                    }
-                    template = template.copy(id = value)
-                }
-            }
-
-            TextEdit(
-                label = stringResource(id = R.string.app_profile_template_name),
-                text = template.name
-            ) { value ->
-                template.copy(name = value).run {
-                    if (autoSave) {
-                        if (!saveTemplate(this)) {
-                            // failed
-                            return@run
-                        }
-                    }
-                    template = this
-                }
-            }
-            TextEdit(
-                label = stringResource(id = R.string.app_profile_template_description),
-                text = template.description
-            ) { value ->
-                template.copy(description = value).run {
-                    if (autoSave) {
-                        if (!saveTemplate(this)) {
-                            // failed
-                            return@run
-                        }
-                    }
-                    template = this
-                }
-            }
-
-            RootProfileConfig(
-                fixedName = true,
-                profile = toNativeProfile(template),
-                onProfileChange = {
-                    template.copy(
-                        uid = it.uid,
-                        gid = it.gid,
-                        groups = it.groups,
-                        capabilities = it.capabilities,
-                        context = it.context,
-                        namespace = it.namespace,
-                        rules = it.rules.split("\n")
-                    ).run {
+                    template.copy(name = value).run {
                         if (autoSave) {
                             if (!saveTemplate(this)) {
                                 // failed
@@ -207,7 +173,46 @@ fun TemplateEditorScreen(
                         }
                         template = this
                     }
-                })
+                }
+                TextEdit(
+                    label = stringResource(id = R.string.app_profile_template_description),
+                    text = template.description
+                ) { value ->
+                    template.copy(description = value).run {
+                        if (autoSave) {
+                            if (!saveTemplate(this)) {
+                                // failed
+                                return@run
+                            }
+                        }
+                        template = this
+                    }
+                }
+
+                RootProfileConfig(
+                    fixedName = true,
+                    profile = toNativeProfile(template),
+                    onProfileChange = {
+                        template.copy(
+                            uid = it.uid,
+                            gid = it.gid,
+                            groups = it.groups,
+                            capabilities = it.capabilities,
+                            context = it.context,
+                            namespace = it.namespace,
+                            rules = it.rules.split("\n")
+                        ).run {
+                            if (autoSave) {
+                                if (!saveTemplate(this)) {
+                                    // failed
+                                    return@run
+                                }
+                            }
+                            template = this
+                        }
+                    }
+                )
+            }
         }
     }
 }
