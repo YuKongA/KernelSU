@@ -78,6 +78,7 @@ import top.yukonga.miuix.kmp.basic.rememberPullToRefreshState
 import top.yukonga.miuix.kmp.theme.MiuixTheme.colorScheme
 import top.yukonga.miuix.kmp.utils.PressFeedbackType
 import top.yukonga.miuix.kmp.utils.SmoothRoundedCornerShape
+import top.yukonga.miuix.kmp.utils.getWindowSize
 import top.yukonga.miuix.kmp.utils.overScrollVertical
 
 /**
@@ -199,14 +200,15 @@ fun AppProfileTemplateScreen(
         ) {
             LazyColumn(
                 modifier = Modifier
-                    .fillMaxSize()
+                    .height(getWindowSize().height.dp)
                     .overScrollVertical()
                     .nestedScroll(scrollBehavior.nestedScrollConnection)
                     .padding(horizontal = 16.dp),
                 contentPadding = PaddingValues(
                     top = innerPadding.calculateTopPadding(),
                     bottom = 56.dp + 16.dp /* Scaffold Fab Spacing + Fab container height */
-                )
+                ),
+                overscrollEffect = null
             ) {
                 item {
                     Spacer(Modifier.height(12.dp))
