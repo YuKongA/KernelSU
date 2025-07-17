@@ -3,7 +3,6 @@ package me.weishu.kernelsu.ui.screen
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
-import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.clickable
@@ -22,12 +21,10 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ArrowBack
-import androidx.compose.material.icons.automirrored.rounded.Undo
 import androidx.compose.material.icons.rounded.BugReport
 import androidx.compose.material.icons.rounded.Compress
 import androidx.compose.material.icons.rounded.ContactPage
 import androidx.compose.material.icons.rounded.Delete
-import androidx.compose.material.icons.rounded.DeleteForever
 import androidx.compose.material.icons.rounded.DeveloperMode
 import androidx.compose.material.icons.rounded.Fence
 import androidx.compose.material.icons.rounded.FolderDelete
@@ -47,7 +44,6 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
@@ -58,16 +54,9 @@ import androidx.compose.ui.unit.dp
 import androidx.core.content.FileProvider
 import androidx.core.content.edit
 import androidx.lifecycle.compose.dropUnlessResumed
-import com.maxkeppeker.sheets.core.models.base.Header
-import com.maxkeppeker.sheets.core.models.base.IconSource
-import com.maxkeppeker.sheets.core.models.base.rememberUseCaseState
-import com.maxkeppeler.sheets.list.ListDialog
-import com.maxkeppeler.sheets.list.models.ListOption
-import com.maxkeppeler.sheets.list.models.ListSelection
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootGraph
 import com.ramcosta.composedestinations.generated.destinations.AppProfileTemplateScreenDestination
-import com.ramcosta.composedestinations.generated.destinations.FlashScreenDestination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import com.ramcosta.composedestinations.navigation.EmptyDestinationsNavigator
 import kotlinx.coroutines.Dispatchers
@@ -78,10 +67,9 @@ import me.weishu.kernelsu.Natives
 import me.weishu.kernelsu.R
 import me.weishu.kernelsu.ui.component.AboutDialog
 import me.weishu.kernelsu.ui.component.ConfirmResult
-import me.weishu.kernelsu.ui.component.DialogHandle
 import me.weishu.kernelsu.ui.component.KsuIsValid
+import me.weishu.kernelsu.ui.component.UninstallDialog
 import me.weishu.kernelsu.ui.component.rememberConfirmDialog
-import me.weishu.kernelsu.ui.component.rememberCustomDialog
 import me.weishu.kernelsu.ui.component.rememberLoadingDialog
 import me.weishu.kernelsu.ui.util.LocalSnackbarHost
 import me.weishu.kernelsu.ui.util.getBugreportFile
@@ -125,11 +113,13 @@ fun SettingScreen(navigator: DestinationsNavigator) {
         snackbarHost = { SnackbarHost(snackBarHost) },
         popupHost = { },
     ) { innerPadding ->
-        val aboutDialog = rememberCustomDialog {
-            AboutDialog(it)
-        }
         val loadingDialog = rememberLoadingDialog()
         val shrinkDialog = rememberConfirmDialog()
+
+        val showAboutDialog = rememberSaveable { mutableStateOf(false) }
+        val aboutDialog = AboutDialog(showAboutDialog)
+        val showUninstallDialog = rememberSaveable { mutableStateOf(false) }
+        val uninstallDialog = UninstallDialog(showUninstallDialog, navigator)
 
         LazyColumn(
             modifier = Modifier
@@ -400,7 +390,6 @@ fun SettingScreen(navigator: DestinationsNavigator) {
                     }
 
                     val shrink = stringResource(id = R.string.shrink_sparse_image)
-                    val shrinkMessage = shrink
                     KsuIsValid {
                         SuperArrow(
                             leftAction = {
@@ -414,7 +403,7 @@ fun SettingScreen(navigator: DestinationsNavigator) {
                             title = shrink,
                             onClick = {
                                 scope.launch {
-                                    val result = shrinkDialog.awaitConfirm(title = shrink, content = shrinkMessage)
+                                    val result = shrinkDialog.awaitConfirm(title = shrink)
                                     if (result == ConfirmResult.Confirmed) {
                                         loadingDialog.withLoading {
                                             shrinkModules()
@@ -427,11 +416,23 @@ fun SettingScreen(navigator: DestinationsNavigator) {
 
                     val lkmMode = Natives.version >= Natives.MINIMAL_SUPPORTED_KERNEL_LKM && Natives.isLkmMode
                     if (lkmMode) {
-                        UninstallItem(navigator) {
-                            loadingDialog.withLoading(it)
-                        }
+                        val uninstall = stringResource(id = R.string.settings_uninstall)
+                        SuperArrow(
+                            leftAction = {
+                                Icon(
+                                    Icons.Rounded.Delete,
+                                    modifier = Modifier.padding(end = 16.dp),
+                                    contentDescription = uninstall,
+                                    tint = colorScheme.onBackground,
+                                )
+                            },
+                            title = uninstall,
+                            onClick = {
+                                showUninstallDialog.value = true
+                                uninstallDialog
+                            }
+                        )
                     }
-
                     val about = stringResource(id = R.string.about)
                     SuperArrow(
                         leftAction = {
@@ -444,7 +445,8 @@ fun SettingScreen(navigator: DestinationsNavigator) {
                         },
                         title = about,
                         onClick = {
-                            aboutDialog.show()
+                            showAboutDialog.value = true
+                            aboutDialog
                         }
                     )
                 }
@@ -459,111 +461,20 @@ fun SettingScreen(navigator: DestinationsNavigator) {
     }
 }
 
-@Composable
-fun UninstallItem(
-    navigator: DestinationsNavigator,
-    withLoading: suspend (suspend () -> Unit) -> Unit
-) {
-    val context = LocalContext.current
-    val scope = rememberCoroutineScope()
-    val uninstallConfirmDialog = rememberConfirmDialog()
-    val showTodo = {
-        Toast.makeText(context, "TODO", Toast.LENGTH_SHORT).show()
-    }
-    val uninstallDialog = rememberUninstallDialog { uninstallType ->
-        scope.launch {
-            val result = uninstallConfirmDialog.awaitConfirm(
-                title = context.getString(uninstallType.title),
-                content = context.getString(uninstallType.message)
-            )
-            if (result == ConfirmResult.Confirmed) {
-                withLoading {
-                    when (uninstallType) {
-                        UninstallType.TEMPORARY -> showTodo()
-                        UninstallType.PERMANENT -> navigator.navigate(
-                            FlashScreenDestination(FlashIt.FlashUninstall)
-                        )
-
-                        UninstallType.RESTORE_STOCK_IMAGE -> navigator.navigate(
-                            FlashScreenDestination(FlashIt.FlashRestore)
-                        )
-
-                        UninstallType.NONE -> Unit
-                    }
-                }
-            }
-        }
-    }
-    val uninstall = stringResource(id = R.string.settings_uninstall)
-    SuperArrow(
-        leftAction = {
-            Icon(
-                Icons.Rounded.Delete,
-                modifier = Modifier.padding(end = 16.dp),
-                contentDescription = uninstall,
-                tint = colorScheme.onBackground,
-            )
-        },
-        title = uninstall,
-        onClick = {
-            uninstallDialog.show()
-        }
-    )
-}
-
-enum class UninstallType(val title: Int, val message: Int, val icon: ImageVector) {
+enum class UninstallType(val title: Int, val message: Int) {
     TEMPORARY(
         R.string.settings_uninstall_temporary,
-        R.string.settings_uninstall_temporary_message,
-        Icons.Rounded.Delete
+        R.string.settings_uninstall_temporary_message
     ),
     PERMANENT(
         R.string.settings_uninstall_permanent,
-        R.string.settings_uninstall_permanent_message,
-        Icons.Rounded.DeleteForever
+        R.string.settings_uninstall_permanent_message
     ),
     RESTORE_STOCK_IMAGE(
         R.string.settings_restore_stock_image,
-        R.string.settings_restore_stock_image_message,
-        Icons.AutoMirrored.Rounded.Undo
+        R.string.settings_restore_stock_image_message
     ),
-    NONE(0, 0, Icons.Rounded.Delete)
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun rememberUninstallDialog(onSelected: (UninstallType) -> Unit): DialogHandle {
-    return rememberCustomDialog { dismiss ->
-        val options = listOf(
-            // UninstallType.TEMPORARY,
-            UninstallType.PERMANENT,
-            UninstallType.RESTORE_STOCK_IMAGE
-        )
-        val listOptions = options.map {
-            ListOption(
-                titleText = stringResource(it.title),
-                subtitleText = if (it.message != 0) stringResource(it.message) else null,
-                icon = IconSource(it.icon)
-            )
-        }
-
-        var selection = UninstallType.NONE
-        ListDialog(
-            state = rememberUseCaseState(visible = true, onFinishedRequest = {
-                if (selection != UninstallType.NONE) {
-                    onSelected(selection)
-                }
-            }, onCloseRequest = {
-                dismiss()
-            }), header = Header.Default(
-                title = stringResource(R.string.settings_uninstall),
-            ), selection = ListSelection.Single(
-                showRadioButtons = false,
-                options = listOptions,
-            ) { index, _ ->
-                selection = options[index]
-            })
-    }
+    NONE(0, 0)
 }
 
 @Composable

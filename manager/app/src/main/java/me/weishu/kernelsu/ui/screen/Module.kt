@@ -250,8 +250,7 @@ fun ModuleScreen(navigator: DestinationsNavigator) {
                         zipUris = uris
                         confirmDialog.showConfirm(
                             title = confirmTitle,
-                            content = confirmContent,
-                            markdown = true
+                            content = confirmContent
                         )
                     }
                 }
@@ -265,6 +264,7 @@ fun ModuleScreen(navigator: DestinationsNavigator) {
                         selectZipLauncher.launch(intent)
                     },
                     shape = SmoothRoundedCornerShape(22.dp),
+                    minWidth = 100.dp,
                     content = {
                         Row(
                             verticalAlignment = Alignment.CenterVertically,
@@ -709,7 +709,7 @@ fun ModuleItem(
                     Icon(
                         modifier = Modifier.size(20.dp),
                         imageVector = Icons.AutoMirrored.Outlined.Wysiwyg,
-                        tint =  colorScheme.onSurface.copy(alpha = if (isSystemInDarkTheme()) 0.7f else 0.9f),
+                        tint = colorScheme.onSurface.copy(alpha = if (isSystemInDarkTheme()) 0.7f else 0.9f),
                         contentDescription = stringResource(R.string.open)
                     )
                 }
@@ -734,12 +734,12 @@ fun ModuleItem(
             IconButton(
                 enabled = !module.remove,
                 onClick = { onUninstall(module) },
-                backgroundColor =  Color.Red.copy(alpha = if (isSystemInDarkTheme()) 0.3f else 0.6f),
+                backgroundColor = Color.Red.copy(alpha = if (isSystemInDarkTheme()) 0.3f else 0.6f),
             ) {
                 Icon(
                     modifier = Modifier.size(20.dp),
                     imageVector = Icons.Rounded.Delete,
-                    tint =  Color.White.copy(alpha = if (isSystemInDarkTheme()) 0.78f else 0.98f),
+                    tint = Color.White.copy(alpha = if (isSystemInDarkTheme()) 0.78f else 0.98f),
                     contentDescription = null
                 )
             }

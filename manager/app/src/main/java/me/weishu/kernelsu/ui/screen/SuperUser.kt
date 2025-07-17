@@ -239,7 +239,7 @@ fun SuperUserScreen(navigator: DestinationsNavigator) {
                                         focusManager.clearFocus()
                                         keyboardController?.hide()
                                     },
-                                text = stringResource(com.maxkeppeler.sheets.core.R.string.cancel),
+                                text = stringResource(android.R.string.cancel),
                                 style = TextStyle(fontSize = 17.sp, fontWeight = FontWeight.Bold),
                                 color = colorScheme.primary
                             )
