@@ -3,22 +3,19 @@ package me.weishu.kernelsu.ui.screen
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowColumn
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -27,7 +24,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.MoreVert
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -42,6 +38,7 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
@@ -50,7 +47,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -65,6 +61,7 @@ import kotlinx.coroutines.launch
 import me.weishu.kernelsu.Natives
 import me.weishu.kernelsu.R
 import me.weishu.kernelsu.ui.viewmodel.SuperUserViewModel
+import top.yukonga.miuix.kmp.basic.BasicComponent
 import top.yukonga.miuix.kmp.basic.Card
 import top.yukonga.miuix.kmp.basic.Icon
 import top.yukonga.miuix.kmp.basic.IconButton
@@ -82,8 +79,10 @@ import top.yukonga.miuix.kmp.basic.TopAppBar
 import top.yukonga.miuix.kmp.basic.rememberPullToRefreshState
 import top.yukonga.miuix.kmp.extra.DropdownImpl
 import top.yukonga.miuix.kmp.icon.MiuixIcons
+import top.yukonga.miuix.kmp.icon.icons.basic.ArrowRight
 import top.yukonga.miuix.kmp.icon.icons.basic.SearchCleanup
 import top.yukonga.miuix.kmp.theme.MiuixTheme.colorScheme
+import top.yukonga.miuix.kmp.utils.PressFeedbackType
 import top.yukonga.miuix.kmp.utils.getWindowSize
 import top.yukonga.miuix.kmp.utils.overScrollVertical
 
@@ -282,13 +281,19 @@ private fun AppItem(
     onClickListener: () -> Unit,
 ) {
     Card(
-        modifier = Modifier.padding(horizontal = 16.dp, vertical = 6.dp),
+        modifier = Modifier
+            .padding(horizontal = 16.dp)
+            .padding(bottom = 12.dp),
+        onClick = {
+            onClickListener()
+        },
+        pressFeedbackType = PressFeedbackType.Sink,
+        showIndication = true,
     ) {
-        Column(modifier = Modifier.clickable(onClick = onClickListener)) {
-            Row(
-                modifier = Modifier.padding(16.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
+        BasicComponent(
+            title = app.label,
+            summary = app.packageName,
+            leftAction = {
                 AsyncImage(
                     model = ImageRequest.Builder(LocalContext.current)
                         .data(app.packageInfo)
@@ -296,57 +301,49 @@ private fun AppItem(
                         .build(),
                     contentDescription = app.label,
                     modifier = Modifier
+                        .padding(end = 16.dp)
                         .size(48.dp)
                 )
-
-                Spacer(modifier = Modifier.width(16.dp))
-
-                Column(
-                    modifier = Modifier.weight(1f),
-                    verticalArrangement = Arrangement.Center
-                ) {
-                    Text(
-                        text = app.label,
-                        fontWeight = FontWeight.SemiBold,
-                        style = MaterialTheme.typography.bodyLarge
-                    )
-                    Spacer(modifier = Modifier.height(2.dp))
-                    Text(
-                        text = app.packageName,
-                        style = MaterialTheme.typography.bodySmall,
-                        color = colorScheme.onSurfaceSecondary,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis
-                    )
-                }
-
-                Spacer(modifier = Modifier.width(8.dp))
-
-                FlowColumn(
-                    horizontalArrangement = Arrangement.End,
-                    itemHorizontalAlignment = Alignment.End,
-                    verticalArrangement = Arrangement.spacedBy(4.dp)
-                ) {
-                    if (app.allowSu) {
-                        StatusTag(label = "ROOT", backgroundColor = colorScheme.tertiaryContainer, contentColor = colorScheme.onTertiaryContainer)
-                    } else {
-                        if (Natives.uidShouldUmount(app.uid)) {
-                            StatusTag(label = "UMOUNT", backgroundColor = colorScheme.secondaryContainer, contentColor = colorScheme.onSecondaryContainer)
+            },
+            rightActions = {
+                Row {
+                    FlowColumn(
+                        verticalArrangement = Arrangement.spacedBy(4.dp)
+                    ) {
+                        if (app.allowSu) {
+                            StatusTag(
+                                label = "ROOT",
+                                backgroundColor = colorScheme.tertiaryContainer,
+                                contentColor = colorScheme.onTertiaryContainer
+                            )
+                        } else {
+                            if (Natives.uidShouldUmount(app.uid)) {
+                                StatusTag(
+                                    label = "UMOUNT",
+                                    backgroundColor = colorScheme.secondaryContainer,
+                                    contentColor = colorScheme.onSecondaryContainer
+                                )
+                            }
+                        }
+                        if (app.hasCustomProfile) {
+                            StatusTag(
+                                label = "CUSTOM",
+                                backgroundColor = colorScheme.primaryContainer,
+                                contentColor = colorScheme.onPrimaryContainer
+                            )
                         }
                     }
-                    if (app.hasCustomProfile) {
-                        StatusTag(label = "CUSTOM", backgroundColor = colorScheme.primaryContainer, contentColor = colorScheme.onPrimaryContainer)
-                    }
+                    Image(
+                        modifier = Modifier
+                            .padding(start = 8.dp)
+                            .size(10.dp, 16.dp),
+                        imageVector = MiuixIcons.Basic.ArrowRight,
+                        contentDescription = null,
+                        colorFilter = ColorFilter.tint(colorScheme.onSurfaceVariantActions),
+                    )
                 }
-
-                Icon(
-                    imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
-                    contentDescription = null,
-                    tint = colorScheme.onSurfaceSecondary.copy(alpha = 0.6f),
-                    modifier = Modifier.padding(start = 4.dp)
-                )
             }
-        }
+        )
     }
 }
 
@@ -365,26 +362,6 @@ private fun StatusTag(label: String, backgroundColor: Color, contentColor: Color
             color = contentColor,
             fontSize = 10.sp,
             fontWeight = FontWeight.Bold
-        )
-    }
-}
-
-@Composable
-fun LabelText(label: String) {
-    Box(
-        modifier = Modifier
-            .padding(top = 4.dp, end = 4.dp)
-            .background(
-                color = colorScheme.onBackground,
-                shape = RoundedCornerShape(4.dp)
-            )
-    ) {
-        Text(
-            text = label,
-            modifier = Modifier.padding(vertical = 2.dp, horizontal = 5.dp),
-            color = colorScheme.background,
-            fontSize = 8.sp,
-            fontWeight = FontWeight.SemiBold,
         )
     }
 }

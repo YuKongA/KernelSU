@@ -1,7 +1,6 @@
 package me.weishu.kernelsu.ui.screen
 
 import android.widget.Toast
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
@@ -77,6 +76,7 @@ import top.yukonga.miuix.kmp.basic.Text
 import top.yukonga.miuix.kmp.basic.TopAppBar
 import top.yukonga.miuix.kmp.basic.rememberPullToRefreshState
 import top.yukonga.miuix.kmp.theme.MiuixTheme.colorScheme
+import top.yukonga.miuix.kmp.utils.PressFeedbackType
 import top.yukonga.miuix.kmp.utils.SmoothRoundedCornerShape
 import top.yukonga.miuix.kmp.utils.overScrollVertical
 
@@ -164,7 +164,7 @@ fun AppProfileTemplateScreen(
                         )
                     )
                 },
-                shape = SmoothRoundedCornerShape(22.dp),
+                shape = SmoothRoundedCornerShape(20.dp),
                 content = {
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
@@ -226,14 +226,16 @@ private fun TemplateItem(
     template: TemplateViewModel.TemplateInfo
 ) {
     Card(
-        modifier = Modifier.padding(bottom = 12.dp)
+        modifier = Modifier.padding(bottom = 12.dp),
+        onClick = {
+            navigator.navigate(TemplateEditorScreenDestination(template, !template.local))
+        },
+        showIndication = true,
+        pressFeedbackType = PressFeedbackType.Sink
     ) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .clickable {
-                    navigator.navigate(TemplateEditorScreenDestination(template, !template.local))
-                }
                 .padding(horizontal = 16.dp, vertical = 14.dp)
         ) {
             Row(
