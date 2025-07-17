@@ -9,6 +9,7 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.LocalIndication
 import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -26,13 +27,12 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.selection.toggleable
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.Wysiwyg
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.outlined.Download
 import androidx.compose.material.icons.outlined.PlayArrow
+import androidx.compose.material.icons.rounded.Add
 import androidx.compose.material.icons.rounded.Delete
+import androidx.compose.material.icons.rounded.MoreVert
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
@@ -90,6 +90,7 @@ import me.weishu.kernelsu.ui.util.uninstallModule
 import me.weishu.kernelsu.ui.viewmodel.ModuleViewModel
 import me.weishu.kernelsu.ui.webui.WebUIActivity
 import top.yukonga.miuix.kmp.basic.Card
+import top.yukonga.miuix.kmp.basic.FloatingActionButton
 import top.yukonga.miuix.kmp.basic.HorizontalDivider
 import top.yukonga.miuix.kmp.basic.Icon
 import top.yukonga.miuix.kmp.basic.IconButton
@@ -107,6 +108,7 @@ import top.yukonga.miuix.kmp.basic.rememberPullToRefreshState
 import top.yukonga.miuix.kmp.extra.DropdownImpl
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 import top.yukonga.miuix.kmp.theme.MiuixTheme.colorScheme
+import top.yukonga.miuix.kmp.utils.SmoothRoundedCornerShape
 import top.yukonga.miuix.kmp.utils.getWindowSize
 import top.yukonga.miuix.kmp.utils.overScrollVertical
 
@@ -152,7 +154,8 @@ fun ModuleScreen(navigator: DestinationsNavigator) {
                         holdDownState = showTopPopup.value
                     ) {
                         Icon(
-                            imageVector = Icons.Filled.MoreVert,
+                            imageVector = Icons.Rounded.MoreVert,
+                            tint = colorScheme.onSurface,
                             contentDescription = stringResource(id = R.string.settings)
                         )
                         ListPopup(
@@ -232,10 +235,10 @@ fun ModuleScreen(navigator: DestinationsNavigator) {
                     val uris = mutableListOf<Uri>()
                     if (clipData != null) {
                         for (i in 0 until clipData.itemCount) {
-                            clipData.getItemAt(i)?.uri?.let { uris.add(it) }
+                            clipData.getItemAt(i)?.uri?.let { it -> uris.add(it) }
                         }
                     } else {
-                        data.data?.let { uris.add(it) }
+                        data.data?.let { it -> uris.add(it) }
                     }
 
                     if (uris.size == 1) {
@@ -252,9 +255,7 @@ fun ModuleScreen(navigator: DestinationsNavigator) {
                         )
                     }
                 }
-
-                ExtendedFloatingActionButton(
-                    containerColor = colorScheme.surface,
+                FloatingActionButton(
                     onClick = {
                         // Select the zip files to install
                         val intent = Intent(Intent.ACTION_GET_CONTENT).apply {
@@ -263,12 +264,26 @@ fun ModuleScreen(navigator: DestinationsNavigator) {
                         }
                         selectZipLauncher.launch(intent)
                     },
-                    icon = { Icon(
-                        Icons.Filled.Add,
-                        moduleInstall,
-                        tint = colorScheme.onBackground
-                    ) },
-                    text = { Text(text = moduleInstall, color = colorScheme.onBackground) },
+                    shape = SmoothRoundedCornerShape(22.dp),
+                    content = {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(4.dp),
+                        ) {
+                            Icon(
+                                Icons.Rounded.Add,
+                                moduleInstall,
+                                Modifier.padding(start = 8.dp),
+                                tint = Color.White
+                            )
+                            Text(
+                                modifier = Modifier.padding(end = 12.dp),
+                                text = moduleInstall,
+                                color = Color.White,
+                                fontWeight = FontWeight.Medium,
+                            )
+                        }
+                    },
                 )
             }
         },
@@ -476,7 +491,7 @@ private fun ModuleList(
             contentPadding = remember {
                 PaddingValues(
                     top = 12.dp,
-                    bottom = 12.dp + 56.dp + 16.dp + 48.dp + 6.dp /* Scaffold Fab Spacing + Fab container height + SnackBar height */
+                    bottom = 12.dp + 56.dp + 16.dp /* Scaffold Fab Spacing + Fab container height */
                 )
             },
         ) {
@@ -621,21 +636,21 @@ fun ModuleItem(
                     text = module.name,
                     fontSize = MiuixTheme.textStyles.title3.fontSize,
                     fontWeight = FontWeight.Medium,
-                    color = MiuixTheme.colorScheme.onSurface,
+                    color = colorScheme.onSurface,
                     textDecoration = textDecoration,
                 )
                 Spacer(Modifier.height(0.5.dp))
                 Text(
                     text = "$moduleVersion: ${module.version}",
                     fontSize = MiuixTheme.textStyles.body2.fontSize,
-                    color = MiuixTheme.colorScheme.onSurfaceVariantSummary,
+                    color = colorScheme.onSurfaceVariantSummary,
                     textDecoration = textDecoration,
                 )
 
                 Text(
                     text = "$moduleAuthor: ${module.author}",
                     fontSize = MiuixTheme.textStyles.body2.fontSize,
-                    color = MiuixTheme.colorScheme.onSurfaceVariantSummary,
+                    color = colorScheme.onSurfaceVariantSummary,
                     textDecoration = textDecoration,
                 )
             }
@@ -652,7 +667,7 @@ fun ModuleItem(
         Text(
             text = module.description,
             fontSize = MiuixTheme.textStyles.body2.fontSize,
-            color = MiuixTheme.colorScheme.onSurfaceVariantSummary,
+            color = colorScheme.onSurfaceVariantSummary,
             modifier = Modifier.padding(top = 8.dp),
             overflow = TextOverflow.Ellipsis,
             maxLines = 4,
@@ -669,7 +684,7 @@ fun ModuleItem(
         ) {
             if (module.hasActionScript) {
                 IconButton(
-                    backgroundColor = MiuixTheme.colorScheme.outline,
+                    backgroundColor = colorScheme.outline,
                     enabled = !module.remove && module.enabled,
                     onClick = {
                         navigator.navigate(ExecuteModuleActionScreenDestination(module.id))
@@ -679,6 +694,7 @@ fun ModuleItem(
                     Icon(
                         modifier = Modifier.size(20.dp),
                         imageVector = Icons.Outlined.PlayArrow,
+                        tint = colorScheme.onSurface.copy(alpha = if (isSystemInDarkTheme()) 0.7f else 0.9f),
                         contentDescription = stringResource(R.string.action)
                     )
                 }
@@ -686,13 +702,14 @@ fun ModuleItem(
 
             if (module.hasWebUi) {
                 IconButton(
-                    backgroundColor = MiuixTheme.colorScheme.outline,
+                    backgroundColor = colorScheme.outline,
                     enabled = !module.remove && module.enabled,
                     onClick = { onClick(module) },
                 ) {
                     Icon(
                         modifier = Modifier.size(20.dp),
                         imageVector = Icons.AutoMirrored.Outlined.Wysiwyg,
+                        tint =  colorScheme.onSurface.copy(alpha = if (isSystemInDarkTheme()) 0.7f else 0.9f),
                         contentDescription = stringResource(R.string.open)
                     )
                 }
@@ -708,7 +725,8 @@ fun ModuleItem(
                     Icon(
                         modifier = Modifier.size(20.dp),
                         imageVector = Icons.Outlined.Download,
-                        contentDescription = stringResource(R.string.module_update)
+                        tint = colorScheme.onSurface.copy(alpha = if (isSystemInDarkTheme()) 0.7f else 0.9f),
+                        contentDescription = stringResource(R.string.module_update),
                     )
                 }
             }
@@ -716,12 +734,12 @@ fun ModuleItem(
             IconButton(
                 enabled = !module.remove,
                 onClick = { onUninstall(module) },
-                backgroundColor = Color.Red.copy(alpha = 0.6f)
+                backgroundColor =  Color.Red.copy(alpha = if (isSystemInDarkTheme()) 0.3f else 0.6f),
             ) {
                 Icon(
                     modifier = Modifier.size(20.dp),
                     imageVector = Icons.Rounded.Delete,
-                    tint = MiuixTheme.colorScheme.onBackground,
+                    tint =  Color.White.copy(alpha = if (isSystemInDarkTheme()) 0.78f else 0.98f),
                     contentDescription = null
                 )
             }

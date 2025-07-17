@@ -19,7 +19,7 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material.icons.rounded.MoreVert
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -34,7 +34,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
@@ -76,7 +75,7 @@ import top.yukonga.miuix.kmp.basic.rememberPullToRefreshState
 import top.yukonga.miuix.kmp.extra.DropdownImpl
 import top.yukonga.miuix.kmp.icon.MiuixIcons
 import top.yukonga.miuix.kmp.icon.icons.basic.SearchCleanup
-import top.yukonga.miuix.kmp.theme.MiuixTheme
+import top.yukonga.miuix.kmp.theme.MiuixTheme.colorScheme
 import top.yukonga.miuix.kmp.utils.getWindowSize
 import top.yukonga.miuix.kmp.utils.overScrollVertical
 
@@ -115,7 +114,8 @@ fun SuperUserScreen(navigator: DestinationsNavigator) {
                         holdDownState = showTopPopup.value
                     ) {
                         Icon(
-                            imageVector = Icons.Filled.MoreVert,
+                            imageVector = Icons.Rounded.MoreVert,
+                            tint = colorScheme.onSurface,
                             contentDescription = stringResource(id = R.string.settings)
                         )
                         ListPopup(
@@ -218,7 +218,7 @@ fun SuperUserScreen(navigator: DestinationsNavigator) {
                                                     .clip(CircleShape)
                                                     .clickable { viewModel.search = "" },
                                                 imageVector = MiuixIcons.Basic.SearchCleanup,
-                                                tint = MiuixTheme.colorScheme.onSurfaceContainerHighest,
+                                                tint = colorScheme.onSurfaceContainerHighest,
                                                 contentDescription = "Search Cleanup"
                                             )
                                         }
@@ -241,7 +241,7 @@ fun SuperUserScreen(navigator: DestinationsNavigator) {
                                     },
                                 text = stringResource(com.maxkeppeler.sheets.core.R.string.cancel),
                                 style = TextStyle(fontSize = 17.sp, fontWeight = FontWeight.Bold),
-                                color = MiuixTheme.colorScheme.primary
+                                color = colorScheme.primary
                             )
                         },
                         expanded = expanded,
@@ -253,7 +253,7 @@ fun SuperUserScreen(navigator: DestinationsNavigator) {
                             modifier = Modifier.fillMaxSize(),
                             text = "Refresh...",
                             textAlign = TextAlign.Center,
-                            color = MiuixTheme.colorScheme.onSecondaryContainer,
+                            color = colorScheme.onSecondaryContainer,
                         )
                     }
                 }
@@ -319,15 +319,16 @@ fun LabelText(label: String) {
         modifier = Modifier
             .padding(top = 4.dp, end = 4.dp)
             .background(
-                Color.Black,
+                color = colorScheme.onBackground,
                 shape = RoundedCornerShape(4.dp)
             )
     ) {
         Text(
             text = label,
             modifier = Modifier.padding(vertical = 2.dp, horizontal = 5.dp),
-            color = Color.White,
+            color = colorScheme.background,
             fontSize = 8.sp,
+            fontWeight = FontWeight.SemiBold,
         )
     }
 }

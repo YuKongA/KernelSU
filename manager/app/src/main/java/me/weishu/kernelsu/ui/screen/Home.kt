@@ -30,14 +30,12 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Archive
-import androidx.compose.material.icons.filled.Refresh
-import androidx.compose.material.icons.filled.Settings
-import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material.icons.outlined.Block
-import androidx.compose.material.icons.outlined.Warning
+import androidx.compose.material.icons.rounded.Archive
 import androidx.compose.material.icons.rounded.CheckCircleOutline
 import androidx.compose.material.icons.rounded.Link
+import androidx.compose.material.icons.rounded.Refresh
+import androidx.compose.material.icons.rounded.Settings
 import androidx.compose.material.icons.rounded.Warning
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
@@ -268,7 +266,7 @@ private fun TopBar(
                 onClick = onSettingsClick
             ) {
                 Icon(
-                    imageVector = Icons.Filled.Settings,
+                    imageVector = Icons.Rounded.Settings,
                     contentDescription = stringResource(id = R.string.settings),
                     tint = colorScheme.onBackground
 
@@ -282,7 +280,7 @@ private fun TopBar(
                     onClick = onInstallClick,
                 ) {
                     Icon(
-                        imageVector = Icons.Filled.Archive,
+                        imageVector = Icons.Rounded.Archive,
                         contentDescription = stringResource(id = R.string.install),
                         tint = colorScheme.onBackground
                     )
@@ -296,7 +294,7 @@ private fun TopBar(
                     holdDownState = showTopPopup.value
                 ) {
                     Icon(
-                        imageVector = Icons.Filled.Refresh,
+                        imageVector = Icons.Rounded.Refresh,
                         contentDescription = stringResource(id = R.string.reboot),
                         tint = colorScheme.onBackground
                     )

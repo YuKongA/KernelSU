@@ -2,8 +2,9 @@ package me.weishu.kernelsu.ui.screen
 
 import androidx.annotation.StringRes
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.*
-import androidx.compose.material.icons.outlined.*
+import androidx.compose.material.icons.rounded.Apps
+import androidx.compose.material.icons.rounded.Home
+import androidx.compose.material.icons.rounded.Security
 import androidx.compose.ui.graphics.vector.ImageVector
 import com.ramcosta.composedestinations.generated.destinations.HomeScreenDestination
 import com.ramcosta.composedestinations.generated.destinations.ModuleScreenDestination
@@ -18,7 +19,7 @@ enum class BottomBarDestination(
     val iconNotSelected: ImageVector,
     val rootRequired: Boolean,
 ) {
-    Home(HomeScreenDestination, R.string.home, Icons.Filled.Home, Icons.Outlined.Home, false),
-    SuperUser(SuperUserScreenDestination, R.string.superuser, Icons.Filled.Security, Icons.Outlined.Security, true),
-    Module(ModuleScreenDestination, R.string.module, Icons.Filled.Apps, Icons.Outlined.Apps, true)
+    Home(HomeScreenDestination, R.string.home, Icons.Rounded.Home, Icons.Rounded.Home, false),
+    SuperUser(SuperUserScreenDestination, R.string.superuser, Icons.Rounded.Security, Icons.Rounded.Security, true),
+    Module(ModuleScreenDestination, R.string.module, Icons.Rounded.Apps, Icons.Rounded.Apps, true)
 }

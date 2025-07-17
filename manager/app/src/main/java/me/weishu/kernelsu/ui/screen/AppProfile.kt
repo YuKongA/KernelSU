@@ -16,10 +16,10 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.AccountCircle
-import androidx.compose.material.icons.filled.Android
-import androidx.compose.material.icons.filled.Security
+import androidx.compose.material.icons.automirrored.rounded.ArrowBack
+import androidx.compose.material.icons.rounded.AccountCircle
+import androidx.compose.material.icons.rounded.Android
+import androidx.compose.material.icons.rounded.Security
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -199,7 +199,7 @@ private fun AppProfileInner(
             SuperSwitch(
                 leftAction = {
                     Icon(
-                        imageVector = Icons.Filled.Security,
+                        imageVector = Icons.Rounded.Security,
                         contentDescription = null,
                         modifier = Modifier.padding(end = 16.dp)
                     )
@@ -296,7 +296,7 @@ private fun TopBar(
                 onClick = onBack
             ) {
                 Icon(
-                    Icons.AutoMirrored.Filled.ArrowBack,
+                    Icons.AutoMirrored.Rounded.ArrowBack,
                     contentDescription = null
                 )
             }
@@ -316,7 +316,7 @@ private fun ProfileBox(
         summary = mode.text,
         leftAction = {
             Icon(
-                Icons.Filled.AccountCircle,
+                Icons.Rounded.AccountCircle,
                 modifier = Modifier.padding(end = 8.dp),
                 contentDescription = null
             )
@@ -414,7 +414,7 @@ private fun AppProfilePreview() {
     AppProfileInner(
         packageName = "icu.nullptr.test",
         appLabel = "Test",
-        appIcon = { Icon(Icons.Filled.Android, null) },
+        appIcon = { Icon(Icons.Rounded.Android, null) },
         profile = profile,
         onProfileChange = {
             profile = it

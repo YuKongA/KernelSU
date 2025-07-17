@@ -13,9 +13,9 @@ import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.Refresh
-import androidx.compose.material.icons.filled.Save
+import androidx.compose.material.icons.automirrored.rounded.ArrowBack
+import androidx.compose.material.icons.rounded.Refresh
+import androidx.compose.material.icons.rounded.Save
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.Icon
@@ -173,7 +173,7 @@ fun FlashScreen(navigator: DestinationsNavigator, flashIt: FlashIt) {
                             }
                         }
                     },
-                    icon = { Icon(Icons.Filled.Refresh, reboot) },
+                    icon = { Icon(Icons.Rounded.Refresh, reboot) },
                     text = { Text(text = reboot) },
                 )
             }
@@ -264,12 +264,12 @@ private fun TopBar(
         navigationIcon = {
             IconButton(
                 onClick = onBack
-            ) { Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = null) }
+            ) { Icon(Icons.AutoMirrored.Rounded.ArrowBack, contentDescription = null) }
         },
         actions = {
             IconButton(onClick = onSave) {
                 Icon(
-                    imageVector = Icons.Filled.Save,
+                    imageVector = Icons.Rounded.Save,
                     contentDescription = "Localized description"
                 )
             }

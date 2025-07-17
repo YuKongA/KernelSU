@@ -21,20 +21,20 @@ import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.automirrored.filled.Undo
-import androidx.compose.material.icons.filled.BugReport
-import androidx.compose.material.icons.filled.Compress
-import androidx.compose.material.icons.filled.ContactPage
-import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.DeleteForever
-import androidx.compose.material.icons.filled.DeveloperMode
-import androidx.compose.material.icons.filled.Fence
-import androidx.compose.material.icons.filled.FolderDelete
-import androidx.compose.material.icons.filled.RemoveModerator
-import androidx.compose.material.icons.filled.Save
-import androidx.compose.material.icons.filled.Share
-import androidx.compose.material.icons.filled.Update
+import androidx.compose.material.icons.automirrored.rounded.ArrowBack
+import androidx.compose.material.icons.automirrored.rounded.Undo
+import androidx.compose.material.icons.rounded.BugReport
+import androidx.compose.material.icons.rounded.Compress
+import androidx.compose.material.icons.rounded.ContactPage
+import androidx.compose.material.icons.rounded.Delete
+import androidx.compose.material.icons.rounded.DeleteForever
+import androidx.compose.material.icons.rounded.DeveloperMode
+import androidx.compose.material.icons.rounded.Fence
+import androidx.compose.material.icons.rounded.FolderDelete
+import androidx.compose.material.icons.rounded.RemoveModerator
+import androidx.compose.material.icons.rounded.Save
+import androidx.compose.material.icons.rounded.Share
+import androidx.compose.material.icons.rounded.Update
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.SnackbarHost
@@ -136,15 +136,14 @@ fun SettingScreen(navigator: DestinationsNavigator) {
                 .height(getWindowSize().height.dp)
                 .overScrollVertical()
                 .nestedScroll(scrollBehavior.nestedScrollConnection)
-                .padding(top = 12.dp)
                 .padding(horizontal = 16.dp),
             contentPadding = PaddingValues(top = innerPadding.calculateTopPadding()),
             overscrollEffect = null,
         ) {
-
             item {
                 Card(
                     modifier = Modifier
+                        .padding(top =12.dp)
                         .fillMaxWidth(),
                 ) {
                     val context = LocalContext.current
@@ -171,7 +170,7 @@ fun SettingScreen(navigator: DestinationsNavigator) {
                         SuperArrow(
                             leftAction = {
                                 Icon(
-                                    Icons.Filled.Fence,
+                                    Icons.Rounded.Fence,
                                     modifier = Modifier.padding(end = 16.dp),
                                     contentDescription = profileTemplate,
                                     tint = colorScheme.onBackground
@@ -193,7 +192,7 @@ fun SettingScreen(navigator: DestinationsNavigator) {
                         SuperSwitch(
                             leftAction = {
                                 Icon(
-                                    Icons.Filled.FolderDelete,
+                                    Icons.Rounded.FolderDelete,
                                     modifier = Modifier.padding(end = 16.dp),
                                     contentDescription = stringResource(id = R.string.settings_umount_modules_default),
                                     tint = colorScheme.onBackground
@@ -218,7 +217,7 @@ fun SettingScreen(navigator: DestinationsNavigator) {
                             SuperSwitch(
                                 leftAction = {
                                     Icon(
-                                        Icons.Filled.RemoveModerator,
+                                        Icons.Rounded.RemoveModerator,
                                         modifier = Modifier.padding(end = 16.dp),
                                         contentDescription = stringResource(id = R.string.settings_disable_su),
                                         tint = colorScheme.onBackground
@@ -246,7 +245,7 @@ fun SettingScreen(navigator: DestinationsNavigator) {
                     SuperSwitch(
                         leftAction = {
                             Icon(
-                                Icons.Filled.Update,
+                                Icons.Rounded.Update,
                                 modifier = Modifier.padding(end = 16.dp),
                                 contentDescription = stringResource(id = R.string.settings_check_update),
                                 tint = colorScheme.onBackground
@@ -271,7 +270,7 @@ fun SettingScreen(navigator: DestinationsNavigator) {
                         SuperSwitch(
                             leftAction = {
                                 Icon(
-                                    Icons.Filled.DeveloperMode,
+                                    Icons.Rounded.DeveloperMode,
                                     modifier = Modifier.padding(end = 16.dp),
                                     contentDescription = stringResource(id = R.string.enable_web_debugging),
                                     tint = colorScheme.onBackground
@@ -292,7 +291,7 @@ fun SettingScreen(navigator: DestinationsNavigator) {
                     SuperArrow(
                         leftAction = {
                             Icon(
-                                Icons.Filled.BugReport,
+                                Icons.Rounded.BugReport,
                                 modifier = Modifier.padding(end = 16.dp),
                                 contentDescription = stringResource(id = R.string.send_log),
                                 tint = colorScheme.onBackground
@@ -325,7 +324,7 @@ fun SettingScreen(navigator: DestinationsNavigator) {
                                                 }
                                         ) {
                                             Icon(
-                                                Icons.Filled.Save,
+                                                Icons.Rounded.Save,
                                                 contentDescription = null,
                                                 modifier = Modifier.align(Alignment.CenterHorizontally),
                                                 tint = colorScheme.onBackground
@@ -378,7 +377,7 @@ fun SettingScreen(navigator: DestinationsNavigator) {
                                                 }
                                         ) {
                                             Icon(
-                                                Icons.Filled.Share,
+                                                Icons.Rounded.Share,
                                                 contentDescription = null,
                                                 modifier = Modifier.align(Alignment.CenterHorizontally),
                                                 tint = colorScheme.onBackground
@@ -406,7 +405,7 @@ fun SettingScreen(navigator: DestinationsNavigator) {
                         SuperArrow(
                             leftAction = {
                                 Icon(
-                                    Icons.Filled.Compress,
+                                    Icons.Rounded.Compress,
                                     modifier = Modifier.padding(end = 16.dp),
                                     contentDescription = shrink,
                                     tint = colorScheme.onBackground
@@ -437,7 +436,7 @@ fun SettingScreen(navigator: DestinationsNavigator) {
                     SuperArrow(
                         leftAction = {
                             Icon(
-                                Icons.Filled.ContactPage,
+                                Icons.Rounded.ContactPage,
                                 modifier = Modifier.padding(end = 16.dp),
                                 contentDescription = about,
                                 tint = colorScheme.onBackground
@@ -499,7 +498,7 @@ fun UninstallItem(
     SuperArrow(
         leftAction = {
             Icon(
-                Icons.Filled.Delete,
+                Icons.Rounded.Delete,
                 modifier = Modifier.padding(end = 16.dp),
                 contentDescription = uninstall
             )
@@ -515,19 +514,19 @@ enum class UninstallType(val title: Int, val message: Int, val icon: ImageVector
     TEMPORARY(
         R.string.settings_uninstall_temporary,
         R.string.settings_uninstall_temporary_message,
-        Icons.Filled.Delete
+        Icons.Rounded.Delete
     ),
     PERMANENT(
         R.string.settings_uninstall_permanent,
         R.string.settings_uninstall_permanent_message,
-        Icons.Filled.DeleteForever
+        Icons.Rounded.DeleteForever
     ),
     RESTORE_STOCK_IMAGE(
         R.string.settings_restore_stock_image,
         R.string.settings_restore_stock_image_message,
-        Icons.AutoMirrored.Filled.Undo
+        Icons.AutoMirrored.Rounded.Undo
     ),
-    NONE(0, 0, Icons.Filled.Delete)
+    NONE(0, 0, Icons.Rounded.Delete)
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -566,7 +565,6 @@ fun rememberUninstallDialog(onSelected: (UninstallType) -> Unit): DialogHandle {
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun TopBar(
     onBack: () -> Unit = {},
@@ -579,7 +577,7 @@ private fun TopBar(
                 modifier = Modifier.padding(start = 16.dp),
                 onClick = onBack
             ) {
-                Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = null)
+                Icon(Icons.AutoMirrored.Rounded.ArrowBack, contentDescription = null)
             }
         },
         scrollBehavior = scrollBehavior

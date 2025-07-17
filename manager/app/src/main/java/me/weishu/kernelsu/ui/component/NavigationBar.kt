@@ -2,8 +2,6 @@ package me.weishu.kernelsu.ui.component
 
 
 import androidx.compose.animation.animateColorAsState
-import androidx.compose.animation.core.animateDpAsState
-import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectTapGestures
@@ -34,7 +32,6 @@ import androidx.compose.ui.Alignment.Companion.CenterHorizontally
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -55,7 +52,7 @@ import top.yukonga.miuix.kmp.utils.platform
 @Composable
 fun NavigationBar(
     items: List<BottomBarDestination>,
-    navController:  NavController,
+    navController: NavController,
     modifier: Modifier = Modifier,
     color: Color = MiuixTheme.colorScheme.surfaceContainer,
     showDivider: Boolean = true,
@@ -65,11 +62,6 @@ fun NavigationBar(
     val navigator = navController.rememberDestinationsNavigator()
     val captionBarPaddings = WindowInsets.captionBar.only(WindowInsetsSides.Bottom).asPaddingValues()
     val captionBarBottomPaddingValue = captionBarPaddings.calculateBottomPadding()
-
-    val animatedCaptionBarHeight by animateDpAsState(
-        targetValue = if (captionBarBottomPaddingValue > 0.dp) captionBarBottomPaddingValue else 0.dp,
-        animationSpec = tween(durationMillis = 300)
-    )
 
     val columnModifier = remember(modifier, color) {
         modifier
@@ -119,7 +111,7 @@ fun NavigationBar(
                     Modifier
                         .height(itemHeight)
                         .weight(itemWeight)
-                        .pointerInput( index) {
+                        .pointerInput(index) {
                             detectTapGestures(
                                 onPress = {
                                     isPressed = true
@@ -148,7 +140,9 @@ fun NavigationBar(
                 ) {
                     val imageColorFilter = remember(tint) { ColorFilter.tint(tint) }
                     Image(
-                        modifier = Modifier.size(32.dp).padding(top = 6.dp),
+                        modifier = Modifier
+                            .size(32.dp)
+                            .padding(top = 6.dp),
                         imageVector = if (isSelected) destination.iconSelected else destination.iconNotSelected,
                         contentDescription = label,
                         colorFilter = imageColorFilter
@@ -167,7 +161,8 @@ fun NavigationBar(
         if (defaultWindowInsetsPadding) {
 
             val windowInsets = WindowInsets.systemBars.union(WindowInsets.displayCutout).only(
-                WindowInsetsSides.Horizontal + WindowInsetsSides.Bottom)
+                WindowInsetsSides.Horizontal + WindowInsetsSides.Bottom
+            )
             Spacer(
                 modifier = Modifier
                     .fillMaxWidth()
