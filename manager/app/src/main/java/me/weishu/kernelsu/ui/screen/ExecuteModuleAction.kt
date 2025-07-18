@@ -14,6 +14,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Snackbar
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
@@ -41,6 +42,7 @@ import me.weishu.kernelsu.R
 import me.weishu.kernelsu.ui.component.KeyEventBlocker
 import me.weishu.kernelsu.ui.util.LocalSnackbarHost
 import me.weishu.kernelsu.ui.util.runModuleAction
+import top.yukonga.miuix.kmp.theme.MiuixTheme.colorScheme
 import java.io.File
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -103,7 +105,16 @@ fun ExecuteModuleActionScreen(navigator: DestinationsNavigator, moduleId: String
                 }
             )
         },
-        snackbarHost = { SnackbarHost(snackBarHost) }
+        snackbarHost = {
+            SnackbarHost(hostState = snackBarHost) {
+                Snackbar(
+                    snackbarData = it,
+                    containerColor = colorScheme.onBackground,
+                    contentColor = colorScheme.background,
+                    actionColor = colorScheme.primary
+                )
+            }
+        }
     ) { innerPadding ->
         KeyEventBlocker {
             it.key == Key.VolumeDown || it.key == Key.VolumeUp

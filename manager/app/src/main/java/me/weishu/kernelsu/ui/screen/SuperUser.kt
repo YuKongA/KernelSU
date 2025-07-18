@@ -202,7 +202,7 @@ fun SuperUserScreen(navigator: DestinationsNavigator) {
                             .onFocusChanged { focusState ->
                                 expanded = focusState.isFocused
                             },
-                        insideMargin = DpSize(16.dp, 0.dp),
+                        insideMargin = DpSize(12.dp, 0.dp),
                         inputField = {
                             InputField(
                                 query = viewModel.search,
@@ -282,7 +282,7 @@ private fun AppItem(
 ) {
     Card(
         modifier = Modifier
-            .padding(horizontal = 16.dp)
+            .padding(horizontal = 12.dp)
             .padding(bottom = 12.dp),
         onClick = {
             onClickListener()
@@ -301,7 +301,7 @@ private fun AppItem(
                         .build(),
                     contentDescription = app.label,
                     modifier = Modifier
-                        .padding(end = 16.dp)
+                        .padding(end = 12.dp)
                         .size(48.dp)
                 )
             },

@@ -22,6 +22,7 @@ import androidx.compose.material.icons.rounded.Security
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Snackbar
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -75,6 +76,7 @@ import top.yukonga.miuix.kmp.basic.TabRowWithContour
 import top.yukonga.miuix.kmp.basic.Text
 import top.yukonga.miuix.kmp.basic.TopAppBar
 import top.yukonga.miuix.kmp.extra.SuperSwitch
+import top.yukonga.miuix.kmp.theme.MiuixTheme.colorScheme
 
 /**
  * @author weishu
@@ -111,7 +113,16 @@ fun AppProfileScreen(
                 scrollBehavior = scrollBehavior
             )
         },
-        snackbarHost = { SnackbarHost(hostState = snackBarHost) },
+        snackbarHost = {
+            SnackbarHost(hostState = snackBarHost) {
+                Snackbar(
+                    snackbarData = it,
+                    containerColor = colorScheme.onBackground,
+                    contentColor = colorScheme.background,
+                    actionColor = colorScheme.primary
+                )
+            }
+        },
         popupHost = { },
     ) { paddingValues ->
         AppProfileInner(
