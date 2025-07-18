@@ -5,7 +5,6 @@ import android.content.Intent
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -63,7 +62,6 @@ import me.weishu.kernelsu.ui.util.LocalSnackbarHost
 import me.weishu.kernelsu.ui.util.getBugreportFile
 import me.weishu.kernelsu.ui.util.shrinkModules
 import top.yukonga.miuix.kmp.basic.Card
-import top.yukonga.miuix.kmp.basic.HorizontalDivider
 import top.yukonga.miuix.kmp.basic.Icon
 import top.yukonga.miuix.kmp.basic.IconButton
 import top.yukonga.miuix.kmp.basic.MiuixScrollBehavior
@@ -292,17 +290,21 @@ fun SettingScreen(navigator: DestinationsNavigator) {
                     )
                     SuperDialog(
                         show = showDialog,
+                        title = stringResource(id = R.string.send_log),
                         onDismissRequest = {
                             showDialog.value = false
                         },
                         content = {
-                            Column {
+                            Card(
+                                color = colorScheme.secondaryContainer,
+                            ) {
                                 SuperArrow(
                                     title = stringResource(id = R.string.save_log),
                                     leftAction = {
                                         Icon(
                                             Icons.Rounded.Save,
                                             contentDescription = null,
+                                            modifier = Modifier.padding(end = 16.dp),
                                             tint = colorScheme.onSurface
                                         )
                                     },
@@ -313,19 +315,13 @@ fun SettingScreen(navigator: DestinationsNavigator) {
                                         showDialog.value = false
                                     }
                                 )
-
-                                HorizontalDivider(
-                                    modifier = Modifier.padding(horizontal = 16.dp),
-                                    thickness = 0.5.dp,
-                                    color = colorScheme.outline.copy(alpha = 0.5f)
-                                )
-
                                 SuperArrow(
                                     title = stringResource(id = R.string.send_log),
                                     leftAction = {
                                         Icon(
                                             Icons.Rounded.Share,
                                             contentDescription = null,
+                                            modifier = Modifier.padding(end = 16.dp),
                                             tint = colorScheme.onSurface
                                         )
                                     },
@@ -458,7 +454,11 @@ private fun TopBar(
                 modifier = Modifier.padding(start = 16.dp),
                 onClick = onBack
             ) {
-                Icon(Icons.AutoMirrored.Rounded.ArrowBack, contentDescription = null)
+                Icon(
+                    Icons.AutoMirrored.Rounded.ArrowBack,
+                    contentDescription = null,
+                    tint = colorScheme.onBackground
+                )
             }
         },
         scrollBehavior = scrollBehavior

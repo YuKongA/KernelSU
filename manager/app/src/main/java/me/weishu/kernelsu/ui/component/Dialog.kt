@@ -180,7 +180,10 @@ interface ConfirmCallback {
     val isEmpty: Boolean get() = onConfirm == null && onDismiss == null
 
     companion object {
-        operator fun invoke(onConfirmProvider: () -> NullableCallback, onDismissProvider: () -> NullableCallback): ConfirmCallback {
+        operator fun invoke(
+            onConfirmProvider: () -> NullableCallback,
+            onDismissProvider: () -> NullableCallback
+        ): ConfirmCallback {
             return object : ConfirmCallback {
                 override val onConfirm: NullableCallback
                     get() = onConfirmProvider()
@@ -470,7 +473,12 @@ private fun LoadingDialog(showDialog: MutableState<Boolean>) {
 }
 
 @Composable
-private fun ConfirmDialog(visuals: ConfirmDialogVisuals, confirm: () -> Unit, dismiss: () -> Unit, showDialog: MutableState<Boolean>) {
+private fun ConfirmDialog(
+    visuals: ConfirmDialogVisuals,
+    confirm: () -> Unit,
+    dismiss: () -> Unit,
+    showDialog: MutableState<Boolean>
+) {
     SuperDialog(
         show = showDialog,
         title = visuals.title,

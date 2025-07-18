@@ -60,6 +60,7 @@ import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import kotlinx.coroutines.launch
 import me.weishu.kernelsu.Natives
 import me.weishu.kernelsu.R
+import me.weishu.kernelsu.ui.component.DropdownItem
 import me.weishu.kernelsu.ui.viewmodel.SuperUserViewModel
 import top.yukonga.miuix.kmp.basic.BasicComponent
 import top.yukonga.miuix.kmp.basic.Card
@@ -134,10 +135,9 @@ fun SuperUserScreen(navigator: DestinationsNavigator) {
                             }
                         ) {
                             ListPopupColumn {
-                                DropdownImpl(
+                                DropdownItem(
                                     text = stringResource(R.string.refresh),
                                     optionSize = 2,
-                                    isSelected = false,
                                     onSelectedIndexChange = {
                                         scope.launch {
                                             viewModel.fetchAppList()
@@ -146,14 +146,13 @@ fun SuperUserScreen(navigator: DestinationsNavigator) {
                                     },
                                     index = 0
                                 )
-                                DropdownImpl(
+                                DropdownItem(
                                     text = if (viewModel.showSystemApps) {
                                         stringResource(R.string.hide_system_apps)
                                     } else {
                                         stringResource(R.string.show_system_apps)
                                     },
                                     optionSize = 2,
-                                    isSelected = false,
                                     onSelectedIndexChange = {
                                         viewModel.showSystemApps = !viewModel.showSystemApps
                                         showTopPopup.value = false

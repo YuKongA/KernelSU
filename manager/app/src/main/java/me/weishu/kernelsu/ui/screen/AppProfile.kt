@@ -3,12 +3,9 @@ package me.weishu.kernelsu.ui.screen
 import android.annotation.SuppressLint
 import androidx.annotation.StringRes
 import androidx.compose.animation.Crossfade
-import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -30,16 +27,13 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -54,6 +48,7 @@ import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import kotlinx.coroutines.launch
 import me.weishu.kernelsu.Natives
 import me.weishu.kernelsu.R
+import me.weishu.kernelsu.ui.component.DropdownItem
 import me.weishu.kernelsu.ui.component.profile.AppProfileConfig
 import me.weishu.kernelsu.ui.component.profile.RootProfileConfig
 import me.weishu.kernelsu.ui.component.profile.TemplateConfig
@@ -76,12 +71,8 @@ import top.yukonga.miuix.kmp.basic.MiuixScrollBehavior
 import top.yukonga.miuix.kmp.basic.Scaffold
 import top.yukonga.miuix.kmp.basic.ScrollBehavior
 import top.yukonga.miuix.kmp.basic.TabRowWithContour
-import top.yukonga.miuix.kmp.basic.Text
 import top.yukonga.miuix.kmp.basic.TopAppBar
-import top.yukonga.miuix.kmp.extra.DropdownColors
-import top.yukonga.miuix.kmp.extra.DropdownDefaults
 import top.yukonga.miuix.kmp.extra.SuperSwitch
-import top.yukonga.miuix.kmp.theme.MiuixTheme
 import top.yukonga.miuix.kmp.theme.MiuixTheme.colorScheme
 
 /**
@@ -415,37 +406,6 @@ private fun AppMenuBox(packageName: String, content: @Composable () -> Unit) {
     }
 }
 
-@Composable
-fun DropdownItem(
-    text: String,
-    optionSize: Int,
-    index: Int,
-    dropdownColors: DropdownColors = DropdownDefaults.dropdownColors(),
-    onSelectedIndexChange: (Int) -> Unit
-) {
-    val currentOnSelectedIndexChange = rememberUpdatedState(onSelectedIndexChange)
-    val additionalTopPadding = if (index == 0) 20f.dp else 12f.dp
-    val additionalBottomPadding = if (index == optionSize - 1) 20f.dp else 12f.dp
-
-    Row(
-        modifier = Modifier
-            .clickable { currentOnSelectedIndexChange.value(index) }
-            .background(dropdownColors.containerColor)
-            .padding(horizontal = 20.dp)
-            .padding(
-                top = additionalTopPadding,
-                bottom = additionalBottomPadding
-            ),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Text(
-            text = text,
-            fontSize = MiuixTheme.textStyles.body1.fontSize,
-            fontWeight = FontWeight.Medium,
-            color = dropdownColors.contentColor,
-        )
-    }
-}
 
 @Preview
 @Composable

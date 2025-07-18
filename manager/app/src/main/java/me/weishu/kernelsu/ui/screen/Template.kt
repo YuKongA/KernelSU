@@ -52,6 +52,7 @@ import com.ramcosta.composedestinations.result.getOr
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import me.weishu.kernelsu.R
+import me.weishu.kernelsu.ui.component.DropdownItem
 import me.weishu.kernelsu.ui.viewmodel.TemplateViewModel
 import top.yukonga.miuix.kmp.basic.Card
 import top.yukonga.miuix.kmp.basic.FloatingActionButton
