@@ -4,10 +4,9 @@ import android.annotation.SuppressLint
 import androidx.annotation.StringRes
 import androidx.compose.animation.Crossfade
 import androidx.compose.foundation.gestures.detectTapGestures
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -23,8 +22,6 @@ import androidx.compose.material.icons.rounded.Security
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FilterChip
-import androidx.compose.material3.ListItem
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -74,6 +71,7 @@ import top.yukonga.miuix.kmp.basic.IconButton
 import top.yukonga.miuix.kmp.basic.MiuixScrollBehavior
 import top.yukonga.miuix.kmp.basic.Scaffold
 import top.yukonga.miuix.kmp.basic.ScrollBehavior
+import top.yukonga.miuix.kmp.basic.TabRowWithContour
 import top.yukonga.miuix.kmp.basic.Text
 import top.yukonga.miuix.kmp.basic.TopAppBar
 import top.yukonga.miuix.kmp.extra.SuperSwitch
@@ -212,7 +210,7 @@ private fun AppProfileInner(
 
         Crossfade(targetState = isRootGranted, label = "") { current ->
             Column(
-                modifier = Modifier.padding(bottom = 6.dp + 48.dp + 6.dp /* SnackBar height */)
+                modifier = Modifier.padding(bottom = 12.dp)
             ) {
                 Card(
                     modifier = Modifier
@@ -239,6 +237,9 @@ private fun AppProfileInner(
                             mode = it
                         }
                         Crossfade(targetState = mode, label = "") { currentMode ->
+                            if (currentMode == Mode.Default) {
+                                Spacer(Modifier.height(16.dp))
+                            }
                             if (currentMode == Mode.Template) {
                                 TemplateConfig(
                                     profile = profile,
@@ -322,29 +323,33 @@ private fun ProfileBox(
         },
     )
     HorizontalDivider(thickness = Dp.Hairline)
-    ListItem(headlineContent = {
-        Row(
-            modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly
-        ) {
-            FilterChip(
-                selected = mode == Mode.Default,
-                label = { Text(stringResource(R.string.profile_default)) },
-                onClick = { onModeChange(Mode.Default) },
-            )
+    val defaultText = stringResource(R.string.profile_default)
+    val templateText = stringResource(R.string.profile_template)
+    val customText = stringResource(R.string.profile_custom)
+
+    val modesAndTitles = remember(hasTemplate, defaultText, templateText, customText) {
+        buildList {
+            add(Mode.Default to defaultText)
             if (hasTemplate) {
-                FilterChip(
-                    selected = mode == Mode.Template,
-                    label = { Text(stringResource(R.string.profile_template)) },
-                    onClick = { onModeChange(Mode.Template) },
-                )
+                add(Mode.Template to templateText)
             }
-            FilterChip(
-                selected = mode == Mode.Custom,
-                label = { Text(stringResource(R.string.profile_custom)) },
-                onClick = { onModeChange(Mode.Custom) },
-            )
+            add(Mode.Custom to customText)
         }
-    })
+    }
+
+    val tabTitles = modesAndTitles.map { it.second }
+    val selectedIndex = modesAndTitles.indexOfFirst { it.first == mode }
+
+    TabRowWithContour(
+        tabs = tabTitles,
+        selectedTabIndex = if (selectedIndex == -1) 0 else selectedIndex,
+        onTabSelected = { index ->
+            onModeChange(modesAndTitles[index].first)
+        },
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp)
+    )
 }
 
 @SuppressLint("UnusedBoxWithConstraintsScope")
@@ -402,8 +407,6 @@ private fun AppMenuBox(packageName: String, content: @Composable () -> Unit) {
             )
         }
     }
-
-
 }
 
 @Preview
