@@ -642,7 +642,7 @@ fun ModuleItem(
 
                 Text(
                     text = module.name,
-                    fontSize = MiuixTheme.textStyles.title3.fontSize,
+                    fontSize = MiuixTheme.textStyles.body1.fontSize,
                     fontWeight = FontWeight.Medium,
                     color = colorScheme.onSurface,
                     textDecoration = textDecoration,
