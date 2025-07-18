@@ -9,15 +9,8 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ArrowBack
 import androidx.compose.material.icons.rounded.Save
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Snackbar
 import androidx.compose.material3.SnackbarHost
-import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -31,6 +24,7 @@ import androidx.compose.ui.input.key.key
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.dropUnlessResumed
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootGraph
@@ -42,6 +36,11 @@ import me.weishu.kernelsu.R
 import me.weishu.kernelsu.ui.component.KeyEventBlocker
 import me.weishu.kernelsu.ui.util.LocalSnackbarHost
 import me.weishu.kernelsu.ui.util.runModuleAction
+import top.yukonga.miuix.kmp.basic.Icon
+import top.yukonga.miuix.kmp.basic.IconButton
+import top.yukonga.miuix.kmp.basic.Scaffold
+import top.yukonga.miuix.kmp.basic.Text
+import top.yukonga.miuix.kmp.basic.TopAppBar
 import top.yukonga.miuix.kmp.theme.MiuixTheme.colorScheme
 import java.io.File
 import java.text.SimpleDateFormat
@@ -131,29 +130,41 @@ fun ExecuteModuleActionScreen(navigator: DestinationsNavigator, moduleId: String
             Text(
                 modifier = Modifier.padding(8.dp),
                 text = text,
-                fontSize = MaterialTheme.typography.bodySmall.fontSize,
+                fontSize = 12.sp,
                 fontFamily = FontFamily.Monospace,
-                lineHeight = MaterialTheme.typography.bodySmall.lineHeight,
             )
         }
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun TopBar(onBack: () -> Unit = {}, onSave: () -> Unit = {}) {
+private fun TopBar(
+    onBack: () -> Unit = {},
+    onSave: () -> Unit = {}
+) {
     TopAppBar(
-        title = { Text(stringResource(R.string.action)) },
+        title = stringResource(R.string.action),
         navigationIcon = {
             IconButton(
+                modifier = Modifier.padding(start = 16.dp),
                 onClick = onBack
-            ) { Icon(Icons.AutoMirrored.Rounded.ArrowBack, contentDescription = null) }
+            ) {
+                Icon(
+                    Icons.AutoMirrored.Rounded.ArrowBack,
+                    contentDescription = null,
+                    tint = colorScheme.onBackground
+                )
+            }
         },
         actions = {
-            IconButton(onClick = onSave) {
+            IconButton(
+                modifier = Modifier.padding(end = 16.dp),
+                onClick = onSave
+            ) {
                 Icon(
                     imageVector = Icons.Rounded.Save,
                     contentDescription = stringResource(id = R.string.save_log),
+                    tint = colorScheme.onBackground
                 )
             }
         }

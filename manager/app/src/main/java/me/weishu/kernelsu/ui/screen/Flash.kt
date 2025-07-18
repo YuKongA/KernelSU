@@ -28,7 +28,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.input.key.key
-import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
@@ -57,9 +56,7 @@ import me.weishu.kernelsu.ui.util.uninstallPermanently
 import top.yukonga.miuix.kmp.basic.FloatingActionButton
 import top.yukonga.miuix.kmp.basic.Icon
 import top.yukonga.miuix.kmp.basic.IconButton
-import top.yukonga.miuix.kmp.basic.MiuixScrollBehavior
 import top.yukonga.miuix.kmp.basic.Scaffold
-import top.yukonga.miuix.kmp.basic.ScrollBehavior
 import top.yukonga.miuix.kmp.basic.SmallTopAppBar
 import top.yukonga.miuix.kmp.basic.Text
 import top.yukonga.miuix.kmp.theme.MiuixTheme.colorScheme
@@ -108,7 +105,6 @@ fun FlashScreen(navigator: DestinationsNavigator, flashIt: FlashIt) {
     val snackBarHost = LocalSnackbarHost.current
     val scope = rememberCoroutineScope()
     val scrollState = rememberScrollState()
-    val scrollBehavior = MiuixScrollBehavior()
     var flashing by rememberSaveable {
         mutableStateOf(FlashingStatus.FLASHING)
     }
@@ -160,7 +156,6 @@ fun FlashScreen(navigator: DestinationsNavigator, flashIt: FlashIt) {
                         snackBarHost.showSnackbar("Log saved to ${file.absolutePath}")
                     }
                 },
-                scrollBehavior = scrollBehavior
             )
         },
         floatingActionButton = {
@@ -216,7 +211,6 @@ fun FlashScreen(navigator: DestinationsNavigator, flashIt: FlashIt) {
             modifier = Modifier
                 .fillMaxSize(1f)
                 .padding(innerPadding)
-                .nestedScroll(scrollBehavior.nestedScrollConnection)
                 .verticalScroll(scrollState),
         ) {
             LaunchedEffect(text) {
@@ -273,7 +267,6 @@ private fun TopBar(
     status: FlashingStatus,
     onBack: () -> Unit = {},
     onSave: () -> Unit = {},
-    scrollBehavior: ScrollBehavior? = null
 ) {
     SmallTopAppBar(
         title = stringResource(
@@ -302,12 +295,11 @@ private fun TopBar(
             ) {
                 Icon(
                     imageVector = Icons.Rounded.Save,
-                    contentDescription = "Localized description",
+                    contentDescription = stringResource(id = R.string.save_log),
                     tint = colorScheme.onBackground
                 )
             }
         },
-        scrollBehavior = scrollBehavior
     )
 }
 
