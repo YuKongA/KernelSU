@@ -65,6 +65,7 @@ import me.weishu.kernelsu.Natives
 import me.weishu.kernelsu.R
 import me.weishu.kernelsu.getKernelVersion
 import me.weishu.kernelsu.ksuApp
+import me.weishu.kernelsu.ui.component.DropdownItem
 import me.weishu.kernelsu.ui.component.KsuIsValid
 import me.weishu.kernelsu.ui.component.rememberConfirmDialog
 import me.weishu.kernelsu.ui.util.checkNewVersion
@@ -87,7 +88,6 @@ import top.yukonga.miuix.kmp.basic.Scaffold
 import top.yukonga.miuix.kmp.basic.ScrollBehavior
 import top.yukonga.miuix.kmp.basic.Text
 import top.yukonga.miuix.kmp.basic.TopAppBar
-import top.yukonga.miuix.kmp.extra.DropdownImpl
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 import top.yukonga.miuix.kmp.theme.MiuixTheme.colorScheme
 import top.yukonga.miuix.kmp.utils.PressFeedbackType
@@ -227,10 +227,9 @@ fun RebootDropdownItem(
     optionSize: Int,
     index: Int,
 ) {
-    DropdownImpl(
+    DropdownItem(
         text = stringResource(id),
         optionSize = optionSize,
-        isSelected = false,
         onSelectedIndexChange = {
             reboot(reason)
             showTopPopup.value = false

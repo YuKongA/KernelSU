@@ -19,8 +19,6 @@ import androidx.compose.material.icons.automirrored.rounded.ArrowBack
 import androidx.compose.material.icons.rounded.AccountCircle
 import androidx.compose.material.icons.rounded.Android
 import androidx.compose.material.icons.rounded.Security
-import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Snackbar
 import androidx.compose.material3.SnackbarHost
@@ -32,15 +30,12 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
-import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.dropUnlessResumed
 import coil.compose.AsyncImage
@@ -53,6 +48,7 @@ import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import kotlinx.coroutines.launch
 import me.weishu.kernelsu.Natives
 import me.weishu.kernelsu.R
+import me.weishu.kernelsu.ui.component.DropdownItem
 import me.weishu.kernelsu.ui.component.profile.AppProfileConfig
 import me.weishu.kernelsu.ui.component.profile.RootProfileConfig
 import me.weishu.kernelsu.ui.component.profile.TemplateConfig
@@ -69,11 +65,12 @@ import top.yukonga.miuix.kmp.basic.Card
 import top.yukonga.miuix.kmp.basic.HorizontalDivider
 import top.yukonga.miuix.kmp.basic.Icon
 import top.yukonga.miuix.kmp.basic.IconButton
+import top.yukonga.miuix.kmp.basic.ListPopup
+import top.yukonga.miuix.kmp.basic.ListPopupColumn
 import top.yukonga.miuix.kmp.basic.MiuixScrollBehavior
 import top.yukonga.miuix.kmp.basic.Scaffold
 import top.yukonga.miuix.kmp.basic.ScrollBehavior
 import top.yukonga.miuix.kmp.basic.TabRowWithContour
-import top.yukonga.miuix.kmp.basic.Text
 import top.yukonga.miuix.kmp.basic.TopAppBar
 import top.yukonga.miuix.kmp.extra.SuperSwitch
 import top.yukonga.miuix.kmp.theme.MiuixTheme.colorScheme
@@ -366,59 +363,49 @@ private fun ProfileBox(
 @SuppressLint("UnusedBoxWithConstraintsScope")
 @Composable
 private fun AppMenuBox(packageName: String, content: @Composable () -> Unit) {
-
-    var expanded by remember { mutableStateOf(false) }
-    var touchPoint: Offset by remember { mutableStateOf(Offset.Zero) }
-    val density = LocalDensity.current
-
+    val expanded = remember { mutableStateOf(false) }
     BoxWithConstraints(
         Modifier
             .fillMaxSize()
             .pointerInput(Unit) {
                 detectTapGestures {
-                    touchPoint = it
-                    expanded = true
+                    expanded.value = true
                 }
             }
     ) {
-
         content()
 
-        val (offsetX, offsetY) = with(density) {
-            (touchPoint.x.toDp()) to (touchPoint.y.toDp())
-        }
-
-        DropdownMenu(
-            expanded = expanded,
-            offset = DpOffset(offsetX, -offsetY),
-            onDismissRequest = {
-                expanded = false
-            },
+        ListPopup(
+            show = expanded,
+            onDismissRequest = { expanded.value = false }
         ) {
-            DropdownMenuItem(
-                text = { Text(stringResource(id = R.string.launch_app)) },
-                onClick = {
-                    expanded = false
-                    launchApp(packageName)
-                },
-            )
-            DropdownMenuItem(
-                text = { Text(stringResource(id = R.string.force_stop_app)) },
-                onClick = {
-                    expanded = false
-                    forceStopApp(packageName)
-                },
-            )
-            DropdownMenuItem(
-                text = { Text(stringResource(id = R.string.restart_app)) },
-                onClick = {
-                    expanded = false
-                    restartApp(packageName)
-                },
-            )
+            ListPopupColumn {
+                val items = listOf(
+                    stringResource(id = R.string.launch_app),
+                    stringResource(id = R.string.force_stop_app),
+                    stringResource(id = R.string.restart_app)
+                )
+
+                items.forEachIndexed { index, text ->
+                    DropdownItem(
+                        text = text,
+                        optionSize = items.size,
+                        index = index,
+                        onSelectedIndexChange = { selectedIndex ->
+                            when (selectedIndex) {
+                                0 -> launchApp(packageName)
+                                1 -> forceStopApp(packageName)
+                                2 -> restartApp(packageName)
+                            }
+                            expanded.value = false
+                        }
+                    )
+                }
+            }
         }
     }
 }
+
 
 @Preview
 @Composable

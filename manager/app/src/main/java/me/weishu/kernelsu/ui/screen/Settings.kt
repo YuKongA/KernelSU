@@ -5,10 +5,6 @@ import android.content.Intent
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -27,7 +23,6 @@ import androidx.compose.material.icons.rounded.Save
 import androidx.compose.material.icons.rounded.Share
 import androidx.compose.material.icons.rounded.Update
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Snackbar
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.runtime.Composable
@@ -37,13 +32,10 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.style.LineHeightStyle
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.core.content.FileProvider
@@ -75,9 +67,9 @@ import top.yukonga.miuix.kmp.basic.IconButton
 import top.yukonga.miuix.kmp.basic.MiuixScrollBehavior
 import top.yukonga.miuix.kmp.basic.Scaffold
 import top.yukonga.miuix.kmp.basic.ScrollBehavior
-import top.yukonga.miuix.kmp.basic.Text
 import top.yukonga.miuix.kmp.basic.TopAppBar
 import top.yukonga.miuix.kmp.extra.SuperArrow
+import top.yukonga.miuix.kmp.extra.SuperDialog
 import top.yukonga.miuix.kmp.extra.SuperSwitch
 import top.yukonga.miuix.kmp.theme.MiuixTheme.colorScheme
 import top.yukonga.miuix.kmp.utils.getWindowSize
@@ -280,7 +272,7 @@ fun SettingScreen(navigator: DestinationsNavigator) {
                         )
                     }
 
-                    var showBottomsheet by remember { mutableStateOf(false) }
+                    val showDialog = remember { mutableStateOf(false) }
 
                     SuperArrow(
                         title = stringResource(id = R.string.send_log),
@@ -293,105 +285,80 @@ fun SettingScreen(navigator: DestinationsNavigator) {
                             )
                         },
                         onClick = {
-                            showBottomsheet = true
+                            showDialog.value = true
                         },
                     )
-                    if (showBottomsheet) {
-                        ModalBottomSheet(
-                            onDismissRequest = { showBottomsheet = false },
-                            content = {
-                                Row(
-                                    modifier = Modifier
-                                        .padding(10.dp)
-                                        .align(Alignment.CenterHorizontally)
-
-                                ) {
-                                    Box {
-                                        Column(
-                                            modifier = Modifier
-                                                .padding(16.dp)
-                                                .clickable {
-                                                    val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd_HH_mm")
-                                                    val current = LocalDateTime.now().format(formatter)
-                                                    exportBugreportLauncher.launch("KernelSU_bugreport_${current}.tar.gz")
-                                                    showBottomsheet = false
+                    SuperDialog(
+                        show = showDialog,
+                        title = stringResource(id = R.string.send_log),
+                        onDismissRequest = {
+                            showDialog.value = false
+                        },
+                        content = {
+                            Card(
+                                color = colorScheme.secondaryContainer,
+                            ) {
+                                SuperArrow(
+                                    title = stringResource(id = R.string.save_log),
+                                    leftAction = {
+                                        Icon(
+                                            Icons.Rounded.Save,
+                                            contentDescription = null,
+                                            modifier = Modifier.padding(end = 16.dp),
+                                            tint = colorScheme.onSurface
+                                        )
+                                    },
+                                    onClick = {
+                                        val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd_HH_mm")
+                                        val current = LocalDateTime.now().format(formatter)
+                                        exportBugreportLauncher.launch("KernelSU_bugreport_${current}.tar.gz")
+                                        showDialog.value = false
+                                    }
+                                )
+                                SuperArrow(
+                                    title = stringResource(id = R.string.send_log),
+                                    leftAction = {
+                                        Icon(
+                                            Icons.Rounded.Share,
+                                            contentDescription = null,
+                                            modifier = Modifier.padding(end = 16.dp),
+                                            tint = colorScheme.onSurface
+                                        )
+                                    },
+                                    onClick = {
+                                        scope.launch {
+                                            showDialog.value = false
+                                            val bugreport = loadingDialog.withLoading {
+                                                withContext(Dispatchers.IO) {
+                                                    getBugreportFile(context)
                                                 }
-                                        ) {
-                                            Icon(
-                                                Icons.Rounded.Save,
-                                                contentDescription = null,
-                                                modifier = Modifier.align(Alignment.CenterHorizontally),
-                                                tint = colorScheme.onBackground
-                                            )
-                                            Text(
-                                                text = stringResource(id = R.string.save_log),
-                                                modifier = Modifier.padding(top = 16.dp),
-                                                textAlign = TextAlign.Center.also {
-                                                    LineHeightStyle(
-                                                        alignment = LineHeightStyle.Alignment.Center,
-                                                        trim = LineHeightStyle.Trim.None
-                                                    )
-                                                }
+                                            }
 
+                                            val uri: Uri =
+                                                FileProvider.getUriForFile(
+                                                    context,
+                                                    "${BuildConfig.APPLICATION_ID}.fileprovider",
+                                                    bugreport
+                                                )
+
+                                            val shareIntent = Intent(Intent.ACTION_SEND).apply {
+                                                putExtra(Intent.EXTRA_STREAM, uri)
+                                                setDataAndType(uri, "application/gzip")
+                                                addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                                            }
+
+                                            context.startActivity(
+                                                Intent.createChooser(
+                                                    shareIntent,
+                                                    context.getString(R.string.send_log)
+                                                )
                                             )
                                         }
                                     }
-                                    Box {
-                                        Column(
-                                            modifier = Modifier
-                                                .padding(16.dp)
-                                                .clickable {
-                                                    scope.launch {
-                                                        val bugreport = loadingDialog.withLoading {
-                                                            withContext(Dispatchers.IO) {
-                                                                getBugreportFile(context)
-                                                            }
-                                                        }
-
-                                                        val uri: Uri =
-                                                            FileProvider.getUriForFile(
-                                                                context,
-                                                                "${BuildConfig.APPLICATION_ID}.fileprovider",
-                                                                bugreport
-                                                            )
-
-                                                        val shareIntent = Intent(Intent.ACTION_SEND).apply {
-                                                            putExtra(Intent.EXTRA_STREAM, uri)
-                                                            setDataAndType(uri, "application/gzip")
-                                                            addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-                                                        }
-
-                                                        context.startActivity(
-                                                            Intent.createChooser(
-                                                                shareIntent,
-                                                                context.getString(R.string.send_log)
-                                                            )
-                                                        )
-                                                    }
-                                                }
-                                        ) {
-                                            Icon(
-                                                Icons.Rounded.Share,
-                                                contentDescription = null,
-                                                modifier = Modifier.align(Alignment.CenterHorizontally),
-                                                tint = colorScheme.onBackground
-                                            )
-                                            Text(
-                                                text = stringResource(id = R.string.send_log),
-                                                modifier = Modifier.padding(top = 16.dp),
-                                                textAlign = TextAlign.Center.also {
-                                                    LineHeightStyle(
-                                                        alignment = LineHeightStyle.Alignment.Center,
-                                                        trim = LineHeightStyle.Trim.None
-                                                    )
-                                                }
-                                            )
-                                        }
-                                    }
-                                }
+                                )
                             }
-                        )
-                    }
+                        }
+                    )
 
                     val shrink = stringResource(id = R.string.shrink_sparse_image)
                     KsuIsValid {
@@ -487,7 +454,11 @@ private fun TopBar(
                 modifier = Modifier.padding(start = 16.dp),
                 onClick = onBack
             ) {
-                Icon(Icons.AutoMirrored.Rounded.ArrowBack, contentDescription = null)
+                Icon(
+                    Icons.AutoMirrored.Rounded.ArrowBack,
+                    contentDescription = null,
+                    tint = colorScheme.onBackground
+                )
             }
         },
         scrollBehavior = scrollBehavior
