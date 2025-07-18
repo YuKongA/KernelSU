@@ -12,17 +12,12 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ArrowBack
 import androidx.compose.material.icons.rounded.DeleteForever
 import androidx.compose.material.icons.rounded.Save
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.input.pointer.pointerInteropFilter
@@ -46,9 +41,12 @@ import me.weishu.kernelsu.ui.util.setAppProfileTemplate
 import me.weishu.kernelsu.ui.viewmodel.TemplateViewModel
 import me.weishu.kernelsu.ui.viewmodel.toJSON
 import top.yukonga.miuix.kmp.basic.Card
+import top.yukonga.miuix.kmp.basic.Icon
+import top.yukonga.miuix.kmp.basic.IconButton
 import top.yukonga.miuix.kmp.basic.MiuixScrollBehavior
 import top.yukonga.miuix.kmp.basic.Scaffold
 import top.yukonga.miuix.kmp.basic.ScrollBehavior
+import top.yukonga.miuix.kmp.basic.Text
 import top.yukonga.miuix.kmp.basic.TextField
 import top.yukonga.miuix.kmp.basic.TopAppBar
 import top.yukonga.miuix.kmp.theme.MiuixTheme.colorScheme
@@ -59,7 +57,6 @@ import top.yukonga.miuix.kmp.utils.overScrollVertical
  * @author weishu
  * @date 2023/10/20.
  */
-@OptIn(ExperimentalComposeUiApi::class, ExperimentalMaterial3Api::class)
 @Destination<RootGraph>
 @Composable
 fun TemplateEditorScreen(
@@ -83,12 +80,6 @@ fun TemplateEditorScreen(
 
     Scaffold(
         topBar = {
-            if (initialTemplate.author.isNotEmpty()) "@${initialTemplate.author}" else ""
-            if (readOnly) {
-                " - ${stringResource(id = R.string.app_profile_template_readonly)}"
-            } else {
-                ""
-            }
             val saveTemplateFailed = stringResource(id = R.string.app_profile_template_save_failed)
             val context = LocalContext.current
 
@@ -135,8 +126,7 @@ fun TemplateEditorScreen(
                 Card(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = 16.dp)
-                        .padding(vertical = 12.dp),
+                        .padding(12.dp),
                 ) {
                     var errorHint by remember {
                         mutableStateOf("")
@@ -272,7 +262,6 @@ fun saveTemplate(template: TemplateViewModel.TemplateInfo, isCreation: Boolean =
     return setAppProfileTemplate(template.id, json.toString())
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun TopBar(
     title: String,
@@ -282,16 +271,6 @@ private fun TopBar(
     onSave: () -> Unit = {},
     scrollBehavior: ScrollBehavior
 ) {
-//    Column {
-//        Text(title)
-//        if (summary.isNotBlank()) {
-//            Text(
-//                text = summary,
-//                style = MaterialTheme.typography.bodyMedium,
-//            )
-//        }
-//    }
-//}
     TopAppBar(
         title = title,
         navigationIcon = {

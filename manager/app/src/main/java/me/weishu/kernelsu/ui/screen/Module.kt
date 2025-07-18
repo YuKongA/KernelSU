@@ -33,6 +33,7 @@ import androidx.compose.material.icons.rounded.Add
 import androidx.compose.material.icons.rounded.Delete
 import androidx.compose.material.icons.rounded.MoreVert
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Snackbar
 import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
@@ -61,6 +62,7 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.core.content.edit
 import androidx.core.net.toUri
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -288,7 +290,16 @@ fun ModuleScreen(navigator: DestinationsNavigator) {
                 )
             }
         },
-        snackbarHost = { SnackbarHost(hostState = snackBarHost) },
+        snackbarHost = {
+            SnackbarHost(hostState = snackBarHost) {
+                Snackbar(
+                    snackbarData = it,
+                    containerColor = colorScheme.onBackground,
+                    contentColor = colorScheme.background,
+                    actionColor = colorScheme.primary
+                )
+            }
+        },
         popupHost = { },
     ) { innerPadding ->
         when {
@@ -296,7 +307,7 @@ fun ModuleScreen(navigator: DestinationsNavigator) {
                 Box(
                     modifier = Modifier
                         .fillMaxSize()
-                        .padding(24.dp),
+                        .padding(12.dp),
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
@@ -314,7 +325,7 @@ fun ModuleScreen(navigator: DestinationsNavigator) {
                         .height(getWindowSize().height.dp)
                         .overScrollVertical()
                         .nestedScroll(scrollBehavior.nestedScrollConnection)
-                        .padding(horizontal = 16.dp),
+                        .padding(horizontal = 12.dp),
                     boxModifier = Modifier.padding(innerPadding),
                     onInstallModule = {
                         navigator.navigate(FlashScreenDestination(FlashIt.FlashModules(listOf(it))))
@@ -330,7 +341,7 @@ fun ModuleScreen(navigator: DestinationsNavigator) {
                         }
                     },
                     context = context,
-                    snackBarHost = snackBarHost
+                    snackBarHost = LocalSnackbarHost.current
                 )
             }
         }
@@ -488,13 +499,12 @@ private fun ModuleList(
 
         LazyColumn(
             modifier = modifier,
-            verticalArrangement = Arrangement.spacedBy(16.dp),
-            contentPadding = remember {
-                PaddingValues(
-                    top = 12.dp,
-                    bottom = 12.dp + 56.dp + 16.dp /* Scaffold Fab Spacing + Fab container height */
-                )
-            },
+            verticalArrangement = Arrangement.spacedBy(12.dp),
+            contentPadding = PaddingValues(
+                top = 12.dp,
+                bottom = 12.dp + 60.dp + 12.dp /* Scaffold Fab Spacing + Fab container height */
+            ),
+            overscrollEffect = null,
         ) {
             when {
                 !viewModel.isOverlayAvailable -> {
@@ -579,9 +589,6 @@ private fun ModuleList(
                                 onClickModule(it.id, it.name, it.hasWebUi)
                             }
                         )
-
-                        // fix last item shadow incomplete in LazyColumn
-                        Spacer(Modifier.height(1.dp))
                     }
                 }
             }
@@ -604,7 +611,7 @@ fun ModuleItem(
 ) {
     Card(
         modifier = Modifier.fillMaxWidth(),
-        insideMargin = PaddingValues(18.dp)
+        insideMargin = PaddingValues(16.dp)
     ) {
         val textDecoration = if (!module.remove) null else TextDecoration.LineThrough
         val interactionSource = remember { MutableInteractionSource() }
@@ -640,7 +647,9 @@ fun ModuleItem(
                     color = colorScheme.onSurface,
                     textDecoration = textDecoration,
                 )
+
                 Spacer(Modifier.height(0.5.dp))
+
                 Text(
                     text = "$moduleVersion: ${module.version}",
                     fontSize = MiuixTheme.textStyles.body2.fontSize,
@@ -669,7 +678,7 @@ fun ModuleItem(
             text = module.description,
             fontSize = MiuixTheme.textStyles.body2.fontSize,
             color = colorScheme.onSurfaceVariantSummary,
-            modifier = Modifier.padding(top = 8.dp),
+            modifier = Modifier.padding(top = 4.dp),
             overflow = TextOverflow.Ellipsis,
             maxLines = 4,
             textDecoration = textDecoration
@@ -680,7 +689,7 @@ fun ModuleItem(
         )
 
         Row(
-            horizontalArrangement = Arrangement.spacedBy(12.dp),
+            horizontalArrangement = Arrangement.spacedBy(16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             if (module.hasActionScript) {
@@ -737,12 +746,26 @@ fun ModuleItem(
                 onClick = { onUninstall(module) },
                 backgroundColor = Color.Red.copy(alpha = if (isSystemInDarkTheme()) 0.3f else 0.6f),
             ) {
-                Icon(
-                    modifier = Modifier.size(20.dp),
-                    imageVector = Icons.Rounded.Delete,
-                    tint = Color.White.copy(alpha = if (isSystemInDarkTheme()) 0.78f else 0.98f),
-                    contentDescription = null
-                )
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(4.dp),
+                ) {
+                    Icon(
+                        modifier = Modifier
+                            .padding(start = 10.dp)
+                            .size(20.dp),
+                        imageVector = Icons.Rounded.Delete,
+                        tint = Color.White.copy(alpha = if (isSystemInDarkTheme()) 0.78f else 0.98f),
+                        contentDescription = null
+                    )
+                    Text(
+                        modifier = Modifier.padding(end = 12.dp),
+                        text = stringResource(R.string.uninstall),
+                        color = Color.White.copy(alpha = if (isSystemInDarkTheme()) 0.78f else 0.98f),
+                        fontWeight = FontWeight.Medium,
+                        fontSize = 15.sp
+                    )
+                }
             }
         }
     }

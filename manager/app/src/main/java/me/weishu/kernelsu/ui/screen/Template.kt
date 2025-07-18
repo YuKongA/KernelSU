@@ -5,7 +5,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -198,11 +197,8 @@ fun AppProfileTemplateScreen(
                     .height(getWindowSize().height.dp)
                     .overScrollVertical()
                     .nestedScroll(scrollBehavior.nestedScrollConnection)
-                    .padding(horizontal = 16.dp),
-                contentPadding = PaddingValues(
-                    top = innerPadding.calculateTopPadding(),
-                    bottom = 56.dp + 16.dp /* Scaffold Fab Spacing + Fab container height */
-                ),
+                    .padding(horizontal = 12.dp),
+                contentPadding = innerPadding,
                 overscrollEffect = null
             ) {
                 item {
@@ -210,6 +206,9 @@ fun AppProfileTemplateScreen(
                 }
                 items(viewModel.templateList, key = { it.id }) { app ->
                     TemplateItem(navigator, app)
+                }
+                item {
+                    Spacer(Modifier.height(60.dp + 12.dp /* Scaffold Fab Spacing + Fab container height */))
                 }
             }
         }
@@ -233,7 +232,7 @@ private fun TemplateItem(
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 16.dp, vertical = 14.dp)
+                .padding(16.dp)
         ) {
             Row(
                 verticalAlignment = Alignment.CenterVertically,
@@ -277,7 +276,7 @@ private fun TemplateItem(
             )
 
             HorizontalDivider(
-                modifier = Modifier.padding(vertical = 12.dp),
+                modifier = Modifier.padding(vertical = 16.dp),
                 thickness = 0.5.dp,
                 color = colorScheme.outline.copy(alpha = 0.5f)
             )
