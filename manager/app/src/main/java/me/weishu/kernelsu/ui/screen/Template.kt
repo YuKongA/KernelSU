@@ -23,17 +23,13 @@ import androidx.compose.material.icons.outlined.Shield
 import androidx.compose.material.icons.rounded.Add
 import androidx.compose.material.icons.rounded.ImportExport
 import androidx.compose.material.icons.rounded.Sync
-import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -62,6 +58,8 @@ import top.yukonga.miuix.kmp.basic.FloatingActionButton
 import top.yukonga.miuix.kmp.basic.HorizontalDivider
 import top.yukonga.miuix.kmp.basic.Icon
 import top.yukonga.miuix.kmp.basic.IconButton
+import top.yukonga.miuix.kmp.basic.ListPopup
+import top.yukonga.miuix.kmp.basic.ListPopupColumn
 import top.yukonga.miuix.kmp.basic.MiuixScrollBehavior
 import top.yukonga.miuix.kmp.basic.PullToRefresh
 import top.yukonga.miuix.kmp.basic.Scaffold
@@ -349,10 +347,10 @@ private fun TopBar(
                 )
             }
 
-            var showDropdown by remember { mutableStateOf(false) }
+            val showDropdown = remember { mutableStateOf(false) }
             IconButton(
                 modifier = Modifier.padding(end = 16.dp),
-                onClick = { showDropdown = true }
+                onClick = { showDropdown.value = true }
             ) {
                 Icon(
                     imageVector = Icons.Rounded.ImportExport,
@@ -360,27 +358,32 @@ private fun TopBar(
                     tint = colorScheme.onBackground
                 )
 
-                DropdownMenu(expanded = showDropdown, onDismissRequest = {
-                    showDropdown = false
-                }) {
-                    DropdownMenuItem(text = {
-                        Text(
+                ListPopup(
+                    show = showDropdown,
+                    onDismissRequest = { showDropdown.value = false }
+                ) {
+                    ListPopupColumn {
+                        val items = listOf(
                             stringResource(id = R.string.app_profile_import_from_clipboard),
-                            color = colorScheme.onBackground
+                            stringResource(id = R.string.app_profile_export_to_clipboard)
                         )
-                    }, onClick = {
-                        onImport()
-                        showDropdown = false
-                    })
-                    DropdownMenuItem(text = {
-                        Text(
-                            stringResource(id = R.string.app_profile_export_to_clipboard),
-                            color = colorScheme.onBackground
-                        )
-                    }, onClick = {
-                        onExport()
-                        showDropdown = false
-                    })
+
+                        items.forEachIndexed { index, text ->
+                            DropdownItem(
+                                text = text,
+                                optionSize = items.size,
+                                index = index,
+                                onSelectedIndexChange = { selectedIndex ->
+                                    if (selectedIndex == 0) {
+                                        onImport()
+                                    } else {
+                                        onExport()
+                                    }
+                                    showDropdown.value = false
+                                }
+                            )
+                        }
+                    }
                 }
             }
         },
