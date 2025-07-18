@@ -5,7 +5,6 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -19,9 +18,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -37,6 +34,7 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.core.text.isDigitsOnly
 import me.weishu.kernelsu.Natives
 import me.weishu.kernelsu.R
@@ -55,7 +53,6 @@ import top.yukonga.miuix.kmp.icon.icons.basic.ArrowRight
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 import top.yukonga.miuix.kmp.theme.MiuixTheme.colorScheme
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun RootProfileConfig(
     modifier: Modifier = Modifier,
@@ -63,10 +60,12 @@ fun RootProfileConfig(
     profile: Natives.Profile,
     onProfileChange: (Natives.Profile) -> Unit,
 ) {
-    Column(modifier = modifier) {
+    Column(
+        modifier = modifier
+    ) {
         if (!fixedName) {
-            OutlinedTextField(
-                label = { Text(stringResource(R.string.profile_name)) },
+            TextField(
+                label = stringResource(R.string.profile_name),
                 value = profile.name,
                 onValueChange = { onProfileChange(profile.copy(name = it)) }
             )
@@ -151,6 +150,7 @@ fun RootProfileConfig(
                 Groups.entries.find { it.gid == g }
             }
         }
+
         GroupsPanel(selectedGroups) {
             onProfileChange(
                 profile.copy(
@@ -185,7 +185,6 @@ fun RootProfileConfig(
     }
 }
 
-@OptIn(ExperimentalLayoutApi::class, ExperimentalMaterial3Api::class)
 @Composable
 fun GroupsPanel(selected: List<Groups>, closeSelection: (selection: Set<Groups>) -> Unit) {
     val showDialog = remember { mutableStateOf(false) }
@@ -238,13 +237,15 @@ fun GroupsPanel(selected: List<Groups>, closeSelection: (selection: Set<Groups>)
             ) {
                 TextButton(
                     onClick = { showDialog.value = false },
-                    text = stringResource(com.maxkeppeler.sheets.core.R.string.cancel),
+                    text = stringResource(android.R.string.cancel),
                     modifier = Modifier.weight(1f)
                 )
                 Spacer(modifier = Modifier.width(20.dp))
-                TextButton(onClick = {
-                    closeSelection(currentSelection.value)
-                    showDialog.value = false },
+                TextButton(
+                    onClick = {
+                        closeSelection(currentSelection.value)
+                        showDialog.value = false
+                    },
                     text = stringResource(R.string.confirm),
                     modifier = Modifier.weight(1f),
                     colors = ButtonDefaults.textButtonColorsPrimary()
@@ -291,7 +292,6 @@ fun GroupsPanel(selected: List<Groups>, closeSelection: (selection: Set<Groups>)
     }
 }
 
-@OptIn(ExperimentalLayoutApi::class, ExperimentalMaterial3Api::class)
 @Composable
 fun CapsPanel(
     selected: Collection<Capabilities>,
@@ -338,13 +338,15 @@ fun CapsPanel(
                 ) {
                     TextButton(
                         onClick = { showDialog.value = false },
-                        text = stringResource(com.maxkeppeler.sheets.core.R.string.cancel),
+                        text = stringResource(android.R.string.cancel),
                         modifier = Modifier.weight(1f)
                     )
                     Spacer(modifier = Modifier.width(20.dp))
-                    TextButton(onClick = {
-                        closeSelection(currentSelection.value)
-                        showDialog.value = false },
+                    TextButton(
+                        onClick = {
+                            closeSelection(currentSelection.value)
+                            showDialog.value = false
+                        },
                         text = stringResource(R.string.confirm),
                         modifier = Modifier.weight(1f),
                         colors = ButtonDefaults.textButtonColorsPrimary()
@@ -421,15 +423,17 @@ private fun UidPanel(uid: Int, label: String, onUidChange: (Int) -> Unit) {
     TextField(
         value = text,
         onValueChange = { newText ->
-            text = newText
             if (isTextValidUid(newText)) {
+                text = newText
                 onUidChange(newText.toIntOrNull() ?: 0)
+            } else {
+                text = ""
             }
         },
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 8.dp),
-        label = label.uppercase(),
+            .padding(horizontal = 16.dp)
+            .padding(top = 16.dp),
         backgroundColor = colorScheme.surfaceContainer,
         borderColor = if (isError) colorScheme.tertiaryContainer else colorScheme.primary,
         keyboardOptions = KeyboardOptions(
@@ -439,11 +443,17 @@ private fun UidPanel(uid: Int, label: String, onUidChange: (Int) -> Unit) {
         keyboardActions = KeyboardActions(onDone = {
             keyboardController?.hide()
         }),
-        singleLine = true
+        singleLine = true,
+        trailingIcon = {
+            Text(
+                text = label.uppercase(),
+                fontSize = 13.sp,
+                modifier = Modifier.padding(horizontal = 16.dp)
+            )
+        }
     )
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun SELinuxPanel(
     profile: Natives.Profile,
@@ -503,13 +513,15 @@ private fun SELinuxPanel(
             ) {
                 TextButton(
                     onClick = { showDialog.value = false },
-                    text = stringResource(com.maxkeppeler.sheets.core.R.string.cancel),
+                    text = stringResource(android.R.string.cancel),
                     modifier = Modifier.weight(1f)
                 )
                 Spacer(modifier = Modifier.width(20.dp))
-                TextButton(onClick = {
-                    onSELinuxChange(domain, rules)
-                    showDialog.value = false },
+                TextButton(
+                    onClick = {
+                        onSELinuxChange(domain, rules)
+                        showDialog.value = false
+                    },
                     text = stringResource(R.string.confirm),
                     enabled = isDomainValid && isRulesValid,
                     modifier = Modifier.weight(1f),
@@ -536,5 +548,5 @@ private fun RootProfileConfigPreview() {
 }
 
 private fun isTextValidUid(text: String): Boolean {
-    return text.isNotEmpty() && text.isDigitsOnly() && text.toInt() >= 0
+    return text.isNotEmpty() && text.isDigitsOnly() && text.toIntOrNull() != null && text.toInt() >= 0
 }

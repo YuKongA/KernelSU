@@ -2,12 +2,9 @@ package me.weishu.kernelsu.ui.screen
 
 import android.widget.Toast
 import androidx.activity.compose.BackHandler
-import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.only
-import androidx.compose.foundation.layout.safeDrawing
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
@@ -18,9 +15,6 @@ import androidx.compose.material.icons.rounded.Save
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.ListItem
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -38,6 +32,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.dropUnlessResumed
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootGraph
@@ -50,11 +45,13 @@ import me.weishu.kernelsu.ui.util.getAppProfileTemplate
 import me.weishu.kernelsu.ui.util.setAppProfileTemplate
 import me.weishu.kernelsu.ui.viewmodel.TemplateViewModel
 import me.weishu.kernelsu.ui.viewmodel.toJSON
+import top.yukonga.miuix.kmp.basic.Card
 import top.yukonga.miuix.kmp.basic.MiuixScrollBehavior
 import top.yukonga.miuix.kmp.basic.Scaffold
 import top.yukonga.miuix.kmp.basic.ScrollBehavior
+import top.yukonga.miuix.kmp.basic.TextField
 import top.yukonga.miuix.kmp.basic.TopAppBar
-import top.yukonga.miuix.kmp.theme.MiuixTheme
+import top.yukonga.miuix.kmp.theme.MiuixTheme.colorScheme
 import top.yukonga.miuix.kmp.utils.getWindowSize
 import top.yukonga.miuix.kmp.utils.overScrollVertical
 
@@ -86,14 +83,12 @@ fun TemplateEditorScreen(
 
     Scaffold(
         topBar = {
-            val author =
-                if (initialTemplate.author.isNotEmpty()) "@${initialTemplate.author}" else ""
-            val readOnlyHint = if (readOnly) {
+            if (initialTemplate.author.isNotEmpty()) "@${initialTemplate.author}" else ""
+            if (readOnly) {
                 " - ${stringResource(id = R.string.app_profile_template_readonly)}"
             } else {
                 ""
             }
-            val titleSummary = "${initialTemplate.id}$author$readOnlyHint"
             val saveTemplateFailed = stringResource(id = R.string.app_profile_template_save_failed)
             val context = LocalContext.current
 
@@ -106,7 +101,6 @@ fun TemplateEditorScreen(
                     stringResource(R.string.app_profile_template_edit)
                 },
                 readOnly = readOnly,
-                summary = titleSummary,
                 onBack = dropUnlessResumed { navigator.navigateBack(result = !readOnly) },
                 onDelete = {
                     if (deleteAppProfileTemplate(template.id)) {
@@ -123,7 +117,7 @@ fun TemplateEditorScreen(
                 scrollBehavior = scrollBehavior
             )
         },
-        contentWindowInsets = WindowInsets.safeDrawing.only(WindowInsetsSides.Top + WindowInsetsSides.Horizontal)
+        popupHost = { }
     ) { innerPadding ->
         LazyColumn(
             modifier = Modifier
@@ -134,13 +128,35 @@ fun TemplateEditorScreen(
                     // disable click and ripple if readOnly
                     readOnly
                 },
-            contentPadding = innerPadding
+            contentPadding = innerPadding,
+            overscrollEffect = null
         ) {
             item {
-                if (isCreation) {
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp)
+                        .padding(vertical = 12.dp),
+                ) {
                     var errorHint by remember {
                         mutableStateOf("")
                     }
+
+                    TextEdit(
+                        label = stringResource(id = R.string.app_profile_template_name),
+                        text = template.name
+                    ) { value ->
+                        template.copy(name = value).run {
+                            if (autoSave) {
+                                if (!saveTemplate(this)) {
+                                    // failed
+                                    return@run
+                                }
+                            }
+                            template = this
+                        }
+                    }
+
                     val idConflictError = stringResource(id = R.string.app_profile_template_id_exist)
                     val idInvalidError = stringResource(id = R.string.app_profile_template_id_invalid)
                     TextEdit(
@@ -158,50 +174,12 @@ fun TemplateEditorScreen(
                         }
                         template = template.copy(id = value)
                     }
-                }
 
-                TextEdit(
-                    label = stringResource(id = R.string.app_profile_template_name),
-                    text = template.name
-                ) { value ->
-                    template.copy(name = value).run {
-                        if (autoSave) {
-                            if (!saveTemplate(this)) {
-                                // failed
-                                return@run
-                            }
-                        }
-                        template = this
-                    }
-                }
-                TextEdit(
-                    label = stringResource(id = R.string.app_profile_template_description),
-                    text = template.description
-                ) { value ->
-                    template.copy(description = value).run {
-                        if (autoSave) {
-                            if (!saveTemplate(this)) {
-                                // failed
-                                return@run
-                            }
-                        }
-                        template = this
-                    }
-                }
-
-                RootProfileConfig(
-                    fixedName = true,
-                    profile = toNativeProfile(template),
-                    onProfileChange = {
-                        template.copy(
-                            uid = it.uid,
-                            gid = it.gid,
-                            groups = it.groups,
-                            capabilities = it.capabilities,
-                            context = it.context,
-                            namespace = it.namespace,
-                            rules = it.rules.split("\n")
-                        ).run {
+                    TextEdit(
+                        label = stringResource(R.string.module_author),
+                        text = template.author
+                    ) { value ->
+                        template.copy(author = value).run {
                             if (autoSave) {
                                 if (!saveTemplate(this)) {
                                     // failed
@@ -211,7 +189,46 @@ fun TemplateEditorScreen(
                             template = this
                         }
                     }
-                )
+
+                    TextEdit(
+                        label = stringResource(id = R.string.app_profile_template_description),
+                        text = template.description
+                    ) { value ->
+                        template.copy(description = value).run {
+                            if (autoSave) {
+                                if (!saveTemplate(this)) {
+                                    // failed
+                                    return@run
+                                }
+                            }
+                            template = this
+                        }
+                    }
+
+                    RootProfileConfig(
+                        fixedName = true,
+                        profile = toNativeProfile(template),
+                        onProfileChange = {
+                            template.copy(
+                                uid = it.uid,
+                                gid = it.gid,
+                                groups = it.groups,
+                                capabilities = it.capabilities,
+                                context = it.context,
+                                namespace = it.namespace,
+                                rules = it.rules.split("\n")
+                            ).run {
+                                if (autoSave) {
+                                    if (!saveTemplate(this)) {
+                                        // failed
+                                        return@run
+                                    }
+                                }
+                                template = this
+                            }
+                        }
+                    )
+                }
             }
         }
     }
@@ -260,7 +277,6 @@ fun saveTemplate(template: TemplateViewModel.TemplateInfo, isCreation: Boolean =
 private fun TopBar(
     title: String,
     readOnly: Boolean,
-    summary: String = "",
     onBack: () -> Unit,
     onDelete: () -> Unit = {},
     onSave: () -> Unit = {},
@@ -277,32 +293,41 @@ private fun TopBar(
 //    }
 //}
     TopAppBar(
-        title = title, navigationIcon = {
+        title = title,
+        navigationIcon = {
             IconButton(
+                modifier = Modifier.padding(start = 16.dp),
                 onClick = onBack
             ) {
                 Icon(
                     Icons.AutoMirrored.Rounded.ArrowBack,
                     contentDescription = null,
-                    tint = MiuixTheme.colorScheme.onBackground
+                    tint = colorScheme.onBackground
                 )
             }
-        }, actions = {
+        },
+        actions = {
             if (readOnly) {
                 return@TopAppBar
             }
-            IconButton(onClick = onDelete) {
+            IconButton(
+                modifier = Modifier.padding(end = 16.dp),
+                onClick = onDelete
+            ) {
                 Icon(
                     Icons.Rounded.DeleteForever,
                     contentDescription = stringResource(id = R.string.app_profile_template_delete),
-                    tint = MiuixTheme.colorScheme.onBackground
+                    tint = colorScheme.onBackground
                 )
             }
-            IconButton(onClick = onSave) {
+            IconButton(
+                modifier = Modifier.padding(end = 16.dp),
+                onClick = onSave
+            ) {
                 Icon(
                     imageVector = Icons.Rounded.Save,
                     contentDescription = stringResource(id = R.string.app_profile_template_save),
-                    tint = MiuixTheme.colorScheme.onBackground
+                    tint = colorScheme.onBackground
                 )
             }
         },
@@ -318,31 +343,32 @@ private fun TextEdit(
     isError: Boolean = false,
     onValueChange: (String) -> Unit = {}
 ) {
-    ListItem(headlineContent = {
-        val keyboardController = LocalSoftwareKeyboardController.current
-        OutlinedTextField(
-            value = text,
-            modifier = Modifier.fillMaxWidth(),
-            label = { Text(label) },
-            suffix = {
-                if (errorHint.isNotBlank()) {
-                    Text(
-                        text = if (isError) errorHint else "",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.error
-                    )
-                }
-            },
-            isError = isError,
-            keyboardOptions = KeyboardOptions(
-                keyboardType = KeyboardType.Ascii, imeAction = ImeAction.Next
-            ),
-            keyboardActions = KeyboardActions(onDone = {
-                keyboardController?.hide()
-            }),
-            onValueChange = onValueChange
-        )
-    })
+    val keyboardController = LocalSoftwareKeyboardController.current
+
+    TextField(
+        value = text,
+        onValueChange = onValueChange,
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp)
+            .padding(top = 16.dp),
+        backgroundColor = colorScheme.surfaceContainer,
+        borderColor = if (isError) colorScheme.tertiaryContainer else colorScheme.primary,
+        keyboardOptions = KeyboardOptions(
+            keyboardType = KeyboardType.Number,
+            imeAction = ImeAction.Done
+        ),
+        keyboardActions = KeyboardActions(onDone = {
+            keyboardController?.hide()
+        }),
+        trailingIcon = {
+            Text(
+                text = if (isError) errorHint else label.uppercase(),
+                fontSize = 13.sp,
+                modifier = Modifier.padding(horizontal = 16.dp)
+            )
+        }
+    )
 }
 
 private fun isValidTemplateId(id: String): Boolean {

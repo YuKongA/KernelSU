@@ -6,6 +6,7 @@ import androidx.compose.animation.Crossfade
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -209,7 +210,7 @@ private fun AppProfileInner(
 
         Crossfade(targetState = isRootGranted, label = "") { current ->
             Column(
-                modifier = Modifier.padding(bottom = 6.dp + 48.dp + 6.dp /* SnackBar height */)
+                modifier = Modifier.padding(bottom = 12.dp)
             ) {
                 Card(
                     modifier = Modifier
@@ -236,6 +237,9 @@ private fun AppProfileInner(
                             mode = it
                         }
                         Crossfade(targetState = mode, label = "") { currentMode ->
+                            if (currentMode == Mode.Default) {
+                                Spacer(Modifier.height(16.dp))
+                            }
                             if (currentMode == Mode.Template) {
                                 TemplateConfig(
                                     profile = profile,
@@ -344,7 +348,7 @@ private fun ProfileBox(
         },
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 8.dp)
+            .padding(horizontal = 16.dp)
     )
 }
 
@@ -403,8 +407,6 @@ private fun AppMenuBox(packageName: String, content: @Composable () -> Unit) {
             )
         }
     }
-
-
 }
 
 @Preview
