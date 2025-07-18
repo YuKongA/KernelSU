@@ -18,8 +18,6 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -43,6 +41,7 @@ import me.weishu.kernelsu.profile.Groups
 import me.weishu.kernelsu.ui.util.isSepolicyValid
 import top.yukonga.miuix.kmp.basic.ButtonDefaults
 import top.yukonga.miuix.kmp.basic.Icon
+import top.yukonga.miuix.kmp.basic.Text
 import top.yukonga.miuix.kmp.basic.TextButton
 import top.yukonga.miuix.kmp.basic.TextField
 import top.yukonga.miuix.kmp.extra.SuperArrow
@@ -407,7 +406,7 @@ private fun StatusTag(label: String) {
     ) {
         Text(
             text = label,
-            style = MaterialTheme.typography.labelMedium,
+            style = MiuixTheme.textStyles.body2,
             color = colorScheme.onSecondaryContainer,
             fontWeight = FontWeight.Medium
         )

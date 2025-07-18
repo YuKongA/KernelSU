@@ -334,7 +334,13 @@ private fun TopBar(
             IconButton(
                 modifier = Modifier.padding(start = 16.dp),
                 onClick = onBack
-            ) { Icon(Icons.AutoMirrored.Rounded.ArrowBack, contentDescription = null) }
+            ) {
+                Icon(
+                    Icons.AutoMirrored.Rounded.ArrowBack,
+                    contentDescription = null,
+                    tint = colorScheme.onBackground
+                )
+            }
         },
         actions = {
             IconButton(

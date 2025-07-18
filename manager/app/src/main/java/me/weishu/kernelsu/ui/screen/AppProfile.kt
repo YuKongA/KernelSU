@@ -1,10 +1,9 @@
 package me.weishu.kernelsu.ui.screen
 
-import android.annotation.SuppressLint
 import androidx.annotation.StringRes
 import androidx.compose.animation.Crossfade
 import androidx.compose.foundation.gestures.detectTapGestures
-import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -12,8 +11,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ArrowBack
 import androidx.compose.material.icons.rounded.AccountCircle
@@ -67,13 +65,17 @@ import top.yukonga.miuix.kmp.basic.Icon
 import top.yukonga.miuix.kmp.basic.IconButton
 import top.yukonga.miuix.kmp.basic.ListPopup
 import top.yukonga.miuix.kmp.basic.ListPopupColumn
+import top.yukonga.miuix.kmp.basic.ListPopupDefaults
 import top.yukonga.miuix.kmp.basic.MiuixScrollBehavior
+import top.yukonga.miuix.kmp.basic.PopupPositionProvider
 import top.yukonga.miuix.kmp.basic.Scaffold
 import top.yukonga.miuix.kmp.basic.ScrollBehavior
 import top.yukonga.miuix.kmp.basic.TabRowWithContour
 import top.yukonga.miuix.kmp.basic.TopAppBar
 import top.yukonga.miuix.kmp.extra.SuperSwitch
 import top.yukonga.miuix.kmp.theme.MiuixTheme.colorScheme
+import top.yukonga.miuix.kmp.utils.getWindowSize
+import top.yukonga.miuix.kmp.utils.overScrollVertical
 
 /**
  * @author weishu
@@ -121,54 +123,61 @@ fun AppProfileScreen(
             }
         },
         popupHost = { },
-    ) { paddingValues ->
-        AppProfileInner(
+    ) { innerPadding ->
+        LazyColumn(
             modifier = Modifier
-                .padding(paddingValues)
-                .nestedScroll(scrollBehavior.nestedScrollConnection)
-                .verticalScroll(rememberScrollState()),
-            packageName = appInfo.packageName,
-            appLabel = appInfo.label,
-            appIcon = {
-                AsyncImage(
-                    model = ImageRequest.Builder(context).data(appInfo.packageInfo).crossfade(true).build(),
-                    contentDescription = appInfo.label,
-                    modifier = Modifier
-                        .padding(4.dp)
-                        .width(48.dp)
-                        .height(48.dp)
+                .height(getWindowSize().height.dp)
+                .overScrollVertical()
+                .nestedScroll(scrollBehavior.nestedScrollConnection),
+            contentPadding = innerPadding,
+            overscrollEffect = null
+        ) {
+            item {
+                AppProfileInner(
+                    packageName = appInfo.packageName,
+                    appLabel = appInfo.label,
+                    appIcon = {
+                        AsyncImage(
+                            model = ImageRequest.Builder(context).data(appInfo.packageInfo).crossfade(true).build(),
+                            contentDescription = appInfo.label,
+                            modifier = Modifier
+                                .padding(4.dp)
+                                .width(48.dp)
+                                .height(48.dp)
+                        )
+                    },
+                    profile = profile,
+                    onViewTemplate = {
+                        getTemplateInfoById(it)?.let { info ->
+                            navigator.navigate(TemplateEditorScreenDestination(info))
+                        }
+                    },
+                    onManageTemplate = {
+                        navigator.navigate(AppProfileTemplateScreenDestination())
+                    },
+                    onProfileChange = {
+                        scope.launch {
+                            if (it.allowSu) {
+                                // sync with allowlist.c - forbid_system_uid
+                                if (appInfo.uid < 2000 && appInfo.uid != 1000) {
+                                    snackBarHost.showSnackbar(suNotAllowed)
+                                    return@launch
+                                }
+                                if (!it.rootUseDefault && it.rules.isNotEmpty() && !setSepolicy(profile.name, it.rules)) {
+                                    snackBarHost.showSnackbar(failToUpdateSepolicy)
+                                    return@launch
+                                }
+                            }
+                            if (!Natives.setAppProfile(it)) {
+                                snackBarHost.showSnackbar(failToUpdateAppProfile.format(appInfo.uid))
+                            } else {
+                                profile = it
+                            }
+                        }
+                    },
                 )
-            },
-            profile = profile,
-            onViewTemplate = {
-                getTemplateInfoById(it)?.let { info ->
-                    navigator.navigate(TemplateEditorScreenDestination(info))
-                }
-            },
-            onManageTemplate = {
-                navigator.navigate(AppProfileTemplateScreenDestination())
-            },
-            onProfileChange = {
-                scope.launch {
-                    if (it.allowSu) {
-                        // sync with allowlist.c - forbid_system_uid
-                        if (appInfo.uid < 2000 && appInfo.uid != 1000) {
-                            snackBarHost.showSnackbar(suNotAllowed)
-                            return@launch
-                        }
-                        if (!it.rootUseDefault && it.rules.isNotEmpty() && !setSepolicy(profile.name, it.rules)) {
-                            snackBarHost.showSnackbar(failToUpdateSepolicy)
-                            return@launch
-                        }
-                    }
-                    if (!Natives.setAppProfile(it)) {
-                        snackBarHost.showSnackbar(failToUpdateAppProfile.format(appInfo.uid))
-                    } else {
-                        profile = it
-                    }
-                }
-            },
-        )
+            }
+        }
     }
 }
 
@@ -199,7 +208,7 @@ private fun AppProfileInner(
         Card(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 16.dp)
+                .padding(horizontal = 12.dp)
                 .padding(bottom = 12.dp),
         ) {
             SuperSwitch(
@@ -207,7 +216,8 @@ private fun AppProfileInner(
                     Icon(
                         imageVector = Icons.Rounded.Security,
                         contentDescription = null,
-                        modifier = Modifier.padding(end = 16.dp)
+                        modifier = Modifier.padding(end = 16.dp),
+                        tint = colorScheme.onBackground
                     )
                 },
                 title = stringResource(id = R.string.superuser),
@@ -223,7 +233,7 @@ private fun AppProfileInner(
                 Card(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = 16.dp)
+                        .padding(horizontal = 12.dp)
                         .padding(bottom = 12.dp),
                 ) {
                     if (current) {
@@ -284,7 +294,7 @@ private fun AppProfileInner(
     }
 }
 
-private enum class Mode(@StringRes private val res: Int) {
+private enum class Mode(@get:StringRes private val res: Int) {
     Default(R.string.profile_default), Template(R.string.profile_template), Custom(R.string.profile_custom);
 
     val text: String
@@ -305,7 +315,8 @@ private fun TopBar(
             ) {
                 Icon(
                     Icons.AutoMirrored.Rounded.ArrowBack,
-                    contentDescription = null
+                    contentDescription = null,
+                    tint = colorScheme.onBackground
                 )
             }
         },
@@ -326,7 +337,8 @@ private fun ProfileBox(
             Icon(
                 Icons.Rounded.AccountCircle,
                 modifier = Modifier.padding(end = 16.dp),
-                contentDescription = null
+                contentDescription = null,
+                tint = colorScheme.onBackground
             )
         },
     )
@@ -360,11 +372,13 @@ private fun ProfileBox(
     )
 }
 
-@SuppressLint("UnusedBoxWithConstraintsScope")
 @Composable
-private fun AppMenuBox(packageName: String, content: @Composable () -> Unit) {
+private fun AppMenuBox(
+    packageName: String,
+    content: @Composable () -> Unit
+) {
     val expanded = remember { mutableStateOf(false) }
-    BoxWithConstraints(
+    Box(
         Modifier
             .fillMaxSize()
             .pointerInput(Unit) {
@@ -377,7 +391,9 @@ private fun AppMenuBox(packageName: String, content: @Composable () -> Unit) {
 
         ListPopup(
             show = expanded,
-            onDismissRequest = { expanded.value = false }
+            onDismissRequest = { expanded.value = false },
+            popupPositionProvider = ListPopupDefaults.ContextMenuPositionProvider,
+            alignment = PopupPositionProvider.Align.TopLeft,
         ) {
             ListPopupColumn {
                 val items = listOf(
