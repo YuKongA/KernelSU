@@ -167,6 +167,12 @@ jobs:
           max-size: 2G
           save: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
 
+      - name: Setup bazel cache
+        uses: actions/cache@v4
+        with:
+          path: "/home/runner/.cache/bazel"
+          key: bazel-gki-kernel-aarch64-${{ inputs.version_name }}
+
       - name: Setup for LKM
         if: ${{ inputs.build_lkm == true }}
         working-directory: android-kernel
