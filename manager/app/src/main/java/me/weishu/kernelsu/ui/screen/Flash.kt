@@ -203,6 +203,7 @@ fun FlashScreen(navigator: DestinationsNavigator, flashIt: FlashIt) {
                 )
             }
         },
+        popupHost = { }
     ) { innerPadding ->
         KeyEventBlocker {
             it.key == Key.VolumeDown || it.key == Key.VolumeUp

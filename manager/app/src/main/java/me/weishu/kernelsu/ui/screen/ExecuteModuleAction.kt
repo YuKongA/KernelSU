@@ -113,7 +113,8 @@ fun ExecuteModuleActionScreen(navigator: DestinationsNavigator, moduleId: String
                     actionColor = colorScheme.primary
                 )
             }
-        }
+        },
+        popupHost = { }
     ) { innerPadding ->
         KeyEventBlocker {
             it.key == Key.VolumeDown || it.key == Key.VolumeUp
