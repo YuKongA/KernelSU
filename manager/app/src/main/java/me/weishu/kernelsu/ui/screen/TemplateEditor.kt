@@ -57,8 +57,8 @@ import top.yukonga.miuix.kmp.utils.overScrollVertical
  * @author weishu
  * @date 2023/10/20.
  */
-@Destination<RootGraph>
 @Composable
+@Destination<RootGraph>
 fun TemplateEditorScreen(
     navigator: ResultBackNavigator<Boolean>,
     initialTemplate: TemplateViewModel.TemplateInfo,

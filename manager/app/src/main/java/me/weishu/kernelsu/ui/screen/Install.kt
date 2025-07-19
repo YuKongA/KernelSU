@@ -72,8 +72,8 @@ import top.yukonga.miuix.kmp.utils.overScrollVertical
  * @author weishu
  * @date 2024/3/12.
  */
-@Destination<RootGraph>
 @Composable
+@Destination<RootGraph>
 fun InstallScreen(navigator: DestinationsNavigator) {
     var installMethod by remember {
         mutableStateOf<InstallMethod?>(null)
@@ -91,9 +91,6 @@ fun InstallScreen(navigator: DestinationsNavigator) {
                 ota = method is InstallMethod.DirectInstallToInactiveSlot
             )
             navigator.navigate(FlashScreenDestination(flashIt)) {
-                popUpTo(FlashScreenDestination) {
-                    inclusive = true
-                }
                 launchSingleTop = true
             }
         }

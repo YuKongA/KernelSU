@@ -3,7 +3,6 @@ package me.weishu.kernelsu.ui.screen
 import android.widget.Toast
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -77,9 +76,8 @@ import top.yukonga.miuix.kmp.utils.overScrollVertical
  * @author weishu
  * @date 2023/10/20.
  */
-
-@Destination<RootGraph>
 @Composable
+@Destination<RootGraph>
 fun AppProfileTemplateScreen(
     navigator: DestinationsNavigator,
     resultRecipient: ResultRecipient<TemplateEditorScreenDestination, Boolean>
@@ -150,9 +148,6 @@ fun AppProfileTemplateScreen(
             FloatingActionButton(
                 onClick = {
                     navigator.navigate(TemplateEditorScreenDestination(TemplateViewModel.TemplateInfo(), false)) {
-                        popUpTo(TemplateEditorScreenDestination) {
-                            inclusive = true
-                        }
                         launchSingleTop = true
                     }
                 },
@@ -212,7 +207,6 @@ fun AppProfileTemplateScreen(
     }
 }
 
-@OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun TemplateItem(
     navigator: DestinationsNavigator,

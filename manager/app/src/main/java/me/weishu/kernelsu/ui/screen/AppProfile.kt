@@ -17,7 +17,6 @@ import androidx.compose.material.icons.automirrored.rounded.ArrowBack
 import androidx.compose.material.icons.rounded.AccountCircle
 import androidx.compose.material.icons.rounded.Android
 import androidx.compose.material.icons.rounded.Security
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Snackbar
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.runtime.Composable
@@ -81,9 +80,8 @@ import top.yukonga.miuix.kmp.utils.overScrollVertical
  * @author weishu
  * @date 2023/5/16.
  */
-@OptIn(ExperimentalMaterial3Api::class)
-@Destination<RootGraph>
 @Composable
+@Destination<RootGraph>
 fun AppProfileScreen(
     navigator: DestinationsNavigator,
     appInfo: SuperUserViewModel.AppInfo,
@@ -150,18 +148,12 @@ fun AppProfileScreen(
                     onViewTemplate = {
                         getTemplateInfoById(it)?.let { info ->
                             navigator.navigate(TemplateEditorScreenDestination(info)) {
-                                popUpTo(TemplateEditorScreenDestination) {
-                                    inclusive = true
-                                }
                                 launchSingleTop = true
                             }
                         }
                     },
                     onManageTemplate = {
                         navigator.navigate(AppProfileTemplateScreenDestination()) {
-                            popUpTo(AppProfileTemplateScreenDestination) {
-                                inclusive = true
-                            }
                             launchSingleTop = true
                         }
                     },

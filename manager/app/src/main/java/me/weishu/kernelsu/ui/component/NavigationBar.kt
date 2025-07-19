@@ -116,7 +116,7 @@ fun NavigationBar(
                                 },
                                 onTap = {
                                     if (isSelected) {
-                                        navigator.popBackStack(destination.direction, false)
+                                        navigator.popBackStack(destination.direction, true)
                                     }
                                     navigator.navigate(destination.direction) {
                                         popUpTo(NavGraphs.root) {
@@ -154,7 +154,6 @@ fun NavigationBar(
             }
         }
         if (defaultWindowInsetsPadding) {
-
             val windowInsets = WindowInsets.systemBars.union(WindowInsets.displayCutout).only(
                 WindowInsetsSides.Horizontal + WindowInsetsSides.Bottom
             )

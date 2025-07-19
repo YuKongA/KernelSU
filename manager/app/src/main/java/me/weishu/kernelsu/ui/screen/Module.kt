@@ -32,7 +32,6 @@ import androidx.compose.material.icons.outlined.PlayArrow
 import androidx.compose.material.icons.rounded.Add
 import androidx.compose.material.icons.rounded.Delete
 import androidx.compose.material.icons.rounded.MoreVert
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Snackbar
 import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHost
@@ -114,9 +113,8 @@ import top.yukonga.miuix.kmp.utils.SmoothRoundedCornerShape
 import top.yukonga.miuix.kmp.utils.getWindowSize
 import top.yukonga.miuix.kmp.utils.overScrollVertical
 
-@OptIn(ExperimentalMaterial3Api::class)
-@Destination<RootGraph>
 @Composable
+@Destination<RootGraph>
 fun ModuleScreen(navigator: DestinationsNavigator) {
     val viewModel = viewModel<ModuleViewModel>()
     val context = LocalContext.current
@@ -223,9 +221,6 @@ fun ModuleScreen(navigator: DestinationsNavigator) {
                 var zipUris by remember { mutableStateOf<List<Uri>>(emptyList()) }
                 val confirmDialog = rememberConfirmDialog(onConfirm = {
                     navigator.navigate(FlashScreenDestination(FlashIt.FlashModules(zipUris))) {
-                        popUpTo(FlashScreenDestination) {
-                            inclusive = true
-                        }
                         launchSingleTop = true
                     }
                     viewModel.markNeedRefresh()
@@ -249,10 +244,7 @@ fun ModuleScreen(navigator: DestinationsNavigator) {
                     }
 
                     if (uris.size == 1) {
-                        navigator.navigate(FlashScreenDestination(FlashIt.FlashModules(listOf(uris.first())))){
-                            popUpTo(FlashScreenDestination) {
-                                inclusive = true
-                            }
+                        navigator.navigate(FlashScreenDestination(FlashIt.FlashModules(listOf(uris.first())))) {
                             launchSingleTop = true
                         }
                     } else if (uris.size > 1) {
@@ -339,9 +331,6 @@ fun ModuleScreen(navigator: DestinationsNavigator) {
                     boxModifier = Modifier.padding(innerPadding),
                     onInstallModule = {
                         navigator.navigate(FlashScreenDestination(FlashIt.FlashModules(listOf(it)))) {
-                            popUpTo(FlashScreenDestination) {
-                                inclusive = true
-                            }
                             launchSingleTop = true
                         }
                     },
@@ -363,7 +352,6 @@ fun ModuleScreen(navigator: DestinationsNavigator) {
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun ModuleList(
     navigator: DestinationsNavigator,
@@ -713,9 +701,6 @@ fun ModuleItem(
                     enabled = !module.remove && module.enabled,
                     onClick = {
                         navigator.navigate(ExecuteModuleActionScreenDestination(module.id)) {
-                            popUpTo(ExecuteModuleActionScreenDestination) {
-                                inclusive = true
-                            }
                             launchSingleTop = true
                         }
                         viewModel.markNeedRefresh()

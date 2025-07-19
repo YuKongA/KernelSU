@@ -53,7 +53,7 @@ import androidx.compose.ui.unit.sp
 import androidx.core.content.pm.PackageInfoCompat
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootGraph
-import com.ramcosta.composedestinations.generated.destinations.FlashScreenDestination
+import com.ramcosta.composedestinations.generated.destinations.HomeScreenDestination
 import com.ramcosta.composedestinations.generated.destinations.InstallScreenDestination
 import com.ramcosta.composedestinations.generated.destinations.ModuleScreenDestination
 import com.ramcosta.composedestinations.generated.destinations.SettingScreenDestination
@@ -95,8 +95,8 @@ import top.yukonga.miuix.kmp.utils.PressFeedbackType
 import top.yukonga.miuix.kmp.utils.getWindowSize
 import top.yukonga.miuix.kmp.utils.overScrollVertical
 
-@Destination<RootGraph>(start = true)
 @Composable
+@Destination<RootGraph>(start = true)
 fun HomeScreen(navigator: DestinationsNavigator) {
     val kernelVersion = getKernelVersion()
     val scrollBehavior = MiuixScrollBehavior()
@@ -163,15 +163,12 @@ fun HomeScreen(navigator: DestinationsNavigator) {
                         kernelVersion, ksuVersion, lkmMode,
                         onClickInstall = {
                             navigator.navigate(InstallScreenDestination) {
-                                popUpTo(InstallScreenDestination) {
-                                    inclusive = true
-                                }
                                 launchSingleTop = true
                             }
                         },
                         onClickSuperuser = {
                             navigator.navigate(SuperUserScreenDestination) {
-                                popUpTo(SuperUserScreenDestination) {
+                                popUpTo(HomeScreenDestination) {
                                     inclusive = true
                                 }
                                 launchSingleTop = true
@@ -179,7 +176,7 @@ fun HomeScreen(navigator: DestinationsNavigator) {
                         },
                         onclickModule = {
                             navigator.navigate(ModuleScreenDestination) {
-                                popUpTo(ModuleScreenDestination) {
+                                popUpTo(HomeScreenDestination) {
                                     inclusive = true
                                 }
                                 launchSingleTop = true

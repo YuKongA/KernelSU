@@ -19,7 +19,6 @@ import androidx.compose.material.icons.rounded.FolderDelete
 import androidx.compose.material.icons.rounded.RemoveModerator
 import androidx.compose.material.icons.rounded.RestartAlt
 import androidx.compose.material.icons.rounded.Update
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Snackbar
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.runtime.Composable
@@ -71,9 +70,8 @@ import top.yukonga.miuix.kmp.utils.overScrollVertical
  * @author weishu
  * @date 2023/1/1.
  */
-@OptIn(ExperimentalMaterial3Api::class)
-@Destination<RootGraph>
 @Composable
+@Destination<RootGraph>
 fun SettingScreen(navigator: DestinationsNavigator) {
     val scrollBehavior = MiuixScrollBehavior()
     val snackBarHost = LocalSnackbarHost.current
@@ -170,9 +168,6 @@ fun SettingScreen(navigator: DestinationsNavigator) {
                             },
                             onClick = {
                                 navigator.navigate(AppProfileTemplateScreenDestination) {
-                                    popUpTo(AppProfileTemplateScreenDestination) {
-                                        inclusive = true
-                                    }
                                     launchSingleTop = true
                                 }
                             }
