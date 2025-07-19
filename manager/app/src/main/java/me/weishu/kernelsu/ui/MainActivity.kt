@@ -8,6 +8,7 @@ import androidx.activity.enableEdgeToEdge
 import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExitTransition
+import androidx.compose.animation.core.CubicBezierEasing
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -36,6 +37,7 @@ import me.weishu.kernelsu.ui.util.LocalSnackbarHost
 import me.weishu.kernelsu.ui.util.rootAvailable
 import me.weishu.kernelsu.ui.util.install
 import top.yukonga.miuix.kmp.basic.Scaffold
+import top.yukonga.miuix.kmp.utils.getWindowSize
 
 class MainActivity : ComponentActivity() {
 
@@ -59,6 +61,8 @@ class MainActivity : ComponentActivity() {
                 val bottomBarRoutes = remember {
                     BottomBarDestination.entries.map { it.direction.route }.toSet()
                 }
+                val windowWidth = getWindowSize().width
+                val easing = CubicBezierEasing(0.12f, 0.38f, 0.2f, 1f)
                 Scaffold(
                     bottomBar = { BottomBar(navController) },
                     contentWindowInsets = WindowInsets(0, 0, 0, 0)
@@ -72,42 +76,52 @@ class MainActivity : ComponentActivity() {
                             navController = navController,
                             defaultTransitions = object : NavHostAnimatedDestinationStyle() {
                                 override val enterTransition: AnimatedContentTransitionScope<NavBackStackEntry>.() -> EnterTransition = {
-                                    // If the target is a detail page (not a bottom navigation page), slide in from the right
                                     if (targetState.destination.route !in bottomBarRoutes) {
-                                        slideInHorizontally(initialOffsetX = { it })
+                                        slideInHorizontally(
+                                            initialOffsetX = { windowWidth },
+                                            animationSpec = tween(durationMillis = 500, easing = easing)
+                                        )
                                     } else {
-                                        // Otherwise (switching between bottom navigation pages), use fade in
-                                        fadeIn(animationSpec = tween(340))
+                                        fadeIn(initialAlpha = 1f)
                                     }
                                 }
 
                                 override val exitTransition: AnimatedContentTransitionScope<NavBackStackEntry>.() -> ExitTransition = {
-                                    // If navigating from the home page (bottom navigation page) to a detail page, slide out to the left
                                     if (initialState.destination.route in bottomBarRoutes && targetState.destination.route !in bottomBarRoutes) {
-                                        slideOutHorizontally(targetOffsetX = { -it / 4 }) + fadeOut()
+                                        slideOutHorizontally(
+                                            targetOffsetX = { -windowWidth / 5 },
+                                            animationSpec = tween(durationMillis = 500, easing = easing)
+                                        ) + fadeOut(
+                                            animationSpec = tween(durationMillis = 500),
+                                            targetAlpha = 0.5f
+                                        )
                                     } else {
-                                        // Otherwise (switching between bottom navigation pages), use fade out
-                                        fadeOut(animationSpec = tween(340))
+                                        fadeOut(targetAlpha = 1f)
                                     }
                                 }
 
                                 override val popEnterTransition: AnimatedContentTransitionScope<NavBackStackEntry>.() -> EnterTransition = {
-                                    // If returning to the home page (bottom navigation page), slide in from the left
                                     if (targetState.destination.route in bottomBarRoutes) {
-                                        slideInHorizontally(initialOffsetX = { -it / 4 }) + fadeIn()
+                                        slideInHorizontally(
+                                            initialOffsetX = { -windowWidth / 5 },
+                                            animationSpec = tween(durationMillis = 500, easing = easing)
+                                        ) + fadeIn(
+                                            animationSpec = tween(durationMillis = 500),
+                                            initialAlpha = 0.5f
+                                        )
                                     } else {
-                                        // Otherwise (e.g., returning between multiple detail pages), use default fade in
-                                        fadeIn(animationSpec = tween(340))
+                                        fadeIn(initialAlpha = 1f)
                                     }
                                 }
 
                                 override val popExitTransition: AnimatedContentTransitionScope<NavBackStackEntry>.() -> ExitTransition = {
-                                    // If returning from a detail page (not a bottom navigation page), scale down and fade out
                                     if (initialState.destination.route !in bottomBarRoutes) {
-                                        scaleOut(targetScale = 0.9f) + fadeOut()
+                                        slideOutHorizontally(
+                                            targetOffsetX = { windowWidth },
+                                            animationSpec = tween(durationMillis = 500, easing = easing)
+                                        )
                                     } else {
-                                        // Otherwise, use default fade out
-                                        fadeOut(animationSpec = tween(340))
+                                        fadeOut(targetAlpha = 1f)
                                     }
                                 }
                             }
