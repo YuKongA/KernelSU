@@ -78,7 +78,6 @@ import top.yukonga.miuix.kmp.basic.SearchBar
 import top.yukonga.miuix.kmp.basic.Text
 import top.yukonga.miuix.kmp.basic.TopAppBar
 import top.yukonga.miuix.kmp.basic.rememberPullToRefreshState
-import top.yukonga.miuix.kmp.extra.DropdownImpl
 import top.yukonga.miuix.kmp.icon.MiuixIcons
 import top.yukonga.miuix.kmp.icon.icons.basic.ArrowRight
 import top.yukonga.miuix.kmp.icon.icons.basic.SearchCleanup
@@ -265,7 +264,12 @@ fun SuperUserScreen(navigator: DestinationsNavigator) {
                 }
                 items(viewModel.appList, key = { it.packageName + it.uid }) { app ->
                     AppItem(app) {
-                        navigator.navigate(AppProfileScreenDestination(app))
+                        navigator.navigate(AppProfileScreenDestination(app)) {
+                            popUpTo(AppProfileScreenDestination) {
+                                inclusive = true
+                            }
+                            launchSingleTop = true
+                        }
                     }
                 }
             }

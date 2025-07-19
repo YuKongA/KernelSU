@@ -81,9 +81,7 @@ fun SettingScreen(navigator: DestinationsNavigator) {
     Scaffold(
         topBar = {
             TopBar(
-                onBack = dropUnlessResumed {
-                    navigator.popBackStack()
-                },
+                onBack = dropUnlessResumed { navigator.popBackStack() },
                 scrollBehavior = scrollBehavior
             )
         },
@@ -171,7 +169,12 @@ fun SettingScreen(navigator: DestinationsNavigator) {
                                 )
                             },
                             onClick = {
-                                navigator.navigate(AppProfileTemplateScreenDestination)
+                                navigator.navigate(AppProfileTemplateScreenDestination) {
+                                    popUpTo(AppProfileTemplateScreenDestination) {
+                                        inclusive = true
+                                    }
+                                    launchSingleTop = true
+                                }
                             }
                         )
                     }

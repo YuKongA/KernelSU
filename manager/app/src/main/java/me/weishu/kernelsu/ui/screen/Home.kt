@@ -53,6 +53,7 @@ import androidx.compose.ui.unit.sp
 import androidx.core.content.pm.PackageInfoCompat
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootGraph
+import com.ramcosta.composedestinations.generated.destinations.FlashScreenDestination
 import com.ramcosta.composedestinations.generated.destinations.InstallScreenDestination
 import com.ramcosta.composedestinations.generated.destinations.ModuleScreenDestination
 import com.ramcosta.composedestinations.generated.destinations.SettingScreenDestination
@@ -105,10 +106,20 @@ fun HomeScreen(navigator: DestinationsNavigator) {
             TopBar(
                 kernelVersion,
                 onSettingsClick = {
-                    navigator.navigate(SettingScreenDestination)
+                    navigator.navigate(SettingScreenDestination) {
+                        popUpTo(SettingScreenDestination) {
+                            inclusive = true
+                        }
+                        launchSingleTop = true
+                    }
                 },
                 onInstallClick = {
-                    navigator.navigate(InstallScreenDestination)
+                    navigator.navigate(InstallScreenDestination) {
+                        popUpTo(InstallScreenDestination) {
+                            inclusive = true
+                        }
+                        launchSingleTop = true
+                    }
                 },
                 scrollBehavior = scrollBehavior,
             )
@@ -151,13 +162,28 @@ fun HomeScreen(navigator: DestinationsNavigator) {
                     StatusCard(
                         kernelVersion, ksuVersion, lkmMode,
                         onClickInstall = {
-                            navigator.navigate(InstallScreenDestination)
+                            navigator.navigate(InstallScreenDestination) {
+                                popUpTo(InstallScreenDestination) {
+                                    inclusive = true
+                                }
+                                launchSingleTop = true
+                            }
                         },
                         onClickSuperuser = {
-                            navigator.navigate(SuperUserScreenDestination)
+                            navigator.navigate(SuperUserScreenDestination) {
+                                popUpTo(SuperUserScreenDestination) {
+                                    inclusive = true
+                                }
+                                launchSingleTop = true
+                            }
                         },
                         onclickModule = {
-                            navigator.navigate(ModuleScreenDestination)
+                            navigator.navigate(ModuleScreenDestination) {
+                                popUpTo(ModuleScreenDestination) {
+                                    inclusive = true
+                                }
+                                launchSingleTop = true
+                            }
                         }
                     )
 

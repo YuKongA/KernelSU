@@ -11,8 +11,6 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
-import androidx.compose.foundation.layout.asPaddingValues
-import androidx.compose.foundation.layout.captionBar
 import androidx.compose.foundation.layout.displayCutout
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -60,8 +58,6 @@ fun NavigationBar(
 ) {
 
     val navigator = navController.rememberDestinationsNavigator()
-    val captionBarPaddings = WindowInsets.captionBar.only(WindowInsetsSides.Bottom).asPaddingValues()
-    val captionBarBottomPaddingValue = captionBarPaddings.calculateBottomPadding()
 
     val columnModifier = remember(modifier, color) {
         modifier
@@ -124,10 +120,9 @@ fun NavigationBar(
                                     }
                                     navigator.navigate(destination.direction) {
                                         popUpTo(NavGraphs.root) {
-                                            saveState = true
+                                            inclusive = true
                                         }
                                         launchSingleTop = true
-                                        restoreState = true
                                     }
                                 }
                             )

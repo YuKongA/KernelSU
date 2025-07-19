@@ -149,12 +149,12 @@ fun AppProfileTemplateScreen(
         floatingActionButton = {
             FloatingActionButton(
                 onClick = {
-                    navigator.navigate(
-                        TemplateEditorScreenDestination(
-                            TemplateViewModel.TemplateInfo(),
-                            false
-                        )
-                    )
+                    navigator.navigate(TemplateEditorScreenDestination(TemplateViewModel.TemplateInfo(), false)) {
+                        popUpTo(TemplateEditorScreenDestination) {
+                            inclusive = true
+                        }
+                        launchSingleTop = true
+                    }
                 },
                 shape = SmoothRoundedCornerShape(20.dp),
                 content = {
@@ -221,7 +221,12 @@ private fun TemplateItem(
     Card(
         modifier = Modifier.padding(bottom = 12.dp),
         onClick = {
-            navigator.navigate(TemplateEditorScreenDestination(template, !template.local))
+            navigator.navigate(TemplateEditorScreenDestination(template, !template.local)) {
+                popUpTo(TemplateEditorScreenDestination) {
+                    inclusive = true
+                }
+                launchSingleTop = true
+            }
         },
         showIndication = true,
         pressFeedbackType = PressFeedbackType.Sink

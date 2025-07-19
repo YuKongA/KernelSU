@@ -90,7 +90,12 @@ fun InstallScreen(navigator: DestinationsNavigator) {
                 lkm = lkmSelection,
                 ota = method is InstallMethod.DirectInstallToInactiveSlot
             )
-            navigator.navigate(FlashScreenDestination(flashIt))
+            navigator.navigate(FlashScreenDestination(flashIt)) {
+                popUpTo(FlashScreenDestination) {
+                    inclusive = true
+                }
+                launchSingleTop = true
+            }
         }
     }
 

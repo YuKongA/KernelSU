@@ -45,13 +45,19 @@ fun UninstallDialog(
     }
     val run = { type: UninstallType ->
         when (type) {
-            PERMANENT -> navigator.navigate(
-                FlashScreenDestination(FlashIt.FlashUninstall)
-            )
+            PERMANENT -> navigator.navigate(FlashScreenDestination(FlashIt.FlashUninstall)) {
+                popUpTo(FlashScreenDestination) {
+                    inclusive = true
+                }
+                launchSingleTop = true
+            }
 
-            RESTORE_STOCK_IMAGE -> navigator.navigate(
-                FlashScreenDestination(FlashIt.FlashRestore)
-            )
+            RESTORE_STOCK_IMAGE -> navigator.navigate(FlashScreenDestination(FlashIt.FlashRestore)) {
+                popUpTo(FlashScreenDestination) {
+                    inclusive = true
+                }
+                launchSingleTop = true
+            }
 
             TEMPORARY -> showTodo()
             NONE -> Unit

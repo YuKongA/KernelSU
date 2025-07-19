@@ -3,8 +3,6 @@ package me.weishu.kernelsu.ui.component
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.ArrowCircleRight
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
@@ -17,7 +15,6 @@ import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import me.weishu.kernelsu.R
 import me.weishu.kernelsu.ui.util.getSupportedKmis
-import top.yukonga.miuix.kmp.basic.Icon
 import top.yukonga.miuix.kmp.basic.Text
 import top.yukonga.miuix.kmp.basic.TextButton
 import top.yukonga.miuix.kmp.extra.SuperArrow
@@ -55,14 +52,6 @@ fun ChooseKmiDialog(
             options.forEachIndexed { index, type ->
                 SuperArrow(
                     title = type,
-                    leftAction = {
-                        Icon(
-                            Icons.Rounded.ArrowCircleRight,
-                            contentDescription = null,
-                            modifier = Modifier.padding(end = 16.dp),
-                            tint = colorScheme.onSurface
-                        )
-                    },
                     onClick = {
                         onSelected(type)
                         showDialog.value = false

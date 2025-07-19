@@ -149,11 +149,21 @@ fun AppProfileScreen(
                     profile = profile,
                     onViewTemplate = {
                         getTemplateInfoById(it)?.let { info ->
-                            navigator.navigate(TemplateEditorScreenDestination(info))
+                            navigator.navigate(TemplateEditorScreenDestination(info)) {
+                                popUpTo(TemplateEditorScreenDestination) {
+                                    inclusive = true
+                                }
+                                launchSingleTop = true
+                            }
                         }
                     },
                     onManageTemplate = {
-                        navigator.navigate(AppProfileTemplateScreenDestination())
+                        navigator.navigate(AppProfileTemplateScreenDestination()) {
+                            popUpTo(AppProfileTemplateScreenDestination) {
+                                inclusive = true
+                            }
+                            launchSingleTop = true
+                        }
                     },
                     onProfileChange = {
                         scope.launch {

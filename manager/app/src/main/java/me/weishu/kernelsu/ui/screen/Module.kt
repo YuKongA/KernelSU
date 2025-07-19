@@ -222,7 +222,12 @@ fun ModuleScreen(navigator: DestinationsNavigator) {
                 val confirmTitle = stringResource(R.string.module)
                 var zipUris by remember { mutableStateOf<List<Uri>>(emptyList()) }
                 val confirmDialog = rememberConfirmDialog(onConfirm = {
-                    navigator.navigate(FlashScreenDestination(FlashIt.FlashModules(zipUris)))
+                    navigator.navigate(FlashScreenDestination(FlashIt.FlashModules(zipUris))) {
+                        popUpTo(FlashScreenDestination) {
+                            inclusive = true
+                        }
+                        launchSingleTop = true
+                    }
                     viewModel.markNeedRefresh()
                 })
                 val selectZipLauncher = rememberLauncherForActivityResult(
@@ -244,7 +249,12 @@ fun ModuleScreen(navigator: DestinationsNavigator) {
                     }
 
                     if (uris.size == 1) {
-                        navigator.navigate(FlashScreenDestination(FlashIt.FlashModules(listOf(uris.first()))))
+                        navigator.navigate(FlashScreenDestination(FlashIt.FlashModules(listOf(uris.first())))){
+                            popUpTo(FlashScreenDestination) {
+                                inclusive = true
+                            }
+                            launchSingleTop = true
+                        }
                     } else if (uris.size > 1) {
                         // multiple files selected
                         val moduleNames =
@@ -328,7 +338,12 @@ fun ModuleScreen(navigator: DestinationsNavigator) {
                         .padding(horizontal = 12.dp),
                     boxModifier = Modifier.padding(innerPadding),
                     onInstallModule = {
-                        navigator.navigate(FlashScreenDestination(FlashIt.FlashModules(listOf(it))))
+                        navigator.navigate(FlashScreenDestination(FlashIt.FlashModules(listOf(it)))) {
+                            popUpTo(FlashScreenDestination) {
+                                inclusive = true
+                            }
+                            launchSingleTop = true
+                        }
                     },
                     onClickModule = { id, name, hasWebUi ->
                         if (hasWebUi) {
@@ -697,7 +712,12 @@ fun ModuleItem(
                     backgroundColor = colorScheme.outline,
                     enabled = !module.remove && module.enabled,
                     onClick = {
-                        navigator.navigate(ExecuteModuleActionScreenDestination(module.id))
+                        navigator.navigate(ExecuteModuleActionScreenDestination(module.id)) {
+                            popUpTo(ExecuteModuleActionScreenDestination) {
+                                inclusive = true
+                            }
+                            launchSingleTop = true
+                        }
                         viewModel.markNeedRefresh()
                     },
                 ) {
