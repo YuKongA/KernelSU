@@ -44,6 +44,7 @@ import androidx.core.content.edit
 import androidx.lifecycle.compose.dropUnlessResumed
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootGraph
+import com.ramcosta.composedestinations.generated.destinations.AboutScreenDestination
 import com.ramcosta.composedestinations.generated.destinations.AppProfileTemplateScreenDestination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import com.ramcosta.composedestinations.navigation.EmptyDestinationsNavigator
@@ -343,8 +344,9 @@ fun SettingScreen(navigator: DestinationsNavigator) {
                             )
                         },
                         onClick = {
-                            showAboutDialog.value = true
-                            aboutDialog
+                            navigator.navigate(AboutScreenDestination) {
+                                launchSingleTop = true
+                            }
                         }
                     )
                 }

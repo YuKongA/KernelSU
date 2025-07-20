@@ -8,33 +8,47 @@ import androidx.activity.enableEdgeToEdge
 import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExitTransition
+import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.animation.scaleOut
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.PagerState
+import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.navigation.NavBackStackEntry
-import androidx.navigation.NavHostController
+import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.ramcosta.composedestinations.DestinationsNavHost
 import com.ramcosta.composedestinations.animations.NavHostAnimatedDestinationStyle
+import com.ramcosta.composedestinations.annotation.Destination
+import com.ramcosta.composedestinations.annotation.RootGraph
 import com.ramcosta.composedestinations.generated.NavGraphs
+import com.ramcosta.composedestinations.navigation.DestinationsNavigator
+import kotlinx.coroutines.launch
 import me.weishu.kernelsu.Natives
 import me.weishu.kernelsu.ksuApp
-import me.weishu.kernelsu.ui.animation.SpringEasing
-import me.weishu.kernelsu.ui.component.NavigationBar
 import me.weishu.kernelsu.ui.screen.BottomBarDestination
+import me.weishu.kernelsu.ui.screen.HomePager
+import me.weishu.kernelsu.ui.screen.ModulePager
+import me.weishu.kernelsu.ui.screen.SuperUserPager
 import me.weishu.kernelsu.ui.theme.KernelSUTheme
 import me.weishu.kernelsu.ui.util.LocalSnackbarHost
-import me.weishu.kernelsu.ui.util.install
 import me.weishu.kernelsu.ui.util.rootAvailable
+import me.weishu.kernelsu.ui.util.install
+import top.yukonga.miuix.kmp.basic.NavigationBar
+import top.yukonga.miuix.kmp.basic.NavigationItem
 import top.yukonga.miuix.kmp.basic.Scaffold
 
 class MainActivity : ComponentActivity() {
@@ -56,66 +70,54 @@ class MainActivity : ComponentActivity() {
             KernelSUTheme {
                 val navController = rememberNavController()
                 val snackBarHostState = remember { SnackbarHostState() }
-                val bottomBarRoutes = remember {
-                    BottomBarDestination.entries.map { it.direction.route }.toSet()
-                }
-                val easing = SpringEasing()
-                val duration = easing.duration.toInt()
 
                 Scaffold(
-                    bottomBar = { BottomBar(navController) },
-                    contentWindowInsets = WindowInsets(0,0,0,0)
+                    //contentWindowInsets = WindowInsets(0, 0, 0, 0)
                 ) { innerPadding ->
                     CompositionLocalProvider(
                         LocalSnackbarHost provides snackBarHostState,
                     ) {
                         DestinationsNavHost(
-                            modifier = Modifier.padding(innerPadding),
+                            modifier = Modifier,
                             navGraph = NavGraphs.root,
                             navController = navController,
                             defaultTransitions = object : NavHostAnimatedDestinationStyle() {
                                 override val enterTransition: AnimatedContentTransitionScope<NavBackStackEntry>.() -> EnterTransition = {
-                                    if (targetState.destination.route !in bottomBarRoutes) {
-                                        slideInHorizontally(
-                                            initialOffsetX = { it },
-                                            animationSpec = tween(duration, 0, easing)
-                                        )
-                                    } else {
-                                        fadeIn(initialAlpha = 1f)
-                                    }
+                                    // If the target is a detail page (not a bottom navigation page), slide in from the right
+                                    slideInHorizontally(
+                                        initialOffsetX = { it },
+                                        animationSpec = tween(durationMillis = 500, easing = FastOutSlowInEasing)
+                                    )
+
                                 }
 
                                 override val exitTransition: AnimatedContentTransitionScope<NavBackStackEntry>.() -> ExitTransition = {
-                                    if (initialState.destination.route in bottomBarRoutes && targetState.destination.route !in bottomBarRoutes) {
-                                        slideOutHorizontally(
-                                            targetOffsetX = { -it / 4 },
-                                            animationSpec = tween(duration, 0, easing)
-                                        ) + fadeOut(targetAlpha = 0.4f)
-                                    } else {
-                                        fadeOut(targetAlpha = 1f)
-                                    }
+                                    // If navigating from the home page (bottom navigation page) to a detail page, slide out to the left
+                                    slideOutHorizontally(
+                                        targetOffsetX = { -it / 5 },
+                                        animationSpec = tween(durationMillis = 500, easing = FastOutSlowInEasing)
+                                    )
+
                                 }
 
                                 override val popEnterTransition: AnimatedContentTransitionScope<NavBackStackEntry>.() -> EnterTransition = {
-                                    if (targetState.destination.route in bottomBarRoutes) {
-                                        slideInHorizontally(
-                                            initialOffsetX = { -it / 4 },
-                                            animationSpec = tween(duration, 0, easing)
-                                        )
-                                    } else {
-                                        fadeIn(initialAlpha = 1f)
-                                    }
+                                    // If returning to the home page (bottom navigation page), slide in from the left
+
+                                    slideInHorizontally(
+                                        initialOffsetX = { -it / 5 },
+                                        animationSpec = tween(durationMillis = 500, easing = FastOutSlowInEasing)
+                                    )
+
                                 }
 
                                 override val popExitTransition: AnimatedContentTransitionScope<NavBackStackEntry>.() -> ExitTransition = {
-                                    if (initialState.destination.route !in bottomBarRoutes) {
-                                        slideOutHorizontally(
-                                            targetOffsetX = { it },
-                                            animationSpec = tween(duration, 0, easing)
-                                        ) + fadeOut(targetAlpha = 0.8f)
-                                    } else {
-                                        fadeOut(targetAlpha = 1f)
-                                    }
+                                    // If returning from a detail page (not a bottom navigation page), scale down and fade out
+
+                                    slideOutHorizontally(
+                                        targetOffsetX = { it },
+                                        animationSpec = tween(durationMillis = 500, easing = FastOutSlowInEasing)
+                                    )
+
                                 }
                             }
                         )
@@ -126,20 +128,68 @@ class MainActivity : ComponentActivity() {
     }
 }
 
+
 @Composable
-private fun BottomBar(navController: NavHostController) {
+@Destination<RootGraph>(start = true)
+fun MainScreen(navController: DestinationsNavigator) {
+    val pagerState = rememberPagerState(initialPage = 0 ,pageCount = { 3 })
+
+    Scaffold(
+        bottomBar = { BottomBar(pagerState,navController) },
+    ){
+        HorizontalPager(
+            pagerState,
+            userScrollEnabled = false
+        ) {
+            when(it){
+                0 -> {
+                    HomePager(pagerState,navController)
+                }
+                1 -> {
+                    SuperUserPager(navController)
+                }
+                2 -> {
+                    ModulePager(navController)
+                }
+            }
+
+        }
+    }
+
+
+}
+
+
+
+@Composable
+private fun BottomBar(pagerState: PagerState, navController: DestinationsNavigator) {
     val isManager = Natives.becomeManager(ksuApp.packageName)
     val fullFeatured = isManager && !Natives.requireNewKernel() && rootAvailable()
 
-    val item = BottomBarDestination.entries.filter { destination ->
-        fullFeatured || !destination.rootRequired
+    if (!fullFeatured) return
 
+    val currentPager = pagerState.currentPage
+    val coroutineScope = rememberCoroutineScope()
+
+    val item = BottomBarDestination.entries.mapIndexed { index, destination ->
+
+        val isSelected = currentPager == index
+
+        NavigationItem(
+            label = stringResource(destination.label),
+            icon = if (isSelected) destination.iconSelected else destination.iconNotSelected,
+        )
     }
-    if (item.size == 1) return
 
     NavigationBar(
         item,
-        navController = navController
+        currentPager,
+        { index ->
+            coroutineScope.launch {
+                pagerState.scrollToPage(index)
+            }
+
+        }
     )
 
 }

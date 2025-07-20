@@ -1,0 +1,181 @@
+package me.weishu.kernelsu.ui.screen
+
+import android.os.Environment
+import android.util.Log
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.WindowInsetsSides
+import androidx.compose.foundation.layout.add
+import androidx.compose.foundation.layout.displayCutout
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.only
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.systemBars
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.rounded.ArrowBack
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.layout.FixedScale
+import androidx.compose.ui.platform.LocalUriHandler
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import androidx.core.util.component1
+import androidx.lifecycle.compose.dropUnlessResumed
+import com.ramcosta.composedestinations.annotation.Destination
+import com.ramcosta.composedestinations.annotation.RootGraph
+import com.ramcosta.composedestinations.navigation.DestinationsNavigator
+import me.weishu.kernelsu.BuildConfig
+import me.weishu.kernelsu.R
+import top.yukonga.miuix.kmp.basic.Card
+import top.yukonga.miuix.kmp.basic.Icon
+import top.yukonga.miuix.kmp.basic.IconButton
+import top.yukonga.miuix.kmp.basic.MiuixScrollBehavior
+import top.yukonga.miuix.kmp.basic.Scaffold
+import top.yukonga.miuix.kmp.basic.Text
+import top.yukonga.miuix.kmp.basic.TopAppBar
+import top.yukonga.miuix.kmp.extra.SuperArrow
+import top.yukonga.miuix.kmp.theme.MiuixTheme.colorScheme
+import top.yukonga.miuix.kmp.utils.SmoothRoundedCornerShape
+import top.yukonga.miuix.kmp.utils.getWindowSize
+import top.yukonga.miuix.kmp.utils.overScrollVertical
+import kotlin.math.log
+
+@Composable
+@Destination<RootGraph>
+fun AboutScreen(navigator: DestinationsNavigator){
+    val uriHandler = LocalUriHandler.current
+    val scrollBehavior = MiuixScrollBehavior()
+
+    val htmlString = stringResource(
+        id = R.string.about_source_code,
+        "<b><a href=\"https://github.com/tiann/KernelSU\">GitHub</a></b>",
+        "<b><a href=\"https://t.me/KernelSU\">Telegram</a></b>"
+    ).replace("<br/>", "\n")
+    val result = extractLinks(htmlString)
+
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                stringResource( R.string.about) + stringResource(id = R.string.app_name),
+                navigationIcon = {
+                    IconButton(
+                        modifier = Modifier.padding(start = 16.dp),
+                        onClick = dropUnlessResumed { navigator.popBackStack() }
+                    ) {
+                        Icon(
+                            Icons.AutoMirrored.Rounded.ArrowBack,
+                            contentDescription = null,
+                            tint = colorScheme.onBackground
+                        )
+                    }
+                },
+                scrollBehavior = scrollBehavior
+            )
+        },
+        popupHost = { },
+        contentWindowInsets = WindowInsets.systemBars.add(WindowInsets.displayCutout).only(WindowInsetsSides.Horizontal)
+    ) { innerPadding ->
+        LazyColumn(
+            modifier = Modifier
+                .height(getWindowSize().height.dp)
+                .overScrollVertical()
+                .nestedScroll(scrollBehavior.nestedScrollConnection)
+                .padding(horizontal = 12.dp),
+            contentPadding = innerPadding,
+            overscrollEffect = null,
+        ) {
+            item {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 12.dp)
+                        .padding(bottom = 18.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Box(
+                        contentAlignment = Alignment.Center,
+                        modifier = Modifier
+                            .size(130.dp)
+                            .clip(SmoothRoundedCornerShape(30.dp))
+                    ) {
+                        Image(
+                            painter = painterResource(id = R.drawable.ic_launcher_foreground),
+                            contentDescription = "icon",
+                            contentScale = FixedScale(2f)
+                        )
+                    }
+                    Text(
+                        stringResource(id = R.string.app_name),
+                        fontWeight = FontWeight.Medium,
+                        fontSize = 26.sp
+                    )
+                    Text(
+                        BuildConfig.VERSION_NAME,
+                        fontSize = 14.sp
+                    )
+                }
+            }
+            item {
+
+                Card {
+                    Log.d("ggc", "AboutScreen: $result")
+                    result.forEach {
+                        SuperArrow(
+                            title = it.fullText,
+                            onClick = {
+                                uriHandler.openUri(it.url)
+                            }
+                        )
+                    }
+                }
+            }
+        }
+    }
+}
+data class LinkInfo(
+    val fullText: String,
+    val url: String
+)
+
+fun extractLinks(html: String): List<LinkInfo> {
+    val regex = Regex(
+        """([^<>\n\r]+?)\s*<b>\s*<a\b[^>]*\bhref\s*=\s*(['"]?)([^'"\s>]+)\2[^>]*>([^<]+)</a>\s*</b>\s*(.*?)\s*(?=<br|\n|$)""",
+        RegexOption.MULTILINE
+    )
+
+    Log.d("ggc", "extractLinks: $html")
+
+    return regex.findAll(html).mapNotNull { match ->
+        try {
+            val before = match.groupValues[1].trim()
+            val url = match.groupValues[3].trim()
+            val title = match.groupValues[4].trim()
+            val after = match.groupValues[5].trim()
+
+            val fullText = "$before $title $after"
+            Log.d("ggc", "extractLinks: $fullText -> $url")
+            LinkInfo(fullText, url)
+        } catch (e: Exception) {
+            Log.e("ggc", "匹配失败: ${e.message}")
+            null
+        }
+    }.toList()
+}

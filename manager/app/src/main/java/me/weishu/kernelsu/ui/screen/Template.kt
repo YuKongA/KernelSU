@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.add
 import androidx.compose.foundation.layout.displayCutout
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -157,7 +158,8 @@ fun AppProfileTemplateScreen(
                         launchSingleTop = true
                     }
                 },
-                shape = SmoothRoundedCornerShape(20.dp),
+                modifier = Modifier.navigationBarsPadding().padding(bottom = 50.dp, end = 20.dp),
+                shape = SmoothRoundedCornerShape(20.dp,1f),
                 content = {
                     Row(
                         verticalAlignment = Alignment.CenterVertically,

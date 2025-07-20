@@ -24,6 +24,7 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -120,8 +121,7 @@ import top.yukonga.miuix.kmp.utils.getWindowSize
 import top.yukonga.miuix.kmp.utils.overScrollVertical
 
 @Composable
-@Destination<RootGraph>
-fun ModuleScreen(navigator: DestinationsNavigator) {
+fun ModulePager(navigator: DestinationsNavigator) {
     val viewModel = viewModel<ModuleViewModel>()
     val context = LocalContext.current
     val snackBarHost = LocalSnackbarHost.current
@@ -266,6 +266,7 @@ fun ModuleScreen(navigator: DestinationsNavigator) {
                     }
                 }
                 FloatingActionButton(
+                    modifier = Modifier.navigationBarsPadding().padding(bottom = 80.dp),
                     onClick = {
                         // Select the zip files to install
                         val intent = Intent(Intent.ACTION_GET_CONTENT).apply {
@@ -274,7 +275,7 @@ fun ModuleScreen(navigator: DestinationsNavigator) {
                         }
                         selectZipLauncher.launch(intent)
                     },
-                    shape = SmoothRoundedCornerShape(20.dp),
+                    shape = SmoothRoundedCornerShape(20.dp,1f),
                     minWidth = 100.dp,
                     content = {
                         Row(
