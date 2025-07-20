@@ -9,8 +9,8 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.FlowColumn
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.add
@@ -44,7 +44,6 @@ import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.input.nestedscroll.nestedScroll
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
@@ -52,6 +51,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -66,9 +66,7 @@ import me.weishu.kernelsu.R
 import me.weishu.kernelsu.ui.component.DropdownItem
 import me.weishu.kernelsu.ui.viewmodel.SuperUserViewModel
 import top.yukonga.miuix.kmp.basic.BasicComponent
-import top.yukonga.miuix.kmp.basic.BasicComponentDefaults
 import top.yukonga.miuix.kmp.basic.Card
-import top.yukonga.miuix.kmp.basic.CardDefaults
 import top.yukonga.miuix.kmp.basic.Icon
 import top.yukonga.miuix.kmp.basic.IconButton
 import top.yukonga.miuix.kmp.basic.InputField
@@ -92,7 +90,10 @@ import top.yukonga.miuix.kmp.utils.getWindowSize
 import top.yukonga.miuix.kmp.utils.overScrollVertical
 
 @Composable
-fun SuperUserPager(navigator: DestinationsNavigator) {
+fun SuperUserPager(
+    navigator: DestinationsNavigator,
+    bottomInnerPadding: Dp
+) {
     val viewModel = viewModel<SuperUserViewModel>()
     val scope = rememberCoroutineScope()
     val scrollBehavior = MiuixScrollBehavior()
@@ -272,6 +273,9 @@ fun SuperUserPager(navigator: DestinationsNavigator) {
                             launchSingleTop = true
                         }
                     }
+                }
+                item {
+                    Spacer(Modifier.height(bottomInnerPadding))
                 }
             }
         }

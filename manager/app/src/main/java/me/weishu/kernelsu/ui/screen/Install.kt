@@ -196,8 +196,8 @@ fun InstallScreen(navigator: DestinationsNavigator) {
                 }
                 Spacer(
                     Modifier.height(
-                        WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
-                                + WindowInsets.captionBar.asPaddingValues().calculateBottomPadding()
+                        WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding() +
+                                WindowInsets.captionBar.asPaddingValues().calculateBottomPadding()
                     )
                 )
             }

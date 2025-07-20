@@ -1,20 +1,19 @@
 package me.weishu.kernelsu.ui.screen
 
-import android.os.Environment
 import android.util.Log
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.add
+import androidx.compose.foundation.layout.asPaddingValues
+import androidx.compose.foundation.layout.captionBar
 import androidx.compose.foundation.layout.displayCutout
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -26,10 +25,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.nestedscroll.nestedScroll
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.FixedScale
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.painterResource
@@ -37,7 +33,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.core.util.component1
 import androidx.lifecycle.compose.dropUnlessResumed
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootGraph
@@ -56,11 +51,10 @@ import top.yukonga.miuix.kmp.theme.MiuixTheme.colorScheme
 import top.yukonga.miuix.kmp.utils.SmoothRoundedCornerShape
 import top.yukonga.miuix.kmp.utils.getWindowSize
 import top.yukonga.miuix.kmp.utils.overScrollVertical
-import kotlin.math.log
 
 @Composable
 @Destination<RootGraph>
-fun AboutScreen(navigator: DestinationsNavigator){
+fun AboutScreen(navigator: DestinationsNavigator) {
     val uriHandler = LocalUriHandler.current
     val scrollBehavior = MiuixScrollBehavior()
 
@@ -74,7 +68,7 @@ fun AboutScreen(navigator: DestinationsNavigator){
     Scaffold(
         topBar = {
             TopAppBar(
-                stringResource( R.string.about) + stringResource(id = R.string.app_name),
+                stringResource(R.string.about) + stringResource(id = R.string.app_name),
                 navigationIcon = {
                     IconButton(
                         modifier = Modifier.padding(start = 16.dp),
@@ -134,9 +128,9 @@ fun AboutScreen(navigator: DestinationsNavigator){
                 }
             }
             item {
-
-                Card {
-                    Log.d("ggc", "AboutScreen: $result")
+                Card(
+                    modifier = Modifier.padding(bottom = 12.dp)
+                ) {
                     result.forEach {
                         SuperArrow(
                             title = it.fullText,
@@ -146,10 +140,17 @@ fun AboutScreen(navigator: DestinationsNavigator){
                         )
                     }
                 }
+                Spacer(
+                    Modifier.height(
+                        WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding() +
+                                WindowInsets.captionBar.asPaddingValues().calculateBottomPadding()
+                    )
+                )
             }
         }
     }
 }
+
 data class LinkInfo(
     val fullText: String,
     val url: String

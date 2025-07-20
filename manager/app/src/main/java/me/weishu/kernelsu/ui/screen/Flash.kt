@@ -6,14 +6,18 @@ import android.os.Parcelable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.add
+import androidx.compose.foundation.layout.asPaddingValues
+import androidx.compose.foundation.layout.captionBar
 import androidx.compose.foundation.layout.displayCutout
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -21,19 +25,11 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ArrowBack
 import androidx.compose.material.icons.rounded.Refresh
 import androidx.compose.material.icons.rounded.Save
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Snackbar
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
-import androidx.compose.material3.TopAppBarScrollBehavior
-import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -46,7 +42,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.input.key.key
-import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
@@ -111,8 +106,10 @@ fun flashModulesSequentially(
 
 @Composable
 @Destination<RootGraph>
-fun FlashScreen(navigator: DestinationsNavigator, flashIt: FlashIt) {
-
+fun FlashScreen(
+    navigator: DestinationsNavigator,
+    flashIt: FlashIt
+) {
     var text by rememberSaveable { mutableStateOf("") }
     var tempText: String
     val logContent = rememberSaveable { StringBuilder() }
@@ -176,6 +173,10 @@ fun FlashScreen(navigator: DestinationsNavigator, flashIt: FlashIt) {
             if (showFloatAction) {
                 val reboot = stringResource(id = R.string.reboot)
                 FloatingActionButton(
+                    modifier = Modifier.padding(
+                        bottom = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding() +
+                                WindowInsets.captionBar.asPaddingValues().calculateBottomPadding()
+                    ),
                     onClick = {
                         scope.launch {
                             withContext(Dispatchers.IO) {
@@ -183,7 +184,7 @@ fun FlashScreen(navigator: DestinationsNavigator, flashIt: FlashIt) {
                             }
                         }
                     },
-                    shape = SmoothRoundedCornerShape(20.dp),
+                    shape = SmoothRoundedCornerShape(16.dp),
                     minWidth = 100.dp,
                     content = {
                         Row(
@@ -237,6 +238,12 @@ fun FlashScreen(navigator: DestinationsNavigator, flashIt: FlashIt) {
                 text = text,
                 fontSize = 12.sp,
                 fontFamily = FontFamily.Monospace,
+            )
+            Spacer(
+                Modifier.height(
+                    WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding() +
+                            WindowInsets.captionBar.asPaddingValues().calculateBottomPadding()
+                )
             )
         }
     }

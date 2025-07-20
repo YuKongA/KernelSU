@@ -28,6 +28,7 @@ import top.yukonga.miuix.kmp.basic.TextButton
 import top.yukonga.miuix.kmp.extra.SuperArrow
 import top.yukonga.miuix.kmp.extra.SuperDialog
 import top.yukonga.miuix.kmp.theme.MiuixTheme
+
 @Composable
 fun UninstallDialog(
     showDialog: MutableState<Boolean>,

@@ -20,13 +20,10 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.add
-import androidx.compose.foundation.layout.asPaddingValues
-import androidx.compose.foundation.layout.captionBar
 import androidx.compose.foundation.layout.displayCutout
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
@@ -36,14 +33,12 @@ import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.pager.PagerState
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.Block
 import androidx.compose.material.icons.rounded.Archive
 import androidx.compose.material.icons.rounded.CheckCircleOutline
 import androidx.compose.material.icons.rounded.ErrorOutline
 import androidx.compose.material.icons.rounded.Link
 import androidx.compose.material.icons.rounded.Refresh
 import androidx.compose.material.icons.rounded.Settings
-import androidx.compose.material.icons.rounded.Warning
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
@@ -64,8 +59,6 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.content.pm.PackageInfoCompat
-import com.ramcosta.composedestinations.annotation.Destination
-import com.ramcosta.composedestinations.annotation.RootGraph
 import com.ramcosta.composedestinations.generated.destinations.InstallScreenDestination
 import com.ramcosta.composedestinations.generated.destinations.SettingScreenDestination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
@@ -100,7 +93,6 @@ import top.yukonga.miuix.kmp.basic.Scaffold
 import top.yukonga.miuix.kmp.basic.ScrollBehavior
 import top.yukonga.miuix.kmp.basic.Text
 import top.yukonga.miuix.kmp.basic.TopAppBar
-import top.yukonga.miuix.kmp.extra.DropdownImpl
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 import top.yukonga.miuix.kmp.theme.MiuixTheme.colorScheme
 import top.yukonga.miuix.kmp.utils.PressFeedbackType
@@ -108,7 +100,11 @@ import top.yukonga.miuix.kmp.utils.getWindowSize
 import top.yukonga.miuix.kmp.utils.overScrollVertical
 
 @Composable
-fun HomePager(pagerState: PagerState, navigator: DestinationsNavigator) {
+fun HomePager(
+    pagerState: PagerState,
+    navigator: DestinationsNavigator,
+    bottomInnerPadding: Dp,
+) {
     val kernelVersion = getKernelVersion()
     val scrollBehavior = MiuixScrollBehavior()
     val coroutineScope = rememberCoroutineScope()
@@ -181,12 +177,12 @@ fun HomePager(pagerState: PagerState, navigator: DestinationsNavigator) {
                         },
                         onClickSuperuser = {
                             coroutineScope.launch {
-                                pagerState.scrollToPage(1)
+                                pagerState.animateScrollToPage(1)
                             }
                         },
                         onclickModule = {
                             coroutineScope.launch {
-                                pagerState.scrollToPage(2)
+                                pagerState.animateScrollToPage(2)
                             }
                         }
                     )
@@ -202,6 +198,7 @@ fun HomePager(pagerState: PagerState, navigator: DestinationsNavigator) {
                     DonateCard()
                     LearnMoreCard()
                 }
+                Spacer(Modifier.height(bottomInnerPadding))
             }
         }
     }

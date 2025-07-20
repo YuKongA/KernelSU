@@ -24,7 +24,6 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -33,12 +32,12 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.selection.toggleable
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.outlined.Wysiwyg
 import androidx.compose.material.icons.outlined.Download
-import androidx.compose.material.icons.outlined.PlayArrow
 import androidx.compose.material.icons.rounded.Add
+import androidx.compose.material.icons.rounded.Code
 import androidx.compose.material.icons.rounded.Delete
 import androidx.compose.material.icons.rounded.MoreVert
+import androidx.compose.material.icons.rounded.PlayArrow
 import androidx.compose.material3.Snackbar
 import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHost
@@ -67,13 +66,12 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.content.edit
 import androidx.core.net.toUri
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.ramcosta.composedestinations.annotation.Destination
-import com.ramcosta.composedestinations.annotation.RootGraph
 import com.ramcosta.composedestinations.generated.destinations.ExecuteModuleActionScreenDestination
 import com.ramcosta.composedestinations.generated.destinations.FlashScreenDestination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
@@ -121,7 +119,10 @@ import top.yukonga.miuix.kmp.utils.getWindowSize
 import top.yukonga.miuix.kmp.utils.overScrollVertical
 
 @Composable
-fun ModulePager(navigator: DestinationsNavigator) {
+fun ModulePager(
+    navigator: DestinationsNavigator,
+    bottomInnerPadding: Dp
+) {
     val viewModel = viewModel<ModuleViewModel>()
     val context = LocalContext.current
     val snackBarHost = LocalSnackbarHost.current
@@ -266,7 +267,8 @@ fun ModulePager(navigator: DestinationsNavigator) {
                     }
                 }
                 FloatingActionButton(
-                    modifier = Modifier.navigationBarsPadding().padding(bottom = 80.dp),
+                    modifier = Modifier
+                        .padding(bottom = bottomInnerPadding),
                     onClick = {
                         // Select the zip files to install
                         val intent = Intent(Intent.ACTION_GET_CONTENT).apply {
@@ -275,7 +277,7 @@ fun ModulePager(navigator: DestinationsNavigator) {
                         }
                         selectZipLauncher.launch(intent)
                     },
-                    shape = SmoothRoundedCornerShape(20.dp,1f),
+                    shape = SmoothRoundedCornerShape(16.dp),
                     minWidth = 100.dp,
                     content = {
                         Row(
@@ -335,7 +337,8 @@ fun ModulePager(navigator: DestinationsNavigator) {
                         .height(getWindowSize().height.dp)
                         .overScrollVertical()
                         .nestedScroll(scrollBehavior.nestedScrollConnection)
-                        .padding(horizontal = 12.dp),
+                        .padding(horizontal = 12.dp)
+                        .padding(bottom = bottomInnerPadding),
                     boxModifier = Modifier.padding(innerPadding),
                     onInstallModule = {
                         navigator.navigate(FlashScreenDestination(FlashIt.FlashModules(listOf(it)))) {
@@ -696,7 +699,9 @@ fun ModuleItem(
         )
 
         HorizontalDivider(
-            modifier = Modifier.padding(vertical = 8.dp)
+            modifier = Modifier.padding(vertical = 8.dp),
+            thickness = 0.5.dp,
+            color = colorScheme.outline.copy(alpha = 0.5f)
         )
 
         Row(
@@ -705,7 +710,7 @@ fun ModuleItem(
         ) {
             if (module.hasActionScript) {
                 IconButton(
-                    backgroundColor = colorScheme.outline,
+                    backgroundColor = colorScheme.secondaryContainer.copy(alpha = 0.8f),
                     enabled = !module.remove && module.enabled,
                     onClick = {
                         navigator.navigate(ExecuteModuleActionScreenDestination(module.id)) {
@@ -716,7 +721,7 @@ fun ModuleItem(
                 ) {
                     Icon(
                         modifier = Modifier.size(20.dp),
-                        imageVector = Icons.Outlined.PlayArrow,
+                        imageVector = Icons.Rounded.PlayArrow,
                         tint = colorScheme.onSurface.copy(alpha = if (isSystemInDarkTheme()) 0.7f else 0.9f),
                         contentDescription = stringResource(R.string.action)
                     )
@@ -725,13 +730,13 @@ fun ModuleItem(
 
             if (module.hasWebUi) {
                 IconButton(
-                    backgroundColor = colorScheme.outline,
+                    backgroundColor = colorScheme.secondaryContainer.copy(alpha = 0.8f),
                     enabled = !module.remove && module.enabled,
                     onClick = { onClick(module) },
                 ) {
                     Icon(
                         modifier = Modifier.size(20.dp),
-                        imageVector = Icons.AutoMirrored.Outlined.Wysiwyg,
+                        imageVector = Icons.Rounded.Code,
                         tint = colorScheme.onSurface.copy(alpha = if (isSystemInDarkTheme()) 0.7f else 0.9f),
                         contentDescription = stringResource(R.string.open)
                     )
@@ -742,6 +747,7 @@ fun ModuleItem(
 
             if (updateUrl.isNotEmpty()) {
                 IconButton(
+                    backgroundColor = colorScheme.secondaryContainer.copy(alpha = 0.8f),
                     enabled = !module.remove,
                     onClick = { onUpdate(module) },
                 ) {

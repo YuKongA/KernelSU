@@ -399,7 +399,7 @@ private fun StatusTag(label: String) {
     Box(
         modifier = Modifier
             .background(
-                color = colorScheme.secondaryContainer.copy(alpha = 0.5f),
+                color = colorScheme.secondaryContainer.copy(alpha = 0.8f),
                 shape = RoundedCornerShape(8.dp)
             )
             .padding(horizontal = 8.dp, vertical = 4.dp)

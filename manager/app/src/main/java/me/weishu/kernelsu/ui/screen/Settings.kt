@@ -1,12 +1,16 @@
 package me.weishu.kernelsu.ui.screen
 
 import android.content.Context
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.add
+import androidx.compose.foundation.layout.asPaddingValues
+import androidx.compose.foundation.layout.captionBar
 import androidx.compose.foundation.layout.displayCutout
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.systemBars
@@ -51,7 +55,6 @@ import com.ramcosta.composedestinations.navigation.EmptyDestinationsNavigator
 import kotlinx.coroutines.launch
 import me.weishu.kernelsu.Natives
 import me.weishu.kernelsu.R
-import me.weishu.kernelsu.ui.component.AboutDialog
 import me.weishu.kernelsu.ui.component.ConfirmResult
 import me.weishu.kernelsu.ui.component.KsuIsValid
 import me.weishu.kernelsu.ui.component.SendLogDialog
@@ -106,8 +109,6 @@ fun SettingScreen(navigator: DestinationsNavigator) {
         val loadingDialog = rememberLoadingDialog()
         val shrinkDialog = rememberConfirmDialog()
 
-        val showAboutDialog = rememberSaveable { mutableStateOf(false) }
-        val aboutDialog = AboutDialog(showAboutDialog)
         val showUninstallDialog = rememberSaveable { mutableStateOf(false) }
         val uninstallDialog = UninstallDialog(showUninstallDialog, navigator)
         val showSendLogDialog = rememberSaveable { mutableStateOf(false) }
@@ -350,6 +351,12 @@ fun SettingScreen(navigator: DestinationsNavigator) {
                         }
                     )
                 }
+                Spacer(
+                    Modifier.height(
+                        WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding() +
+                                WindowInsets.captionBar.asPaddingValues().calculateBottomPadding()
+                    )
+                )
             }
         }
     }
