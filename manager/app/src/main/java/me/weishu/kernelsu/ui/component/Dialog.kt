@@ -8,39 +8,67 @@ import android.text.method.LinkMovementMethod
 import android.util.Log
 import android.view.ViewGroup
 import android.widget.TextView
+import androidx.compose.animation.core.EaseInOutCubic
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.tween
+import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.saveable.Saver
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
-import androidx.compose.ui.window.Dialog
-import androidx.compose.ui.window.DialogProperties
 import io.noties.markwon.Markwon
 import io.noties.markwon.utils.NoCopySpannableFactory
-import kotlinx.coroutines.*
+import kotlinx.coroutines.CancellableContinuation
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.async
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.ReceiveChannel
 import kotlinx.coroutines.flow.FlowCollector
 import kotlinx.coroutines.flow.consumeAsFlow
 import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.parcelize.Parcelize
+import top.yukonga.miuix.kmp.basic.ButtonDefaults
+import top.yukonga.miuix.kmp.basic.Text
+import top.yukonga.miuix.kmp.basic.TextButton
+import top.yukonga.miuix.kmp.extra.SuperDialog
+import top.yukonga.miuix.kmp.theme.LocalColors
+import top.yukonga.miuix.kmp.theme.MiuixTheme
+import top.yukonga.miuix.kmp.theme.MiuixTheme.colorScheme
 import kotlin.coroutines.resume
 
 private const val TAG = "DialogComponent"
 
 interface ConfirmDialogVisuals : Parcelable {
     val title: String
-    val content: String
+    val content: String?
     val isMarkdown: Boolean
     val confirm: String?
     val dismiss: String?
@@ -49,7 +77,7 @@ interface ConfirmDialogVisuals : Parcelable {
 @Parcelize
 private data class ConfirmDialogVisualsImpl(
     override val title: String,
-    override val content: String,
+    override val content: String?,
     override val isMarkdown: Boolean,
     override val confirm: String?,
     override val dismiss: String?,
@@ -81,7 +109,7 @@ interface ConfirmDialogHandle : DialogHandle {
 
     fun showConfirm(
         title: String,
-        content: String,
+        content: String? = null,
         markdown: Boolean = false,
         confirm: String? = null,
         dismiss: String? = null
@@ -89,7 +117,7 @@ interface ConfirmDialogHandle : DialogHandle {
 
     suspend fun awaitConfirm(
         title: String,
-        content: String,
+        content: String? = null,
         markdown: Boolean = false,
         confirm: String? = null,
         dismiss: String? = null
@@ -153,7 +181,10 @@ interface ConfirmCallback {
     val isEmpty: Boolean get() = onConfirm == null && onDismiss == null
 
     companion object {
-        operator fun invoke(onConfirmProvider: () -> NullableCallback, onDismissProvider: () -> NullableCallback): ConfirmCallback {
+        operator fun invoke(
+            onConfirmProvider: () -> NullableCallback,
+            onDismissProvider: () -> NullableCallback
+        ): ConfirmCallback {
             return object : ConfirmCallback {
                 override val onConfirm: NullableCallback
                     get() = onConfirmProvider()
@@ -244,7 +275,7 @@ private class ConfirmDialogHandleImpl(
 
     override fun showConfirm(
         title: String,
-        content: String,
+        content: String?,
         markdown: Boolean,
         confirm: String?,
         dismiss: String?
@@ -257,7 +288,7 @@ private class ConfirmDialogHandleImpl(
 
     override suspend fun awaitConfirm(
         title: String,
-        content: String,
+        content: String?,
         markdown: Boolean,
         confirm: String?,
         dismiss: String?
@@ -293,23 +324,12 @@ private class ConfirmDialogHandleImpl(
     }
 }
 
-private class CustomDialogHandleImpl(
-    visible: MutableState<Boolean>,
-    coroutineScope: CoroutineScope
-) : DialogHandleBase(visible, coroutineScope) {
-    override val dialogType: String get() = "CustomDialog"
-}
-
 @Composable
 fun rememberLoadingDialog(): LoadingDialogHandle {
-    val visible = remember {
-        mutableStateOf(false)
-    }
+    val visible = remember { mutableStateOf(false) }
     val coroutineScope = rememberCoroutineScope()
 
-    if (visible.value) {
-        LoadingDialog()
-    }
+    LoadingDialog(visible)
 
     return remember {
         LoadingDialogHandleImpl(visible, coroutineScope)
@@ -337,7 +357,8 @@ private fun rememberConfirmDialog(visuals: ConfirmDialogVisuals, callback: Confi
         ConfirmDialog(
             handle.visuals,
             confirm = { coroutineScope.launch { resultChannel.send(ConfirmResult.Confirmed) } },
-            dismiss = { coroutineScope.launch { resultChannel.send(ConfirmResult.Canceled) } }
+            dismiss = { coroutineScope.launch { resultChannel.send(ConfirmResult.Canceled) } },
+            showDialog = visible
         )
     }
 
@@ -364,69 +385,129 @@ fun rememberConfirmDialog(callback: ConfirmCallback): ConfirmDialogHandle {
 }
 
 @Composable
-fun rememberCustomDialog(composable: @Composable (dismiss: () -> Unit) -> Unit): DialogHandle {
-    val visible = rememberSaveable {
-        mutableStateOf(false)
-    }
-    val coroutineScope = rememberCoroutineScope()
-    if (visible.value) {
-        composable { visible.value = false }
-    }
-    return remember {
-        CustomDialogHandleImpl(visible, coroutineScope)
-    }
-}
-
-@Composable
-private fun LoadingDialog() {
-    Dialog(
+private fun LoadingDialog(showDialog: MutableState<Boolean>) {
+    SuperDialog(
+        show = showDialog,
         onDismissRequest = {},
-        properties = DialogProperties(dismissOnClickOutside = false, dismissOnBackPress = false)
-    ) {
-        Surface(
-            modifier = Modifier.size(100.dp), shape = RoundedCornerShape(8.dp)
-        ) {
+        content = {
             Box(
-                contentAlignment = Alignment.Center,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 48.dp),
+                contentAlignment = Alignment.Center
             ) {
-                CircularProgressIndicator()
+                val infiniteTransition = rememberInfiniteTransition(label = "vortex_animation")
+
+                val rotation by infiniteTransition.animateFloat(
+                    initialValue = 0f,
+                    targetValue = 360f,
+                    animationSpec = infiniteRepeatable(
+                        animation = tween(2000, easing = EaseInOutCubic),
+                        repeatMode = RepeatMode.Restart
+                    ),
+                    label = "vortex_rotation"
+                )
+
+                val arcAngle by infiniteTransition.animateFloat(
+                    initialValue = 30f,
+                    targetValue = 270f,
+                    animationSpec = infiniteRepeatable(
+                        animation = tween(1000, easing = EaseInOutCubic),
+                        repeatMode = RepeatMode.Reverse
+                    ),
+                    label = "vortex_arc_angle"
+                )
+
+                val primaryColor = colorScheme.primary
+
+                Canvas(modifier = Modifier.size(64.dp)) {
+                    val strokeWidth = 10f
+                    drawArc(
+                        color = primaryColor,
+                        startAngle = rotation,
+                        sweepAngle = arcAngle,
+                        useCenter = false,
+                        style = Stroke(width = strokeWidth, cap = StrokeCap.Round),
+                        alpha = 0.3f
+                    )
+                    drawArc(
+                        color = primaryColor,
+                        startAngle = rotation + 120f,
+                        sweepAngle = arcAngle,
+                        useCenter = false,
+                        style = Stroke(width = strokeWidth * 0.6f, cap = StrokeCap.Round),
+                        alpha = 0.6f
+                    )
+                    drawArc(
+                        color = primaryColor,
+                        startAngle = rotation + 240f,
+                        sweepAngle = arcAngle,
+                        useCenter = false,
+                        style = Stroke(width = strokeWidth * 0.3f, cap = StrokeCap.Round),
+                        alpha = 1.0f
+                    )
+                }
             }
         }
-    }
+    )
 }
 
 @Composable
-private fun ConfirmDialog(visuals: ConfirmDialogVisuals, confirm: () -> Unit, dismiss: () -> Unit) {
-    AlertDialog(
+private fun ConfirmDialog(
+    visuals: ConfirmDialogVisuals,
+    confirm: () -> Unit,
+    dismiss: () -> Unit,
+    showDialog: MutableState<Boolean>
+) {
+    SuperDialog(
+        show = showDialog,
+        title = visuals.title,
         onDismissRequest = {
-            dismiss()
+            showDialog.value = false
         },
-        title = {
-            Text(text = visuals.title)
-        },
-        text = {
-            if (visuals.isMarkdown) {
-                MarkdownContent(content = visuals.content)
-            } else {
-                Text(text = visuals.content)
+        content = {
+            Column {
+                visuals.content?.let {
+                    if (visuals.isMarkdown) {
+                        MarkdownContent(content = visuals.content!!)
+                    } else {
+                        Text(
+                            text = visuals.content!!,
+                            fontSize = MiuixTheme.textStyles.body2.fontSize
+                        )
+                    }
+                }
+                Row(
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    modifier = Modifier.padding(top = 12.dp)
+                ) {
+                    TextButton(
+                        text = visuals.dismiss ?: stringResource(id = android.R.string.cancel),
+                        onClick = {
+                            dismiss()
+                            showDialog.value = false
+                        },
+                        modifier = Modifier.weight(1f)
+                    )
+                    Spacer(Modifier.width(20.dp))
+                    TextButton(
+                        text = visuals.confirm ?: stringResource(id = android.R.string.ok),
+                        onClick = {
+                            confirm()
+                            showDialog.value = false
+                        },
+                        modifier = Modifier.weight(1f),
+                        colors = ButtonDefaults.textButtonColorsPrimary()
+                    )
+                }
             }
-        },
-        confirmButton = {
-            TextButton(onClick = confirm) {
-                Text(text = visuals.confirm ?: stringResource(id = android.R.string.ok))
-            }
-        },
-        dismissButton = {
-            TextButton(onClick = dismiss) {
-                Text(text = visuals.dismiss ?: stringResource(id = android.R.string.cancel))
-            }
-        },
+        }
     )
 }
 
 @Composable
 private fun MarkdownContent(content: String) {
-    val contentColor = LocalContentColor.current
+    val contentColor = LocalColors.current
 
     AndroidView(
         factory = { context ->
@@ -447,7 +528,7 @@ private fun MarkdownContent(content: String) {
             .wrapContentHeight(),
         update = {
             Markwon.create(it.context).setMarkdown(it, content)
-            it.setTextColor(contentColor.toArgb())
+            it.setTextColor(contentColor.onBackground.toArgb())
         }
     )
 }
