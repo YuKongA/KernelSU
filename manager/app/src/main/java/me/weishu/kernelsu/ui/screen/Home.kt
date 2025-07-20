@@ -31,6 +31,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.pager.PagerState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Archive
 import androidx.compose.material.icons.rounded.CheckCircleOutline
@@ -44,6 +45,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -57,15 +59,11 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.content.pm.PackageInfoCompat
-import com.ramcosta.composedestinations.annotation.Destination
-import com.ramcosta.composedestinations.annotation.RootGraph
-import com.ramcosta.composedestinations.generated.destinations.HomeScreenDestination
 import com.ramcosta.composedestinations.generated.destinations.InstallScreenDestination
-import com.ramcosta.composedestinations.generated.destinations.ModuleScreenDestination
 import com.ramcosta.composedestinations.generated.destinations.SettingScreenDestination
-import com.ramcosta.composedestinations.generated.destinations.SuperUserScreenDestination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import me.weishu.kernelsu.KernelVersion
 import me.weishu.kernelsu.Natives
@@ -102,10 +100,14 @@ import top.yukonga.miuix.kmp.utils.getWindowSize
 import top.yukonga.miuix.kmp.utils.overScrollVertical
 
 @Composable
-@Destination<RootGraph>(start = true)
-fun HomeScreen(navigator: DestinationsNavigator) {
+fun HomePager(
+    pagerState: PagerState,
+    navigator: DestinationsNavigator,
+    bottomInnerPadding: Dp,
+) {
     val kernelVersion = getKernelVersion()
     val scrollBehavior = MiuixScrollBehavior()
+    val coroutineScope = rememberCoroutineScope()
 
     Scaffold(
         topBar = {
@@ -174,19 +176,13 @@ fun HomeScreen(navigator: DestinationsNavigator) {
                             }
                         },
                         onClickSuperuser = {
-                            navigator.navigate(SuperUserScreenDestination) {
-                                popUpTo(HomeScreenDestination) {
-                                    inclusive = true
-                                }
-                                launchSingleTop = true
+                            coroutineScope.launch {
+                                pagerState.animateScrollToPage(1)
                             }
                         },
                         onclickModule = {
-                            navigator.navigate(ModuleScreenDestination) {
-                                popUpTo(HomeScreenDestination) {
-                                    inclusive = true
-                                }
-                                launchSingleTop = true
+                            coroutineScope.launch {
+                                pagerState.animateScrollToPage(2)
                             }
                         }
                     )
@@ -202,6 +198,7 @@ fun HomeScreen(navigator: DestinationsNavigator) {
                     DonateCard()
                     LearnMoreCard()
                 }
+                Spacer(Modifier.height(bottomInnerPadding))
             }
         }
     }

@@ -9,9 +9,12 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.add
+import androidx.compose.foundation.layout.asPaddingValues
+import androidx.compose.foundation.layout.captionBar
 import androidx.compose.foundation.layout.displayCutout
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -27,7 +30,6 @@ import androidx.compose.material.icons.outlined.Shield
 import androidx.compose.material.icons.rounded.Add
 import androidx.compose.material.icons.rounded.ImportExport
 import androidx.compose.material.icons.rounded.Sync
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -157,6 +159,10 @@ fun AppProfileTemplateScreen(
                         launchSingleTop = true
                     }
                 },
+                modifier = Modifier.padding(
+                    bottom = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding() +
+                            WindowInsets.captionBar.asPaddingValues().calculateBottomPadding()
+                ),
                 shape = SmoothRoundedCornerShape(20.dp),
                 content = {
                     Row(
@@ -207,7 +213,13 @@ fun AppProfileTemplateScreen(
                     TemplateItem(navigator, app)
                 }
                 item {
-                    Spacer(Modifier.height(60.dp + 12.dp /* Scaffold Fab Spacing + Fab container height */))
+                    Spacer(
+                        Modifier.height(
+                            60.dp + 12.dp +
+                                    WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding() +
+                                    WindowInsets.captionBar.asPaddingValues().calculateBottomPadding()
+                        )
+                    )
                 }
             }
         }
@@ -279,7 +291,7 @@ private fun TemplateItem(
             )
 
             HorizontalDivider(
-                modifier = Modifier.padding(vertical = 16.dp),
+                modifier = Modifier.padding(vertical = 8.dp),
                 thickness = 0.5.dp,
                 color = colorScheme.outline.copy(alpha = 0.5f)
             )
@@ -323,7 +335,6 @@ private fun InfoChip(icon: ImageVector, text: String) {
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun TopBar(
     onBack: () -> Unit,

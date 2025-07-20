@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.FlowColumn
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.add
@@ -50,14 +51,13 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
-import com.ramcosta.composedestinations.annotation.Destination
-import com.ramcosta.composedestinations.annotation.RootGraph
 import com.ramcosta.composedestinations.generated.destinations.AppProfileScreenDestination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import kotlinx.coroutines.launch
@@ -90,8 +90,10 @@ import top.yukonga.miuix.kmp.utils.getWindowSize
 import top.yukonga.miuix.kmp.utils.overScrollVertical
 
 @Composable
-@Destination<RootGraph>
-fun SuperUserScreen(navigator: DestinationsNavigator) {
+fun SuperUserPager(
+    navigator: DestinationsNavigator,
+    bottomInnerPadding: Dp
+) {
     val viewModel = viewModel<SuperUserViewModel>()
     val scope = rememberCoroutineScope()
     val scrollBehavior = MiuixScrollBehavior()
@@ -272,6 +274,9 @@ fun SuperUserScreen(navigator: DestinationsNavigator) {
                         }
                     }
                 }
+                item {
+                    Spacer(Modifier.height(bottomInnerPadding))
+                }
             }
         }
     }
@@ -312,7 +317,7 @@ private fun AppItem(
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
                     FlowColumn(
-                        verticalArrangement = Arrangement.spacedBy(4.dp),
+                        verticalArrangement = Arrangement.spacedBy(6.dp),
                         itemHorizontalAlignment = Alignment.End
                     ) {
                         if (app.allowSu) {
