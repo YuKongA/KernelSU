@@ -13,6 +13,7 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
@@ -63,6 +64,7 @@ class MainActivity : ComponentActivity() {
 
                 Scaffold(
                     bottomBar = { BottomBar(navController) },
+                    contentWindowInsets = WindowInsets(0,0,0,0)
                 ) { innerPadding ->
                     CompositionLocalProvider(
                         LocalSnackbarHost provides snackBarHostState,
