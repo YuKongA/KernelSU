@@ -102,8 +102,7 @@ import top.yukonga.miuix.kmp.utils.overScrollVertical
 @Composable
 fun HomePager(
     pagerState: PagerState,
-    navigator: DestinationsNavigator,
-    bottomInnerPadding: Dp,
+    navigator: DestinationsNavigator
 ) {
     val kernelVersion = getKernelVersion()
     val scrollBehavior = MiuixScrollBehavior()
@@ -198,7 +197,6 @@ fun HomePager(
                     DonateCard()
                     LearnMoreCard()
                 }
-                Spacer(Modifier.height(bottomInnerPadding))
             }
         }
     }

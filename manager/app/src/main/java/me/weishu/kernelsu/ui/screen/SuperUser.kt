@@ -10,7 +10,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.FlowColumn
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.add
@@ -51,7 +50,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -91,8 +89,7 @@ import top.yukonga.miuix.kmp.utils.overScrollVertical
 
 @Composable
 fun SuperUserPager(
-    navigator: DestinationsNavigator,
-    bottomInnerPadding: Dp
+    navigator: DestinationsNavigator
 ) {
     val viewModel = viewModel<SuperUserViewModel>()
     val scope = rememberCoroutineScope()
@@ -273,9 +270,6 @@ fun SuperUserPager(
                             launchSingleTop = true
                         }
                     }
-                }
-                item {
-                    Spacer(Modifier.height(bottomInnerPadding))
                 }
             }
         }

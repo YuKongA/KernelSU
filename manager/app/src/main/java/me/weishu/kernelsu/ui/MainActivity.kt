@@ -12,6 +12,7 @@ import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.PagerState
 import androidx.compose.foundation.pager.rememberPagerState
@@ -22,7 +23,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.unit.Dp
 import androidx.navigation.NavBackStackEntry
 import androidx.navigation.compose.rememberNavController
 import com.ramcosta.composedestinations.DestinationsNavHost
@@ -122,23 +122,15 @@ fun MainScreen(navController: DestinationsNavigator) {
     ) { innerPadding ->
         HorizontalPager(
             pagerState,
-            userScrollEnabled = false
+            userScrollEnabled = false,
+            beyondViewportPageCount = 2,
+            contentPadding = PaddingValues(bottom = innerPadding.calculateBottomPadding())
         ) {
             when (it) {
-                0 -> {
-                    HomePager(pagerState, navController, innerPadding.calculateBottomPadding())
-
-                }
-
-                1 -> {
-                    SuperUserPager(navController, innerPadding.calculateBottomPadding())
-                }
-
-                2 -> {
-                    ModulePager(navController, innerPadding.calculateBottomPadding())
-                }
+                0 -> HomePager(pagerState, navController)
+                1 -> SuperUserPager(navController)
+                2 -> ModulePager(navController)
             }
-
         }
     }
 }

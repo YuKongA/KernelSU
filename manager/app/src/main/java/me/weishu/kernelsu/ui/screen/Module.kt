@@ -66,7 +66,6 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.content.edit
@@ -120,8 +119,7 @@ import top.yukonga.miuix.kmp.utils.overScrollVertical
 
 @Composable
 fun ModulePager(
-    navigator: DestinationsNavigator,
-    bottomInnerPadding: Dp
+    navigator: DestinationsNavigator
 ) {
     val viewModel = viewModel<ModuleViewModel>()
     val context = LocalContext.current
@@ -267,8 +265,6 @@ fun ModulePager(
                     }
                 }
                 FloatingActionButton(
-                    modifier = Modifier
-                        .padding(bottom = bottomInnerPadding),
                     onClick = {
                         // Select the zip files to install
                         val intent = Intent(Intent.ACTION_GET_CONTENT).apply {
@@ -337,8 +333,7 @@ fun ModulePager(
                         .height(getWindowSize().height.dp)
                         .overScrollVertical()
                         .nestedScroll(scrollBehavior.nestedScrollConnection)
-                        .padding(horizontal = 12.dp)
-                        .padding(bottom = bottomInnerPadding),
+                        .padding(horizontal = 12.dp),
                     boxModifier = Modifier.padding(innerPadding),
                     onInstallModule = {
                         navigator.navigate(FlashScreenDestination(FlashIt.FlashModules(listOf(it)))) {
