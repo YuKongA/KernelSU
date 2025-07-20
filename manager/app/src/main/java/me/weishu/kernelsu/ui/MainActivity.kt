@@ -8,14 +8,11 @@ import androidx.activity.enableEdgeToEdge
 import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExitTransition
-import androidx.compose.animation.core.CubicBezierEasing
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
-import androidx.compose.animation.scaleOut
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
-import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
@@ -30,14 +27,14 @@ import com.ramcosta.composedestinations.animations.NavHostAnimatedDestinationSty
 import com.ramcosta.composedestinations.generated.NavGraphs
 import me.weishu.kernelsu.Natives
 import me.weishu.kernelsu.ksuApp
+import me.weishu.kernelsu.ui.animation.SpringEasing
 import me.weishu.kernelsu.ui.component.NavigationBar
 import me.weishu.kernelsu.ui.screen.BottomBarDestination
 import me.weishu.kernelsu.ui.theme.KernelSUTheme
 import me.weishu.kernelsu.ui.util.LocalSnackbarHost
-import me.weishu.kernelsu.ui.util.rootAvailable
 import me.weishu.kernelsu.ui.util.install
+import me.weishu.kernelsu.ui.util.rootAvailable
 import top.yukonga.miuix.kmp.basic.Scaffold
-import top.yukonga.miuix.kmp.utils.getWindowSize
 
 class MainActivity : ComponentActivity() {
 
@@ -61,11 +58,11 @@ class MainActivity : ComponentActivity() {
                 val bottomBarRoutes = remember {
                     BottomBarDestination.entries.map { it.direction.route }.toSet()
                 }
-                val windowWidth = getWindowSize().width
-                val easing = CubicBezierEasing(0.12f, 0.38f, 0.2f, 1f)
+                val easing = SpringEasing()
+                val duration = easing.duration.toInt()
+
                 Scaffold(
                     bottomBar = { BottomBar(navController) },
-                    contentWindowInsets = WindowInsets(0, 0, 0, 0)
                 ) { innerPadding ->
                     CompositionLocalProvider(
                         LocalSnackbarHost provides snackBarHostState,
@@ -78,8 +75,8 @@ class MainActivity : ComponentActivity() {
                                 override val enterTransition: AnimatedContentTransitionScope<NavBackStackEntry>.() -> EnterTransition = {
                                     if (targetState.destination.route !in bottomBarRoutes) {
                                         slideInHorizontally(
-                                            initialOffsetX = { windowWidth },
-                                            animationSpec = tween(durationMillis = 500, easing = easing)
+                                            initialOffsetX = { it },
+                                            animationSpec = tween(duration, 0, easing)
                                         )
                                     } else {
                                         fadeIn(initialAlpha = 1f)
@@ -89,12 +86,9 @@ class MainActivity : ComponentActivity() {
                                 override val exitTransition: AnimatedContentTransitionScope<NavBackStackEntry>.() -> ExitTransition = {
                                     if (initialState.destination.route in bottomBarRoutes && targetState.destination.route !in bottomBarRoutes) {
                                         slideOutHorizontally(
-                                            targetOffsetX = { -windowWidth / 5 },
-                                            animationSpec = tween(durationMillis = 500, easing = easing)
-                                        ) + fadeOut(
-                                            animationSpec = tween(durationMillis = 500),
-                                            targetAlpha = 0.5f
-                                        )
+                                            targetOffsetX = { -it / 4 },
+                                            animationSpec = tween(duration, 0, easing)
+                                        ) + fadeOut(targetAlpha = 0.4f)
                                     } else {
                                         fadeOut(targetAlpha = 1f)
                                     }
@@ -103,11 +97,8 @@ class MainActivity : ComponentActivity() {
                                 override val popEnterTransition: AnimatedContentTransitionScope<NavBackStackEntry>.() -> EnterTransition = {
                                     if (targetState.destination.route in bottomBarRoutes) {
                                         slideInHorizontally(
-                                            initialOffsetX = { -windowWidth / 5 },
-                                            animationSpec = tween(durationMillis = 500, easing = easing)
-                                        ) + fadeIn(
-                                            animationSpec = tween(durationMillis = 500),
-                                            initialAlpha = 0.5f
+                                            initialOffsetX = { -it / 4 },
+                                            animationSpec = tween(duration, 0, easing)
                                         )
                                     } else {
                                         fadeIn(initialAlpha = 1f)
@@ -117,9 +108,9 @@ class MainActivity : ComponentActivity() {
                                 override val popExitTransition: AnimatedContentTransitionScope<NavBackStackEntry>.() -> ExitTransition = {
                                     if (initialState.destination.route !in bottomBarRoutes) {
                                         slideOutHorizontally(
-                                            targetOffsetX = { windowWidth },
-                                            animationSpec = tween(durationMillis = 500, easing = easing)
-                                        )
+                                            targetOffsetX = { it },
+                                            animationSpec = tween(duration, 0, easing)
+                                        ) + fadeOut(targetAlpha = 0.8f)
                                     } else {
                                         fadeOut(targetAlpha = 1f)
                                     }
