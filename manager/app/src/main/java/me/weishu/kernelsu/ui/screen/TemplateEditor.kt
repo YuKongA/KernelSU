@@ -29,6 +29,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.input.pointer.pointerInteropFilter
 import androidx.compose.ui.platform.LocalContext
@@ -42,6 +43,11 @@ import androidx.lifecycle.compose.dropUnlessResumed
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootGraph
 import com.ramcosta.composedestinations.result.ResultBackNavigator
+import dev.chrisbanes.haze.HazeState
+import dev.chrisbanes.haze.HazeStyle
+import dev.chrisbanes.haze.HazeTint
+import dev.chrisbanes.haze.hazeEffect
+import dev.chrisbanes.haze.hazeSource
 import me.weishu.kernelsu.Natives
 import me.weishu.kernelsu.R
 import me.weishu.kernelsu.ui.component.profile.RootProfileConfig
@@ -88,6 +94,12 @@ fun TemplateEditorScreen(
         navigator.navigateBack(result = !readOnly)
     }
 
+    val hazeState = remember { HazeState() }
+    val hazeStyle = HazeStyle(
+        backgroundColor = colorScheme.background,
+        tint = HazeTint(colorScheme.background.copy(0.67f))
+    )
+
     Scaffold(
         topBar = {
             val saveTemplateFailed = stringResource(id = R.string.app_profile_template_save_failed)
@@ -115,7 +127,9 @@ fun TemplateEditorScreen(
                         Toast.makeText(context, saveTemplateFailed, Toast.LENGTH_SHORT).show()
                     }
                 },
-                scrollBehavior = scrollBehavior
+                scrollBehavior = scrollBehavior,
+                hazeState = hazeState,
+                hazeStyle = hazeStyle
             )
         },
         popupHost = { },
@@ -126,6 +140,7 @@ fun TemplateEditorScreen(
                 .height(getWindowSize().height.dp)
                 .overScrollVertical()
                 .nestedScroll(scrollBehavior.nestedScrollConnection)
+                .hazeSource(hazeState)
                 .pointerInteropFilter {
                     // disable click and ripple if readOnly
                     readOnly
@@ -286,9 +301,18 @@ private fun TopBar(
     onBack: () -> Unit,
     onDelete: () -> Unit = {},
     onSave: () -> Unit = {},
-    scrollBehavior: ScrollBehavior
+    scrollBehavior: ScrollBehavior,
+    hazeState: HazeState,
+    hazeStyle: HazeStyle
 ) {
     TopAppBar(
+        modifier = Modifier
+            .hazeEffect(state = hazeState) {
+                style = hazeStyle
+                blurRadius = 25.dp
+                noiseFactor = 0f
+            },
+        color = Color.Transparent,
         title = title,
         navigationIcon = {
             IconButton(

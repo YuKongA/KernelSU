@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.add
 import androidx.compose.foundation.layout.asPaddingValues
+import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.layout.captionBar
 import androidx.compose.foundation.layout.displayCutout
 import androidx.compose.foundation.layout.fillMaxSize
@@ -26,12 +27,15 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.input.key.key
+import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
@@ -40,6 +44,10 @@ import androidx.lifecycle.compose.dropUnlessResumed
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootGraph
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
+import dev.chrisbanes.haze.HazeState
+import dev.chrisbanes.haze.HazeStyle
+import dev.chrisbanes.haze.HazeTint
+import dev.chrisbanes.haze.hazeEffect
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -95,6 +103,12 @@ fun ExecuteModuleActionScreen(navigator: DestinationsNavigator, moduleId: String
         if (actionResult) navigator.popBackStack()
     }
 
+    val hazeState = remember { HazeState() }
+    val hazeStyle = HazeStyle(
+        backgroundColor = colorScheme.background,
+        tint = HazeTint(colorScheme.background.copy(0.67f))
+    )
+
     Scaffold(
         topBar = {
             TopBar(
@@ -112,7 +126,9 @@ fun ExecuteModuleActionScreen(navigator: DestinationsNavigator, moduleId: String
                         file.writeText(logContent.toString())
                         snackBarHost.showSnackbar("Log saved to ${file.absolutePath}")
                     }
-                }
+                },
+                hazeState = hazeState,
+                hazeStyle = hazeStyle
             )
         },
         snackbarHost = {
@@ -128,18 +144,23 @@ fun ExecuteModuleActionScreen(navigator: DestinationsNavigator, moduleId: String
         popupHost = { },
         contentWindowInsets = WindowInsets.systemBars.add(WindowInsets.displayCutout).only(WindowInsetsSides.Horizontal)
     ) { innerPadding ->
+        val layoutDirection = LocalLayoutDirection.current
         KeyEventBlocker {
             it.key == Key.VolumeDown || it.key == Key.VolumeUp
         }
         Column(
             modifier = Modifier
                 .fillMaxSize(1f)
-                .padding(innerPadding)
+                .padding(
+                    start = innerPadding.calculateStartPadding(layoutDirection),
+                    end = innerPadding.calculateStartPadding(layoutDirection),
+                )
                 .verticalScroll(scrollState),
         ) {
             LaunchedEffect(text) {
                 scrollState.animateScrollTo(scrollState.maxValue)
             }
+            Spacer(Modifier.height(innerPadding.calculateTopPadding()))
             Text(
                 modifier = Modifier.padding(8.dp),
                 text = text,
@@ -148,7 +169,7 @@ fun ExecuteModuleActionScreen(navigator: DestinationsNavigator, moduleId: String
             )
             Spacer(
                 Modifier.height(
-                    WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding() +
+                    12.dp + WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding() +
                             WindowInsets.captionBar.asPaddingValues().calculateBottomPadding()
                 )
             )
@@ -159,9 +180,18 @@ fun ExecuteModuleActionScreen(navigator: DestinationsNavigator, moduleId: String
 @Composable
 private fun TopBar(
     onBack: () -> Unit = {},
-    onSave: () -> Unit = {}
+    onSave: () -> Unit = {},
+    hazeState: HazeState,
+    hazeStyle: HazeStyle
 ) {
     TopAppBar(
+        modifier = Modifier
+            .hazeEffect(state = hazeState) {
+                style = hazeStyle
+                blurRadius = 25.dp
+                noiseFactor = 0f
+            },
+        color = Color.Transparent,
         title = stringResource(R.string.action),
         navigationIcon = {
             IconButton(

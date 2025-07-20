@@ -9,7 +9,9 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.FlowColumn
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.add
@@ -50,6 +52,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -58,6 +61,11 @@ import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.ramcosta.composedestinations.generated.destinations.AppProfileScreenDestination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
+import dev.chrisbanes.haze.HazeState
+import dev.chrisbanes.haze.HazeStyle
+import dev.chrisbanes.haze.HazeTint
+import dev.chrisbanes.haze.hazeEffect
+import dev.chrisbanes.haze.hazeSource
 import kotlinx.coroutines.launch
 import me.weishu.kernelsu.Natives
 import me.weishu.kernelsu.R
@@ -89,7 +97,8 @@ import top.yukonga.miuix.kmp.utils.overScrollVertical
 
 @Composable
 fun SuperUserPager(
-    navigator: DestinationsNavigator
+    navigator: DestinationsNavigator,
+    bottomInnerPadding: Dp
 ) {
     val viewModel = viewModel<SuperUserViewModel>()
     val scope = rememberCoroutineScope()
@@ -109,9 +118,22 @@ fun SuperUserPager(
         }
     }
 
+    val hazeState = remember { HazeState() }
+    val hazeStyle = HazeStyle(
+        backgroundColor = colorScheme.background,
+        tint = HazeTint(colorScheme.background.copy(0.67f))
+    )
+
     Scaffold(
         topBar = {
             TopAppBar(
+                modifier = Modifier
+                    .hazeEffect(state = hazeState) {
+                        style = hazeStyle
+                        blurRadius = 25.dp
+                        noiseFactor = 0f
+                    },
+                color = Color.Transparent,
                 title = stringResource(R.string.superuser),
                 actions = {
                     val showTopPopup = remember { mutableStateOf(false) }
@@ -178,7 +200,7 @@ fun SuperUserPager(
                     pullToRefreshState.completeRefreshing { }
                 }
             },
-            contentPadding = innerPadding
+            contentPadding = PaddingValues(top = innerPadding.calculateTopPadding() + 12.dp),
         ) {
             val keyboardController = LocalSoftwareKeyboardController.current
             val focusManager = LocalFocusManager.current
@@ -190,7 +212,8 @@ fun SuperUserPager(
                 modifier = Modifier
                     .height(getWindowSize().height.dp)
                     .overScrollVertical()
-                    .nestedScroll(scrollBehavior.nestedScrollConnection),
+                    .nestedScroll(scrollBehavior.nestedScrollConnection)
+                    .hazeSource(hazeState),
                 contentPadding = innerPadding,
                 overscrollEffect = null,
             ) {
@@ -270,6 +293,9 @@ fun SuperUserPager(
                             launchSingleTop = true
                         }
                     }
+                }
+                item {
+                    Spacer(Modifier.height(bottomInnerPadding))
                 }
             }
         }

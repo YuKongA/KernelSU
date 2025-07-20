@@ -19,6 +19,8 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.add
+import androidx.compose.foundation.layout.calculateEndPadding
+import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.layout.displayCutout
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
@@ -53,12 +55,10 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalFocusManager
-import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
@@ -66,6 +66,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.content.edit
@@ -75,6 +76,11 @@ import com.ramcosta.composedestinations.generated.destinations.ExecuteModuleActi
 import com.ramcosta.composedestinations.generated.destinations.FlashScreenDestination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import com.ramcosta.composedestinations.navigation.EmptyDestinationsNavigator
+import dev.chrisbanes.haze.HazeState
+import dev.chrisbanes.haze.HazeStyle
+import dev.chrisbanes.haze.HazeTint
+import dev.chrisbanes.haze.hazeEffect
+import dev.chrisbanes.haze.hazeSource
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -119,7 +125,8 @@ import top.yukonga.miuix.kmp.utils.overScrollVertical
 
 @Composable
 fun ModulePager(
-    navigator: DestinationsNavigator
+    navigator: DestinationsNavigator,
+    bottomInnerPadding: Dp
 ) {
     val viewModel = viewModel<ModuleViewModel>()
     val context = LocalContext.current
@@ -146,9 +153,22 @@ fun ModulePager(
         contract = ActivityResultContracts.StartActivityForResult()
     ) { viewModel.fetchModuleList() }
 
+    val hazeState = remember { HazeState() }
+    val hazeStyle = HazeStyle(
+        backgroundColor = colorScheme.background,
+        tint = HazeTint(colorScheme.background.copy(0.67f))
+    )
+
     Scaffold(
         topBar = {
             TopAppBar(
+                modifier = Modifier
+                    .hazeEffect(state = hazeState) {
+                        style = hazeStyle
+                        blurRadius = 25.dp
+                        noiseFactor = 0f
+                    },
+                color = Color.Transparent,
                 title = stringResource(R.string.module),
                 actions = {
                     val showTopPopup = remember { mutableStateOf(false) }
@@ -265,6 +285,8 @@ fun ModulePager(
                     }
                 }
                 FloatingActionButton(
+                    modifier = Modifier
+                        .padding(bottom = bottomInnerPadding),
                     onClick = {
                         // Select the zip files to install
                         val intent = Intent(Intent.ACTION_GET_CONTENT).apply {
@@ -333,8 +355,8 @@ fun ModulePager(
                         .height(getWindowSize().height.dp)
                         .overScrollVertical()
                         .nestedScroll(scrollBehavior.nestedScrollConnection)
+                        .hazeSource(hazeState)
                         .padding(horizontal = 12.dp),
-                    boxModifier = Modifier.padding(innerPadding),
                     onInstallModule = {
                         navigator.navigate(FlashScreenDestination(FlashIt.FlashModules(listOf(it)))) {
                             launchSingleTop = true
@@ -351,7 +373,9 @@ fun ModulePager(
                         }
                     },
                     context = context,
-                    snackBarHost = LocalSnackbarHost.current
+                    snackBarHost = LocalSnackbarHost.current,
+                    innerPadding = innerPadding,
+                    bottomInnerPadding = bottomInnerPadding
                 )
             }
         }
@@ -363,11 +387,12 @@ private fun ModuleList(
     navigator: DestinationsNavigator,
     viewModel: ModuleViewModel,
     modifier: Modifier = Modifier,
-    boxModifier: Modifier = Modifier,
     onInstallModule: (Uri) -> Unit,
     onClickModule: (id: String, name: String, hasWebUi: Boolean) -> Unit,
     context: Context,
-    snackBarHost: SnackbarHostState
+    snackBarHost: SnackbarHostState,
+    innerPadding: PaddingValues,
+    bottomInnerPadding: Dp
 ) {
     val failedEnable = stringResource(R.string.module_failed_to_enable)
     val failedDisable = stringResource(R.string.module_failed_to_disable)
@@ -500,18 +525,18 @@ private fun ModuleList(
             viewModel.fetchModuleList()
             pullToRefreshState.completeRefreshing { }
         },
-        modifier = boxModifier
+        contentPadding = PaddingValues(top = innerPadding.calculateTopPadding() + 12.dp)
     ) {
-        LocalSoftwareKeyboardController.current
-        LocalFocusManager.current
-        remember { FocusRequester() }
+        val layoutDirection = LocalLayoutDirection.current
 
         LazyColumn(
             modifier = modifier,
             verticalArrangement = Arrangement.spacedBy(12.dp),
             contentPadding = PaddingValues(
-                top = 12.dp,
-                bottom = 12.dp + 60.dp + 12.dp /* Scaffold Fab Spacing + Fab container height */
+                top = innerPadding.calculateTopPadding() + 12.dp,
+                bottom = bottomInnerPadding + 12.dp + 12.dp + 60.dp,
+                start = innerPadding.calculateStartPadding(layoutDirection),
+                end = innerPadding.calculateEndPadding(layoutDirection)
             ),
             overscrollEffect = null,
         ) {

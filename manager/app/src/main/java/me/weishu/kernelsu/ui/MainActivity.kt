@@ -12,7 +12,6 @@ import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.PagerState
 import androidx.compose.foundation.pager.rememberPagerState
@@ -22,7 +21,9 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.dp
 import androidx.navigation.NavBackStackEntry
 import androidx.navigation.compose.rememberNavController
 import com.ramcosta.composedestinations.DestinationsNavHost
@@ -31,6 +32,11 @@ import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootGraph
 import com.ramcosta.composedestinations.generated.NavGraphs
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
+import dev.chrisbanes.haze.HazeState
+import dev.chrisbanes.haze.HazeStyle
+import dev.chrisbanes.haze.HazeTint
+import dev.chrisbanes.haze.hazeEffect
+import dev.chrisbanes.haze.hazeSource
 import kotlinx.coroutines.launch
 import me.weishu.kernelsu.Natives
 import me.weishu.kernelsu.ksuApp
@@ -45,6 +51,7 @@ import me.weishu.kernelsu.ui.util.rootAvailable
 import top.yukonga.miuix.kmp.basic.NavigationBar
 import top.yukonga.miuix.kmp.basic.NavigationItem
 import top.yukonga.miuix.kmp.basic.Scaffold
+import top.yukonga.miuix.kmp.theme.MiuixTheme
 
 class MainActivity : ComponentActivity() {
 
@@ -75,33 +82,37 @@ class MainActivity : ComponentActivity() {
                             navGraph = NavGraphs.root,
                             navController = navController,
                             defaultTransitions = object : NavHostAnimatedDestinationStyle() {
-                                override val enterTransition: AnimatedContentTransitionScope<NavBackStackEntry>.() -> EnterTransition = {
-                                    slideInHorizontally(
-                                        initialOffsetX = { it },
-                                        animationSpec = tween(durationMillis = 500, easing = FastOutSlowInEasing)
-                                    )
-                                }
+                                override val enterTransition: AnimatedContentTransitionScope<NavBackStackEntry>.() -> EnterTransition =
+                                    {
+                                        slideInHorizontally(
+                                            initialOffsetX = { it },
+                                            animationSpec = tween(durationMillis = 500, easing = FastOutSlowInEasing)
+                                        )
+                                    }
 
-                                override val exitTransition: AnimatedContentTransitionScope<NavBackStackEntry>.() -> ExitTransition = {
-                                    slideOutHorizontally(
-                                        targetOffsetX = { -it / 5 },
-                                        animationSpec = tween(durationMillis = 500, easing = FastOutSlowInEasing)
-                                    )
-                                }
+                                override val exitTransition: AnimatedContentTransitionScope<NavBackStackEntry>.() -> ExitTransition =
+                                    {
+                                        slideOutHorizontally(
+                                            targetOffsetX = { -it / 5 },
+                                            animationSpec = tween(durationMillis = 500, easing = FastOutSlowInEasing)
+                                        )
+                                    }
 
-                                override val popEnterTransition: AnimatedContentTransitionScope<NavBackStackEntry>.() -> EnterTransition = {
-                                    slideInHorizontally(
-                                        initialOffsetX = { -it / 5 },
-                                        animationSpec = tween(durationMillis = 500, easing = FastOutSlowInEasing)
-                                    )
-                                }
+                                override val popEnterTransition: AnimatedContentTransitionScope<NavBackStackEntry>.() -> EnterTransition =
+                                    {
+                                        slideInHorizontally(
+                                            initialOffsetX = { -it / 5 },
+                                            animationSpec = tween(durationMillis = 500, easing = FastOutSlowInEasing)
+                                        )
+                                    }
 
-                                override val popExitTransition: AnimatedContentTransitionScope<NavBackStackEntry>.() -> ExitTransition = {
-                                    slideOutHorizontally(
-                                        targetOffsetX = { it },
-                                        animationSpec = tween(durationMillis = 500, easing = FastOutSlowInEasing)
-                                    )
-                                }
+                                override val popExitTransition: AnimatedContentTransitionScope<NavBackStackEntry>.() -> ExitTransition =
+                                    {
+                                        slideOutHorizontally(
+                                            targetOffsetX = { it },
+                                            animationSpec = tween(durationMillis = 500, easing = FastOutSlowInEasing)
+                                        )
+                                    }
                             }
                         )
                     }
@@ -116,20 +127,26 @@ class MainActivity : ComponentActivity() {
 @Destination<RootGraph>(start = true)
 fun MainScreen(navController: DestinationsNavigator) {
     val pagerState = rememberPagerState(initialPage = 0, pageCount = { 3 })
+    val hazeState = remember { HazeState() }
+    val hazeStyle = HazeStyle(
+        backgroundColor = MiuixTheme.colorScheme.background,
+        tint = HazeTint(MiuixTheme.colorScheme.background.copy(0.67f))
+    )
 
     Scaffold(
-        bottomBar = { BottomBar(pagerState) },
+        bottomBar = { BottomBar(pagerState, hazeState, hazeStyle) },
     ) { innerPadding ->
         HorizontalPager(
-            pagerState,
+            modifier = Modifier
+                .hazeSource(state = hazeState),
+            state = pagerState,
             userScrollEnabled = false,
-            beyondViewportPageCount = 2,
-            contentPadding = PaddingValues(bottom = innerPadding.calculateBottomPadding())
+            beyondViewportPageCount = 2
         ) {
             when (it) {
-                0 -> HomePager(pagerState, navController)
-                1 -> SuperUserPager(navController)
-                2 -> ModulePager(navController)
+                0 -> HomePager(pagerState, navController, innerPadding.calculateBottomPadding())
+                1 -> SuperUserPager(navController, innerPadding.calculateBottomPadding())
+                2 -> ModulePager(navController, innerPadding.calculateBottomPadding())
             }
         }
     }
@@ -137,7 +154,11 @@ fun MainScreen(navController: DestinationsNavigator) {
 
 
 @Composable
-private fun BottomBar(pagerState: PagerState) {
+private fun BottomBar(
+    pagerState: PagerState,
+    hazeState: HazeState,
+    hazeStyle: HazeStyle
+) {
     val isManager = Natives.becomeManager(ksuApp.packageName)
     val fullFeatured = isManager && !Natives.requireNewKernel() && rootAvailable()
 
@@ -157,9 +178,16 @@ private fun BottomBar(pagerState: PagerState) {
     }
 
     NavigationBar(
-        item,
-        currentPager,
-        { index ->
+        modifier = Modifier
+            .hazeEffect(hazeState) {
+                style = hazeStyle
+                blurRadius = 25.dp
+                noiseFactor = 0f
+            },
+        color = Color.Transparent,
+        items = item,
+        selected = currentPager,
+        onClick = { index ->
             coroutineScope.launch {
                 pagerState.animateScrollToPage(index)
             }

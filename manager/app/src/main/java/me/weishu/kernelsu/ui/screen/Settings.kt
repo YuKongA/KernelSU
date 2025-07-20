@@ -34,10 +34,12 @@ import androidx.compose.material3.SnackbarHost
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
@@ -52,6 +54,11 @@ import com.ramcosta.composedestinations.generated.destinations.AboutScreenDestin
 import com.ramcosta.composedestinations.generated.destinations.AppProfileTemplateScreenDestination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import com.ramcosta.composedestinations.navigation.EmptyDestinationsNavigator
+import dev.chrisbanes.haze.HazeState
+import dev.chrisbanes.haze.HazeStyle
+import dev.chrisbanes.haze.HazeTint
+import dev.chrisbanes.haze.hazeEffect
+import dev.chrisbanes.haze.hazeSource
 import kotlinx.coroutines.launch
 import me.weishu.kernelsu.Natives
 import me.weishu.kernelsu.R
@@ -86,11 +93,19 @@ fun SettingScreen(navigator: DestinationsNavigator) {
     val scrollBehavior = MiuixScrollBehavior()
     val snackBarHost = LocalSnackbarHost.current
 
+    val hazeState = remember { HazeState() }
+    val hazeStyle = HazeStyle(
+        backgroundColor = colorScheme.background,
+        tint = HazeTint(colorScheme.background.copy(0.67f))
+    )
+
     Scaffold(
         topBar = {
             TopBar(
                 onBack = dropUnlessResumed { navigator.popBackStack() },
-                scrollBehavior = scrollBehavior
+                scrollBehavior = scrollBehavior,
+                hazeState = hazeState,
+                hazeStyle = hazeStyle
             )
         },
         snackbarHost = {
@@ -119,6 +134,7 @@ fun SettingScreen(navigator: DestinationsNavigator) {
                 .height(getWindowSize().height.dp)
                 .overScrollVertical()
                 .nestedScroll(scrollBehavior.nestedScrollConnection)
+                .hazeSource(hazeState)
                 .padding(horizontal = 12.dp),
             contentPadding = innerPadding,
             overscrollEffect = null,
@@ -384,9 +400,18 @@ enum class UninstallType(val icon: ImageVector, val title: Int, val message: Int
 @Composable
 private fun TopBar(
     onBack: () -> Unit = {},
-    scrollBehavior: ScrollBehavior? = null
+    scrollBehavior: ScrollBehavior? = null,
+    hazeState: HazeState,
+    hazeStyle: HazeStyle
 ) {
     TopAppBar(
+        modifier = Modifier
+            .hazeEffect(state = hazeState) {
+                style = hazeStyle
+                blurRadius = 25.dp
+                noiseFactor = 0f
+            },
+        color = Color.Transparent,
         title = stringResource(R.string.settings),
         navigationIcon = {
             IconButton(

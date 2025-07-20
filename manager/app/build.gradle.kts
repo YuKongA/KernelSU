@@ -150,4 +150,5 @@ dependencies {
     implementation(libs.lsposed.cxx)
 
     implementation(libs.miuix)
+    implementation(libs.haze)
 }

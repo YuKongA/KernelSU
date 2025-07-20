@@ -37,6 +37,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
@@ -48,6 +49,11 @@ import com.ramcosta.composedestinations.annotation.RootGraph
 import com.ramcosta.composedestinations.generated.destinations.FlashScreenDestination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import com.ramcosta.composedestinations.navigation.EmptyDestinationsNavigator
+import dev.chrisbanes.haze.HazeState
+import dev.chrisbanes.haze.HazeStyle
+import dev.chrisbanes.haze.HazeTint
+import dev.chrisbanes.haze.hazeEffect
+import dev.chrisbanes.haze.hazeSource
 import me.weishu.kernelsu.R
 import me.weishu.kernelsu.ui.component.ChooseKmiDialog
 import me.weishu.kernelsu.ui.component.rememberConfirmDialog
@@ -137,12 +143,20 @@ fun InstallScreen(navigator: DestinationsNavigator) {
 
     val scrollBehavior = MiuixScrollBehavior()
 
+    val hazeState = remember { HazeState() }
+    val hazeStyle = HazeStyle(
+        backgroundColor = colorScheme.background,
+        tint = HazeTint(colorScheme.background.copy(0.67f))
+    )
+
     Scaffold(
         topBar = {
             TopBar(
                 onBack = dropUnlessResumed { navigator.popBackStack() },
                 onLkmUpload = onLkmUpload,
-                scrollBehavior = scrollBehavior
+                scrollBehavior = scrollBehavior,
+                hazeState = hazeState,
+                hazeStyle = hazeStyle
             )
         },
         popupHost = { },
@@ -153,6 +167,7 @@ fun InstallScreen(navigator: DestinationsNavigator) {
                 .height(getWindowSize().height.dp)
                 .overScrollVertical()
                 .nestedScroll(scrollBehavior.nestedScrollConnection)
+                .hazeSource(hazeState)
                 .padding(top = 12.dp)
                 .padding(horizontal = 16.dp),
             contentPadding = innerPadding,
@@ -317,9 +332,18 @@ private fun SelectInstallMethod(onSelected: (InstallMethod) -> Unit = {}) {
 private fun TopBar(
     onBack: () -> Unit = {},
     onLkmUpload: () -> Unit = {},
-    scrollBehavior: ScrollBehavior? = null
+    scrollBehavior: ScrollBehavior,
+    hazeState: HazeState,
+    hazeStyle: HazeStyle
 ) {
     TopAppBar(
+        modifier = Modifier
+            .hazeEffect(state = hazeState) {
+                style = hazeStyle
+                blurRadius = 25.dp
+                noiseFactor = 0f
+            },
+        color = Color.Transparent,
         title = stringResource(R.string.install),
         navigationIcon = {
             IconButton(

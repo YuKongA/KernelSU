@@ -2,6 +2,7 @@ package me.weishu.kernelsu.ui.screen
 
 import android.util.Log
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -22,9 +23,11 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ArrowBack
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.FixedScale
 import androidx.compose.ui.platform.LocalUriHandler
@@ -37,6 +40,11 @@ import androidx.lifecycle.compose.dropUnlessResumed
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootGraph
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
+import dev.chrisbanes.haze.HazeState
+import dev.chrisbanes.haze.HazeStyle
+import dev.chrisbanes.haze.HazeTint
+import dev.chrisbanes.haze.hazeEffect
+import dev.chrisbanes.haze.hazeSource
 import me.weishu.kernelsu.BuildConfig
 import me.weishu.kernelsu.R
 import top.yukonga.miuix.kmp.basic.Card
@@ -65,10 +73,23 @@ fun AboutScreen(navigator: DestinationsNavigator) {
     ).replace("<br/>", "\n")
     val result = extractLinks(htmlString)
 
+    val hazeState = remember { HazeState() }
+    val hazeStyle = HazeStyle(
+        backgroundColor = colorScheme.background,
+        tint = HazeTint(colorScheme.background.copy(0.67f))
+    )
+
     Scaffold(
         topBar = {
             TopAppBar(
-                stringResource(R.string.about) + stringResource(id = R.string.app_name),
+                modifier = Modifier
+                    .hazeEffect(state = hazeState) {
+                        style = hazeStyle
+                        blurRadius = 25.dp
+                        noiseFactor = 0f
+                    },
+                color = Color.Transparent,
+                title = stringResource(R.string.about) + stringResource(id = R.string.app_name),
                 navigationIcon = {
                     IconButton(
                         modifier = Modifier.padding(start = 16.dp),
@@ -92,6 +113,7 @@ fun AboutScreen(navigator: DestinationsNavigator) {
                 .height(getWindowSize().height.dp)
                 .overScrollVertical()
                 .nestedScroll(scrollBehavior.nestedScrollConnection)
+                .hazeSource(hazeState)
                 .padding(horizontal = 12.dp),
             contentPadding = innerPadding,
             overscrollEffect = null,
@@ -101,28 +123,30 @@ fun AboutScreen(navigator: DestinationsNavigator) {
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(horizontal = 12.dp)
-                        .padding(bottom = 18.dp),
+                        .padding(vertical = 48.dp),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     Box(
                         contentAlignment = Alignment.Center,
                         modifier = Modifier
-                            .size(130.dp)
-                            .clip(SmoothRoundedCornerShape(30.dp))
+                            .size(80.dp)
+                            .clip(SmoothRoundedCornerShape(16.dp))
+                            .background(Color.White)
                     ) {
                         Image(
                             painter = painterResource(id = R.drawable.ic_launcher_foreground),
                             contentDescription = "icon",
-                            contentScale = FixedScale(2f)
+                            contentScale = FixedScale(1f)
                         )
                     }
                     Text(
-                        stringResource(id = R.string.app_name),
+                        modifier = Modifier.padding(top = 12.dp),
+                        text = stringResource(id = R.string.app_name),
                         fontWeight = FontWeight.Medium,
                         fontSize = 26.sp
                     )
                     Text(
-                        BuildConfig.VERSION_NAME,
+                        text = BuildConfig.VERSION_NAME,
                         fontSize = 14.sp
                     )
                 }

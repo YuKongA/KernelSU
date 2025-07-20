@@ -55,6 +55,11 @@ import com.ramcosta.composedestinations.generated.destinations.TemplateEditorScr
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import com.ramcosta.composedestinations.result.ResultRecipient
 import com.ramcosta.composedestinations.result.getOr
+import dev.chrisbanes.haze.HazeState
+import dev.chrisbanes.haze.HazeStyle
+import dev.chrisbanes.haze.HazeTint
+import dev.chrisbanes.haze.hazeEffect
+import dev.chrisbanes.haze.hazeSource
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import me.weishu.kernelsu.R
@@ -107,6 +112,12 @@ fun AppProfileTemplateScreen(
         }
     }
 
+    val hazeState = remember { HazeState() }
+    val hazeStyle = HazeStyle(
+        backgroundColor = colorScheme.background,
+        tint = HazeTint(colorScheme.background.copy(0.67f))
+    )
+
     Scaffold(
         topBar = {
             val clipboardManager = LocalClipboardManager.current
@@ -149,7 +160,9 @@ fun AppProfileTemplateScreen(
                         }
                     }
                 },
-                scrollBehavior = scrollBehavior
+                scrollBehavior = scrollBehavior,
+                hazeState = hazeState,
+                hazeStyle = hazeStyle
             )
         },
         floatingActionButton = {
@@ -202,6 +215,7 @@ fun AppProfileTemplateScreen(
                     .height(getWindowSize().height.dp)
                     .overScrollVertical()
                     .nestedScroll(scrollBehavior.nestedScrollConnection)
+                    .hazeSource(hazeState)
                     .padding(horizontal = 12.dp),
                 contentPadding = innerPadding,
                 overscrollEffect = null
@@ -341,9 +355,18 @@ private fun TopBar(
     onSync: () -> Unit = {},
     onImport: () -> Unit = {},
     onExport: () -> Unit = {},
-    scrollBehavior: ScrollBehavior
+    scrollBehavior: ScrollBehavior,
+    hazeState: HazeState,
+    hazeStyle: HazeStyle
 ) {
     TopAppBar(
+        modifier = Modifier
+            .hazeEffect(state = hazeState) {
+                style = hazeStyle
+                blurRadius = 25.dp
+                noiseFactor = 0f
+            },
+        color = Color.Transparent,
         title = stringResource(R.string.settings_profile_template),
         navigationIcon = {
             IconButton(
