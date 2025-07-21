@@ -1,6 +1,7 @@
 package me.weishu.kernelsu.ui.screen
 
 import android.widget.Toast
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.FlowRow
@@ -22,6 +23,7 @@ import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ArrowBack
 import androidx.compose.material.icons.outlined.Fingerprint
@@ -167,6 +169,8 @@ fun AppProfileTemplateScreen(
         },
         floatingActionButton = {
             FloatingActionButton(
+                containerColor = colorScheme.surface,
+                shadowElevation = 3.5.dp,
                 onClick = {
                     navigator.navigate(TemplateEditorScreenDestination(TemplateViewModel.TemplateInfo(), false)) {
                         launchSingleTop = true
@@ -174,27 +178,15 @@ fun AppProfileTemplateScreen(
                 },
                 modifier = Modifier.padding(
                     bottom = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding() +
-                            WindowInsets.captionBar.asPaddingValues().calculateBottomPadding()
-                ),
-                shape = SmoothRoundedCornerShape(20.dp),
+                            WindowInsets.captionBar.asPaddingValues().calculateBottomPadding() + 10.dp, end = 20.dp)
+                    .border(0.05.dp, colorScheme.outline.copy(alpha = 0.5f), CircleShape),
                 content = {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(4.dp),
-                    ) {
-                        Icon(
-                            Icons.Rounded.Add,
-                            null,
-                            Modifier.padding(start = 8.dp),
-                            tint = Color.White
-                        )
-                        Text(
-                            modifier = Modifier.padding(end = 12.dp),
-                            text = stringResource(id = R.string.app_profile_template_create),
-                            color = Color.White,
-                            fontWeight = FontWeight.Medium,
-                        )
-                    }
+                    Icon(
+                        Icons.Rounded.Add,
+                        null,
+                        Modifier.size(40.dp),
+                        tint = colorScheme.primary
+                    )
                 },
             )
         },

@@ -39,6 +39,7 @@ import me.weishu.kernelsu.R
 import me.weishu.kernelsu.profile.Capabilities
 import me.weishu.kernelsu.profile.Groups
 import me.weishu.kernelsu.ui.component.EditText
+import me.weishu.kernelsu.ui.component.SuperEditArrow
 import me.weishu.kernelsu.ui.util.isSepolicyValid
 import top.yukonga.miuix.kmp.basic.ButtonDefaults
 import top.yukonga.miuix.kmp.basic.Icon
@@ -127,23 +128,31 @@ fun RootProfileConfig(
         })
         */
 
-        UidPanel(uid = profile.uid, label = "uid", onUidChange = {
+        SuperEditArrow(
+            title = "UID",
+            defaultValue = profile.uid,
+        ){
             onProfileChange(
                 profile.copy(
                     uid = it,
                     rootUseDefault = false
                 )
             )
-        })
 
-        UidPanel(uid = profile.gid, label = "gid", onUidChange = {
+        }
+
+        SuperEditArrow(
+            title = "GID",
+            defaultValue = profile.gid,
+        ){
             onProfileChange(
                 profile.copy(
-                    gid = it,
+                    uid = it,
                     rootUseDefault = false
                 )
             )
-        })
+
+        }
 
         val selectedGroups = profile.groups.ifEmpty { listOf(0) }.let { e ->
             e.mapNotNull { g ->

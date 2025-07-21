@@ -8,6 +8,8 @@ import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.LocalIndication
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
@@ -33,11 +35,14 @@ import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.selection.toggleable
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material.icons.outlined.Download
 import androidx.compose.material.icons.rounded.Add
 import androidx.compose.material.icons.rounded.Code
 import androidx.compose.material.icons.rounded.Delete
+import androidx.compose.material.icons.rounded.Download
 import androidx.compose.material.icons.rounded.MoreVert
 import androidx.compose.material.icons.rounded.PlayArrow
 import androidx.compose.material3.Snackbar
@@ -67,6 +72,8 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.TextUnit
+import androidx.compose.ui.unit.TextUnitType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.content.edit
@@ -105,6 +112,7 @@ import top.yukonga.miuix.kmp.basic.FloatingActionButton
 import top.yukonga.miuix.kmp.basic.HorizontalDivider
 import top.yukonga.miuix.kmp.basic.Icon
 import top.yukonga.miuix.kmp.basic.IconButton
+import top.yukonga.miuix.kmp.basic.IconButtonDefaults
 import top.yukonga.miuix.kmp.basic.ListPopup
 import top.yukonga.miuix.kmp.basic.ListPopupColumn
 import top.yukonga.miuix.kmp.basic.ListPopupDefaults
@@ -286,7 +294,10 @@ fun ModulePager(
                 }
                 FloatingActionButton(
                     modifier = Modifier
-                        .padding(bottom = bottomInnerPadding),
+                        .padding(bottom = bottomInnerPadding + 27.dp, end = 20.dp)
+                        .border(0.05.dp, colorScheme.outline.copy(alpha = 0.5f), CircleShape),
+                    containerColor = colorScheme.surface,
+                    shadowElevation = 3.5.dp,
                     onClick = {
                         // Select the zip files to install
                         val intent = Intent(Intent.ACTION_GET_CONTENT).apply {
@@ -295,26 +306,14 @@ fun ModulePager(
                         }
                         selectZipLauncher.launch(intent)
                     },
-                    shape = SmoothRoundedCornerShape(16.dp),
-                    minWidth = 100.dp,
                     content = {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(4.dp),
-                        ) {
-                            Icon(
-                                Icons.Rounded.Add,
-                                moduleInstall,
-                                Modifier.padding(start = 8.dp),
-                                tint = Color.White
-                            )
-                            Text(
-                                modifier = Modifier.padding(end = 12.dp),
-                                text = moduleInstall,
-                                color = Color.White,
-                                fontWeight = FontWeight.Medium,
-                            )
-                        }
+                        Icon(
+                            Icons.Rounded.Add,
+                            moduleInstall,
+                            modifier = Modifier.size(40.dp),
+                            //Modifier.padding(start = 8.dp),
+                            tint = colorScheme.primary
+                        )
                     },
                 )
             }
@@ -557,6 +556,7 @@ private fun ModuleList(
 
                 viewModel.moduleList.isEmpty() -> {
                     item {
+                        TestModuleItem()
                         Box(
                             modifier = Modifier.fillParentMaxSize(),
                             contentAlignment = Alignment.Center
@@ -652,10 +652,14 @@ fun ModuleItem(
         val indication = LocalIndication.current
         val viewModel = viewModel<ModuleViewModel>()
 
-        Row {
+        Row(
+            modifier = Modifier,
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
             Column(
                 modifier = Modifier
                     .weight(1f)
+                    .padding(end = 4.dp)
                     .run {
                         if (module.hasWebUi) {
                             toggleable(
@@ -676,33 +680,32 @@ fun ModuleItem(
 
                 Text(
                     text = module.name,
-                    fontSize = MiuixTheme.textStyles.body1.fontSize,
-                    fontWeight = FontWeight.Medium,
+                    fontSize = 17.sp,
+                    fontWeight = FontWeight(550),
                     color = colorScheme.onSurface,
                     textDecoration = textDecoration,
                 )
 
-                Spacer(Modifier.height(0.5.dp))
-
                 Text(
                     text = "$moduleVersion: ${module.version}",
-                    fontSize = MiuixTheme.textStyles.body2.fontSize,
+                    fontSize = 14.sp,
+                    modifier = Modifier.padding(top = 1.dp),
+                    fontWeight = FontWeight(500),
                     color = colorScheme.onSurfaceVariantSummary,
                     textDecoration = textDecoration,
                 )
 
                 Text(
                     text = "$moduleAuthor: ${module.author}",
-                    fontSize = MiuixTheme.textStyles.body2.fontSize,
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight(500),
                     color = colorScheme.onSurfaceVariantSummary,
                     textDecoration = textDecoration,
                 )
             }
 
             Switch(
-                modifier = Modifier
-                    .fillMaxHeight()
-                    .align(Alignment.CenterVertically),
+                modifier = Modifier,
                 checked = module.enabled,
                 onCheckedChange = onCheckChanged
             )
@@ -710,27 +713,31 @@ fun ModuleItem(
 
         Text(
             text = module.description,
-            fontSize = MiuixTheme.textStyles.body2.fontSize,
+            fontSize = 14.5.sp,
             color = colorScheme.onSurfaceVariantSummary,
-            modifier = Modifier.padding(top = 4.dp),
+            modifier = Modifier.padding(top = 2.dp),
             overflow = TextOverflow.Ellipsis,
             maxLines = 4,
             textDecoration = textDecoration
         )
 
         HorizontalDivider(
-            modifier = Modifier.padding(vertical = 8.dp),
+            modifier = Modifier.padding(top = 10.dp, bottom = 10.dp),
             thickness = 0.5.dp,
             color = colorScheme.outline.copy(alpha = 0.5f)
         )
 
         Row(
+            modifier = Modifier,
             horizontalArrangement = Arrangement.spacedBy(16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             if (module.hasActionScript) {
                 IconButton(
+                    //backgroundColor = Color(if (isSystemInDarkTheme()) 0xFF25354E else 0xFFEAF2FF),
                     backgroundColor = colorScheme.secondaryContainer.copy(alpha = 0.8f),
+                    minHeight = 35.dp,
+                    minWidth = 35.dp,
                     enabled = !module.remove && module.enabled,
                     onClick = {
                         navigator.navigate(ExecuteModuleActionScreenDestination(module.id)) {
@@ -742,6 +749,7 @@ fun ModuleItem(
                     Icon(
                         modifier = Modifier.size(20.dp),
                         imageVector = Icons.Rounded.PlayArrow,
+                        //tint = Color(0xFF0D84FF),
                         tint = colorScheme.onSurface.copy(alpha = if (isSystemInDarkTheme()) 0.7f else 0.9f),
                         contentDescription = stringResource(R.string.action)
                     )
@@ -752,6 +760,8 @@ fun ModuleItem(
                 IconButton(
                     backgroundColor = colorScheme.secondaryContainer.copy(alpha = 0.8f),
                     enabled = !module.remove && module.enabled,
+                    minHeight = 35.dp,
+                    minWidth = 35.dp,
                     onClick = { onClick(module) },
                 ) {
                     Icon(
@@ -767,43 +777,80 @@ fun ModuleItem(
 
             if (updateUrl.isNotEmpty()) {
                 IconButton(
-                    backgroundColor = colorScheme.secondaryContainer.copy(alpha = 0.8f),
+                    backgroundColor = Color(if (isSystemInDarkTheme()) 0xFF25354E else 0xFFEAF2FF),
+                    //backgroundColor = Color(if (isSystemInDarkTheme()) 0xFF20442D else 0xFFEBFAF0),
                     enabled = !module.remove,
+                    minHeight = 35.dp,
+                    minWidth = 35.dp,
                     onClick = { onUpdate(module) },
                 ) {
-                    Icon(
-                        modifier = Modifier.size(20.dp),
-                        imageVector = Icons.Outlined.Download,
-                        tint = colorScheme.onSurface.copy(alpha = if (isSystemInDarkTheme()) 0.7f else 0.9f),
-                        contentDescription = stringResource(R.string.module_update),
-                    )
+                    Row(
+                        modifier = Modifier.then(
+                            if (updateUrl.isNotEmpty()) {
+                                Modifier.padding(horizontal = 10.dp)
+                            }else{
+                                Modifier
+                            }
+                        ),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(2.dp),
+                    ) {
+                        Icon(
+                            modifier = Modifier.size(20.dp),
+                            imageVector = Icons.Rounded.Download,
+                            tint = Color(0xFF0D84FF),
+                            //tint = Color(0xFF0BAE73),
+                            contentDescription = stringResource(R.string.module_update),
+                        )
+                        Text(
+                            text = stringResource(R.string.module_update),
+                            color = Color(0xFF0D84FF),
+                            //color = Color(0xFF0BAE73),
+                            fontWeight = FontWeight.Medium,
+                            fontSize = 14.sp
+                        )
+
+                    }
                 }
             }
 
             IconButton(
                 enabled = !module.remove,
+                minHeight = 35.dp,
+                minWidth = 35.dp,
                 onClick = { onUninstall(module) },
-                backgroundColor = Color.Red.copy(alpha = if (isSystemInDarkTheme()) 0.3f else 0.6f),
+                backgroundColor = colorScheme.secondaryContainer.copy(alpha = 0.8f),
+                //backgroundColor = Color(if (isSystemInDarkTheme()) 0xFF4E2525 else 0xFFFFEAEA),
             ) {
                 Row(
+                    modifier = Modifier.then(
+                        if (updateUrl.isEmpty()) {
+                            Modifier.padding(horizontal = 10.dp)
+                        }else{
+                            Modifier
+                        }
+                    ),
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(4.dp),
                 ) {
                     Icon(
                         modifier = Modifier
-                            .padding(start = 10.dp)
                             .size(20.dp),
-                        imageVector = Icons.Rounded.Delete,
-                        tint = Color.White.copy(alpha = if (isSystemInDarkTheme()) 0.78f else 0.98f),
+                        imageVector = Icons.Outlined.Delete,
+                        tint = colorScheme.onSurface.copy(alpha = if (isSystemInDarkTheme()) 0.7f else 0.9f),
+                        //tint = Color( if (isSystemInDarkTheme()) 0xFFF72727 else 0xFFFF3434),
                         contentDescription = null
                     )
-                    Text(
-                        modifier = Modifier.padding(end = 12.dp),
-                        text = stringResource(R.string.uninstall),
-                        color = Color.White.copy(alpha = if (isSystemInDarkTheme()) 0.78f else 0.98f),
-                        fontWeight = FontWeight.Medium,
-                        fontSize = 15.sp
-                    )
+                    if (updateUrl.isEmpty()) {
+
+                        Text(
+                            text = stringResource(R.string.uninstall),
+                            color = colorScheme.onSurface.copy(alpha = if (isSystemInDarkTheme()) 0.7f else 0.9f),
+                            //color = Color( if (isSystemInDarkTheme()) 0xFFF72727 else 0xFFFF3434),
+                            fontWeight = FontWeight.Medium,
+                            fontSize = 15.sp
+                        )
+                    }
                 }
             }
         }
@@ -828,4 +875,89 @@ fun ModuleItemPreview() {
         hasActionScript = false
     )
     ModuleItem(EmptyDestinationsNavigator, module, "", {}, {}, {}, {})
+}
+
+
+@Composable
+fun TestModuleItem() {
+    val module = ModuleViewModel.ModuleInfo(
+        id = "id",
+        name = "ModuleName",
+        version = "version",
+        versionCode = 1,
+        author = "author",
+        description = "I am a test module and i do nothing but show a very long description",
+        enabled = true,
+        update = true,
+        remove = false,
+        updateJson = "111",
+        hasWebUi = true,
+        hasActionScript = true
+    )
+    ModuleItem(EmptyDestinationsNavigator, module, "1111", {}, {}, {}, {})
+    Spacer(Modifier.height(12.dp))
+    val module0 = ModuleViewModel.ModuleInfo(
+        id = "id",
+        name = "ModuleName",
+        version = "version",
+        versionCode = 1,
+        author = "author",
+        description = "I am a test module and i do nothing but show a very long description",
+        enabled = false,
+        update = true,
+        remove = false,
+        updateJson = "111",
+        hasWebUi = true,
+        hasActionScript = true
+    )
+    ModuleItem(EmptyDestinationsNavigator, module0, "1111", {}, {}, {}, {})
+    Spacer(Modifier.height(12.dp))
+    val module2 = ModuleViewModel.ModuleInfo(
+        id = "id",
+        name = "bbbbbbbbbbbbbbbbbbModuleNamebbbbbbbbbbbbbb",
+        version = "version",
+        versionCode = 1,
+        author = "author",
+        description = "I am a test module and i do nothing but show a very long description",
+        enabled = true,
+        update = true,
+        remove = false,
+        updateJson = "111",
+        hasWebUi = true,
+        hasActionScript = true
+    )
+    ModuleItem(EmptyDestinationsNavigator, module2, "1111", {}, {}, {}, {})
+    Spacer(Modifier.height(12.dp))
+    val module3 = ModuleViewModel.ModuleInfo(
+        id = "id",
+        name = "Module",
+        version = "version",
+        versionCode = 1,
+        author = "authorrrrrrrrrrrrrrrrrrrrrrrrbbbbbbbbbbbbb",
+        description = "I am a test module and i do nothing but show a very long description",
+        enabled = true,
+        update = true,
+        remove = false,
+        updateJson = "111",
+        hasWebUi = true,
+        hasActionScript = true
+    )
+    ModuleItem(EmptyDestinationsNavigator, module3, "1111", {}, {}, {}, {})
+    Spacer(Modifier.height(12.dp))
+    val module4 = ModuleViewModel.ModuleInfo(
+        id = "id",
+        name = "bbbbbbbbbbbbbbbbbbModuleNamebbbbbbbbbbbbbb",
+        version = "version",
+        versionCode = 1,
+        author = "authorrrrrrrrrrrrrrrrrrrrrrrrbbbbbbbbbbbbb",
+        description = "I am a test module and i do nothing but show a very long description",
+        enabled = true,
+        update = true,
+        remove = false,
+        updateJson = "111",
+        hasWebUi = true,
+        hasActionScript = true
+    )
+    ModuleItem(EmptyDestinationsNavigator, module4, "1111", {}, {}, {}, {})
+    Spacer(Modifier.height(12.dp))
 }

@@ -140,7 +140,7 @@ fun MainScreen(navController: DestinationsNavigator) {
                 .hazeSource(state = hazeState),
             state = pagerState,
             userScrollEnabled = false,
-            beyondViewportPageCount = 2
+            beyondViewportPageCount = 1
         ) {
             when (it) {
                 0 -> HomePager(pagerState, navController, innerPadding.calculateBottomPadding())

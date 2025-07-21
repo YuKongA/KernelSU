@@ -1,5 +1,6 @@
 package me.weishu.kernelsu.ui.screen
 
+import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -16,6 +17,7 @@ import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.add
 import androidx.compose.foundation.layout.displayCutout
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.only
@@ -56,6 +58,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.zIndex
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
@@ -70,6 +73,10 @@ import kotlinx.coroutines.launch
 import me.weishu.kernelsu.Natives
 import me.weishu.kernelsu.R
 import me.weishu.kernelsu.ui.component.DropdownItem
+import me.weishu.kernelsu.ui.component.Loading
+import me.weishu.kernelsu.ui.component.SearchBox
+import me.weishu.kernelsu.ui.component.SearchPager
+import me.weishu.kernelsu.ui.component.rememberSearchStatus
 import me.weishu.kernelsu.ui.viewmodel.SuperUserViewModel
 import top.yukonga.miuix.kmp.basic.BasicComponent
 import top.yukonga.miuix.kmp.basic.Card
@@ -82,6 +89,7 @@ import top.yukonga.miuix.kmp.basic.ListPopupDefaults
 import top.yukonga.miuix.kmp.basic.MiuixScrollBehavior
 import top.yukonga.miuix.kmp.basic.PopupPositionProvider
 import top.yukonga.miuix.kmp.basic.PullToRefresh
+import top.yukonga.miuix.kmp.basic.RefreshState
 import top.yukonga.miuix.kmp.basic.Scaffold
 import top.yukonga.miuix.kmp.basic.SearchBar
 import top.yukonga.miuix.kmp.basic.Text
@@ -94,6 +102,7 @@ import top.yukonga.miuix.kmp.theme.MiuixTheme.colorScheme
 import top.yukonga.miuix.kmp.utils.PressFeedbackType
 import top.yukonga.miuix.kmp.utils.getWindowSize
 import top.yukonga.miuix.kmp.utils.overScrollVertical
+import kotlin.math.log
 
 @Composable
 fun SuperUserPager(
@@ -104,18 +113,18 @@ fun SuperUserPager(
     val scope = rememberCoroutineScope()
     val scrollBehavior = MiuixScrollBehavior()
     val listState = rememberLazyListState()
+    val searchStatus by viewModel.searchStatus
+
 
     LaunchedEffect(key1 = navigator) {
-        viewModel.search = ""
-        if (viewModel.appList.isEmpty()) {
+        if (viewModel.appList.value.isEmpty() || viewModel.searchResults.value.isEmpty()) {
             viewModel.fetchAppList()
         }
     }
 
-    LaunchedEffect(viewModel.search) {
-        if (viewModel.search.isEmpty()) {
-            listState.scrollToItem(0)
-        }
+    LaunchedEffect(searchStatus.searchText) {
+        Log.d("ggc", "SearchBar: updateSearchText")
+        viewModel.updateSearchText(searchStatus.searchText)
     }
 
     val hazeState = remember { HazeState() }
@@ -126,28 +135,18 @@ fun SuperUserPager(
 
     Scaffold(
         topBar = {
-            TopAppBar(
-                modifier = Modifier
-                    .hazeEffect(state = hazeState) {
-                        style = hazeStyle
-                        blurRadius = 25.dp
-                        noiseFactor = 0f
-                    },
-                color = Color.Transparent,
-                title = stringResource(R.string.superuser),
-                actions = {
-                    val showTopPopup = remember { mutableStateOf(false) }
-
-                    IconButton(
-                        modifier = Modifier.padding(end = 16.dp),
-                        onClick = { showTopPopup.value = true },
-                        holdDownState = showTopPopup.value
-                    ) {
-                        Icon(
-                            imageVector = Icons.Rounded.MoreVert,
-                            tint = colorScheme.onSurface,
-                            contentDescription = stringResource(id = R.string.settings)
-                        )
+            searchStatus.TopAppBarAnim{
+                TopAppBar(
+                    modifier = Modifier
+                        .hazeEffect(state = hazeState) {
+                            style = hazeStyle
+                            blurRadius = 25.dp
+                            noiseFactor = 0f
+                        },
+                    color = Color.Transparent,
+                    title = stringResource(R.string.superuser),
+                    actions = {
+                        val showTopPopup = remember { mutableStateOf(false) }
                         ListPopup(
                             show = showTopPopup,
                             popupPositionProvider = ListPopupDefaults.ContextMenuPositionProvider,
@@ -183,111 +182,31 @@ fun SuperUserPager(
                                 )
                             }
                         }
-                    }
-                },
-                scrollBehavior = scrollBehavior
-            )
-        },
-        popupHost = { },
-        contentWindowInsets = WindowInsets.systemBars.add(WindowInsets.displayCutout).only(WindowInsetsSides.Horizontal)
-    ) { innerPadding ->
-        val pullToRefreshState = rememberPullToRefreshState()
-        PullToRefresh(
-            pullToRefreshState = pullToRefreshState,
-            onRefresh = {
-                scope.launch {
-                    viewModel.fetchAppList()
-                    pullToRefreshState.completeRefreshing { }
-                }
-            },
-            contentPadding = PaddingValues(top = innerPadding.calculateTopPadding() + 12.dp),
-        ) {
-            val keyboardController = LocalSoftwareKeyboardController.current
-            val focusManager = LocalFocusManager.current
-            val focusRequester = remember { FocusRequester() }
-            var expanded by remember { mutableStateOf(false) }
 
-            LazyColumn(
-                state = listState,
-                modifier = Modifier
-                    .height(getWindowSize().height.dp)
-                    .overScrollVertical()
-                    .nestedScroll(scrollBehavior.nestedScrollConnection)
-                    .hazeSource(hazeState),
-                contentPadding = innerPadding,
-                overscrollEffect = null,
+                        IconButton(
+                            modifier = Modifier.padding(end = 16.dp),
+                            onClick = {
+                                Log.d("ggc", "SuperUserPager: click")
+                                showTopPopup.value = true
+                                      },
+                            holdDownState = showTopPopup.value
+                        ) {
+                            Icon(
+                                imageVector = Icons.Rounded.MoreVert,
+                                tint = colorScheme.onSurface,
+                                contentDescription = stringResource(id = R.string.settings)
+                            )
+                        }
+                    },
+                    scrollBehavior = scrollBehavior
+                )
+            }
+        },
+        popupHost = {
+            searchStatus.SearchPager(
+                {}
             ) {
-                item {
-                    SearchBar(
-                        modifier = Modifier
-                            .padding(vertical = 12.dp)
-                            .focusRequester(focusRequester)
-                            .onFocusChanged { focusState ->
-                                expanded = focusState.isFocused
-                            },
-                        insideMargin = DpSize(12.dp, 0.dp),
-                        inputField = {
-                            InputField(
-                                query = viewModel.search,
-                                onQueryChange = { viewModel.search = it },
-                                onSearch = { },
-                                expanded = false,
-                                onExpandedChange = { },
-                                trailingIcon = {
-                                    AnimatedVisibility(
-                                        visible = viewModel.search.isNotEmpty(),
-                                        enter = fadeIn(),
-                                        exit = fadeOut(),
-                                    ) {
-                                        Box(
-                                            modifier = Modifier.padding(start = 8.dp, end = 16.dp),
-                                            contentAlignment = Alignment.CenterStart
-                                        ) {
-                                            Icon(
-                                                modifier = Modifier
-                                                    .clip(CircleShape)
-                                                    .clickable { viewModel.search = "" },
-                                                imageVector = MiuixIcons.Basic.SearchCleanup,
-                                                tint = colorScheme.onSurfaceContainerHighest,
-                                                contentDescription = "Search Cleanup"
-                                            )
-                                        }
-                                    }
-                                }
-                            )
-                        },
-                        onExpandedChange = { },
-                        outsideRightAction = {
-                            Text(
-                                modifier = Modifier
-                                    .padding(end = 12.dp)
-                                    .clickable(
-                                        interactionSource = null,
-                                        indication = null
-                                    ) {
-                                        viewModel.search = ""
-                                        focusManager.clearFocus()
-                                        keyboardController?.hide()
-                                    },
-                                text = stringResource(android.R.string.cancel),
-                                style = TextStyle(fontSize = 17.sp, fontWeight = FontWeight.Bold),
-                                color = colorScheme.primary
-                            )
-                        },
-                        expanded = expanded,
-                    ) {}
-                }
-                item {
-                    if (viewModel.appList.isEmpty()) {
-                        Text(
-                            modifier = Modifier.fillMaxSize(),
-                            text = "Refresh...",
-                            textAlign = TextAlign.Center,
-                            color = colorScheme.onSecondaryContainer,
-                        )
-                    }
-                }
-                items(viewModel.appList, key = { it.packageName + it.uid }) { app ->
+                items(viewModel.searchResults.value, key = { it.packageName + it.uid }) { app ->
                     AppItem(app) {
                         navigator.navigate(AppProfileScreenDestination(app)) {
                             launchSingleTop = true
@@ -297,9 +216,75 @@ fun SuperUserPager(
                 item {
                     Spacer(Modifier.height(bottomInnerPadding))
                 }
+
+            }
+
+        },
+        contentWindowInsets = WindowInsets.systemBars.add(WindowInsets.displayCutout).only(WindowInsetsSides.Horizontal)
+    ) { innerPadding ->
+        val pullToRefreshState = rememberPullToRefreshState()
+        searchStatus.SearchBox(
+            modifier = Modifier
+                .padding(top = innerPadding.calculateTopPadding() + 12.dp)
+                .fillMaxSize(),
+        ){
+
+            PullToRefresh(
+                pullToRefreshState = pullToRefreshState,
+                onRefresh = {
+                    scope.launch {
+                        viewModel.fetchAppList()
+                        pullToRefreshState.completeRefreshing { }
+                    }
+                },
+                contentPadding = PaddingValues(top = 8.dp),
+            ) {
+                LazyColumn(
+                    state = listState,
+                    modifier = Modifier
+                        .fillMaxHeight()
+                        .overScrollVertical()
+                        .nestedScroll(scrollBehavior.nestedScrollConnection)
+                        .hazeSource(hazeState),
+                    contentPadding = PaddingValues(top = 6.dp),
+                    overscrollEffect = null,
+                ) {
+                    item {
+                        if (viewModel.appList.value.isEmpty() ) {
+                            if (viewModel.isRefreshing){
+                                Loading()
+                                Text(
+                                    modifier = Modifier.fillMaxSize(),
+                                    text = "Refresh...",
+                                    textAlign = TextAlign.Center,
+                                    color = colorScheme.onSecondaryContainer,
+                                )
+                            }else {
+                                Text(
+                                    modifier = Modifier.fillMaxSize(),
+                                    text = "empty",
+                                    textAlign = TextAlign.Center,
+                                    color = colorScheme.onSecondaryContainer,
+                                )
+
+                            }
+                        }
+                    }
+                    items(viewModel.appList.value, key = { it.packageName + it.uid }) { app ->
+                        AppItem(app) {
+                            navigator.navigate(AppProfileScreenDestination(app)) {
+                                launchSingleTop = true
+                            }
+                        }
+                    }
+                    item {
+                        Spacer(Modifier.height(bottomInnerPadding))
+                    }
+                }
             }
         }
     }
+
 }
 
 @Composable

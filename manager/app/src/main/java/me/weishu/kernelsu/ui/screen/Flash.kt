@@ -19,6 +19,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -76,6 +77,7 @@ import top.yukonga.miuix.kmp.basic.FloatingActionButton
 import top.yukonga.miuix.kmp.basic.Icon
 import top.yukonga.miuix.kmp.basic.IconButton
 import top.yukonga.miuix.kmp.basic.Scaffold
+import top.yukonga.miuix.kmp.basic.SearchBar
 import top.yukonga.miuix.kmp.basic.SmallTopAppBar
 import top.yukonga.miuix.kmp.basic.Text
 import top.yukonga.miuix.kmp.theme.MiuixTheme.colorScheme
@@ -191,8 +193,7 @@ fun FlashScreen(
                 FloatingActionButton(
                     modifier = Modifier.padding(
                         bottom = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding() +
-                                WindowInsets.captionBar.asPaddingValues().calculateBottomPadding()
-                    ),
+                                WindowInsets.captionBar.asPaddingValues().calculateBottomPadding() + 10.dp, end = 20.dp),
                     onClick = {
                         scope.launch {
                             withContext(Dispatchers.IO) {
@@ -200,26 +201,15 @@ fun FlashScreen(
                             }
                         }
                     },
-                    shape = SmoothRoundedCornerShape(16.dp),
-                    minWidth = 100.dp,
+                    containerColor = colorScheme.surface,
+                    shadowElevation = 3.5.dp,
                     content = {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(4.dp),
-                        ) {
-                            Icon(
-                                Icons.Rounded.Refresh,
-                                reboot,
-                                Modifier.padding(start = 8.dp),
-                                tint = Color.White
-                            )
-                            Text(
-                                modifier = Modifier.padding(end = 12.dp),
-                                text = reboot,
-                                color = Color.White,
-                                fontWeight = FontWeight.Medium,
-                            )
-                        }
+                        Icon(
+                            Icons.Rounded.Refresh,
+                            reboot,
+                            Modifier.size(40.dp),
+                            tint = colorScheme.primary
+                        )
                     },
                 )
             }
