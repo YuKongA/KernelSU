@@ -122,7 +122,6 @@ class MainActivity : ComponentActivity() {
     }
 }
 
-
 @Composable
 @Destination<RootGraph>(start = true)
 fun MainScreen(navController: DestinationsNavigator) {

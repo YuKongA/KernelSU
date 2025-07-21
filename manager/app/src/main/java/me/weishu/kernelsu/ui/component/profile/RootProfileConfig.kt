@@ -1,7 +1,9 @@
 package me.weishu.kernelsu.ui.component.profile
 
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -16,7 +18,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -25,19 +26,19 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.core.text.isDigitsOnly
 import me.weishu.kernelsu.Natives
 import me.weishu.kernelsu.R
 import me.weishu.kernelsu.profile.Capabilities
 import me.weishu.kernelsu.profile.Groups
+import me.weishu.kernelsu.ui.component.EditText
 import me.weishu.kernelsu.ui.util.isSepolicyValid
 import top.yukonga.miuix.kmp.basic.ButtonDefaults
 import top.yukonga.miuix.kmp.basic.Icon
@@ -415,41 +416,27 @@ private fun StatusTag(label: String) {
 
 @Composable
 private fun UidPanel(uid: Int, label: String, onUidChange: (Int) -> Unit) {
-    var text by remember(uid) { mutableStateOf(uid.toString()) }
-    var isError by remember(text) { mutableStateOf(!isTextValidUid(text)) }
-    val keyboardController = LocalSoftwareKeyboardController.current
-
-    TextField(
-        value = text,
-        onValueChange = { newText ->
-            if (isTextValidUid(newText)) {
-                text = newText
-                onUidChange(newText.toIntOrNull() ?: 0)
-            } else {
-                text = ""
+    val text = remember(uid) { mutableStateOf(uid.toString()) }
+    var isError by remember {
+        mutableStateOf(false)
+    }
+    Log.d("RootProfileConfig", "UidPanel: $label, text: ${text.value}, isError: $isError")
+    EditText(
+        title = label.uppercase(),
+        textValue = text,
+        onTextValueChange = { newText ->
+            text.value = newText
+            val valid = !isTextValidUid(text.value)
+            isError = valid
+            if (!isError) {
+                onUidChange(text.value.toIntOrNull() ?: 0)
             }
         },
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 16.dp)
-            .padding(top = 16.dp),
-        backgroundColor = colorScheme.surfaceContainer,
-        borderColor = if (isError) colorScheme.tertiaryContainer else colorScheme.primary,
         keyboardOptions = KeyboardOptions(
             keyboardType = KeyboardType.Number,
-            imeAction = ImeAction.Done
         ),
-        keyboardActions = KeyboardActions(onDone = {
-            keyboardController?.hide()
-        }),
-        singleLine = true,
-        trailingIcon = {
-            Text(
-                text = label.uppercase(),
-                fontSize = 13.sp,
-                modifier = Modifier.padding(horizontal = 16.dp)
-            )
-        }
+        enabled = true,
+        isError = isError
     )
 }
 
@@ -484,7 +471,11 @@ private fun SELinuxPanel(
                         .padding(vertical = 8.dp),
                     label = stringResource(id = R.string.profile_selinux_domain),
                     backgroundColor = colorScheme.surfaceContainer,
-                    borderColor = if (isDomainValid) colorScheme.primary else colorScheme.tertiaryContainer,
+                    borderColor = if (isDomainValid) {
+                        colorScheme.primary
+                    } else {
+                        Color.Red.copy(alpha = if (isSystemInDarkTheme()) 0.3f else 0.6f)
+                    },
                     keyboardOptions = KeyboardOptions(
                         keyboardType = KeyboardType.Ascii,
                         imeAction = ImeAction.Next
@@ -499,7 +490,11 @@ private fun SELinuxPanel(
                         .padding(vertical = 8.dp),
                     label = stringResource(id = R.string.profile_selinux_rules),
                     backgroundColor = colorScheme.surfaceContainer,
-                    borderColor = if (isRulesValid) colorScheme.primary else colorScheme.tertiaryContainer,
+                    borderColor = if (isRulesValid) {
+                        colorScheme.primary
+                    } else {
+                        Color.Red.copy(alpha = if (isSystemInDarkTheme()) 0.3f else 0.6f)
+                    },
                     keyboardOptions = KeyboardOptions(
                         keyboardType = KeyboardType.Ascii,
                     ),

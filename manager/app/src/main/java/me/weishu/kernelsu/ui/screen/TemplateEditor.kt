@@ -16,7 +16,6 @@ import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ArrowBack
@@ -33,12 +32,9 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.input.pointer.pointerInteropFilter
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.dropUnlessResumed
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootGraph
@@ -50,6 +46,7 @@ import dev.chrisbanes.haze.hazeEffect
 import dev.chrisbanes.haze.hazeSource
 import me.weishu.kernelsu.Natives
 import me.weishu.kernelsu.R
+import me.weishu.kernelsu.ui.component.EditText
 import me.weishu.kernelsu.ui.component.profile.RootProfileConfig
 import me.weishu.kernelsu.ui.util.deleteAppProfileTemplate
 import me.weishu.kernelsu.ui.util.getAppProfileTemplate
@@ -62,8 +59,6 @@ import top.yukonga.miuix.kmp.basic.IconButton
 import top.yukonga.miuix.kmp.basic.MiuixScrollBehavior
 import top.yukonga.miuix.kmp.basic.Scaffold
 import top.yukonga.miuix.kmp.basic.ScrollBehavior
-import top.yukonga.miuix.kmp.basic.Text
-import top.yukonga.miuix.kmp.basic.TextField
 import top.yukonga.miuix.kmp.basic.TopAppBar
 import top.yukonga.miuix.kmp.theme.MiuixTheme.colorScheme
 import top.yukonga.miuix.kmp.utils.getWindowSize
@@ -103,6 +98,8 @@ fun TemplateEditorScreen(
     Scaffold(
         topBar = {
             val saveTemplateFailed = stringResource(id = R.string.app_profile_template_save_failed)
+            val idConflictError = stringResource(id = R.string.app_profile_template_id_exist)
+            val idInvalidError = stringResource(id = R.string.app_profile_template_id_invalid)
             val context = LocalContext.current
 
             TopBar(
@@ -121,6 +118,19 @@ fun TemplateEditorScreen(
                     }
                 },
                 onSave = {
+                    when (idCheck(template.id)) {
+                        0 -> Unit
+
+                        1 -> {
+                            Toast.makeText(context, idConflictError, Toast.LENGTH_SHORT).show()
+                            return@TopBar
+                        }
+
+                        2 -> {
+                            Toast.makeText(context, idInvalidError, Toast.LENGTH_SHORT).show()
+                            return@TopBar
+                        }
+                    }
                     if (saveTemplate(template, isCreation)) {
                         navigator.navigateBack(result = true)
                     } else {
@@ -155,7 +165,7 @@ fun TemplateEditorScreen(
                         .padding(12.dp),
                 ) {
                     var errorHint by remember {
-                        mutableStateOf("")
+                        mutableStateOf(false)
                     }
 
                     TextEdit(
@@ -173,24 +183,22 @@ fun TemplateEditorScreen(
                         }
                     }
 
-                    val idConflictError = stringResource(id = R.string.app_profile_template_id_exist)
-                    val idInvalidError = stringResource(id = R.string.app_profile_template_id_invalid)
                     TextEdit(
                         label = stringResource(id = R.string.app_profile_template_id),
                         text = template.id,
-                        errorHint = errorHint,
-                        isError = errorHint.isNotEmpty()
+                        isError = errorHint
                     ) { value ->
-                        errorHint = if (isTemplateExist(value)) {
-                            idConflictError
+                        errorHint = if (value.isEmpty()) {
+                            false
+                        } else if (isTemplateExist(value)) {
+                            true
                         } else if (!isValidTemplateId(value)) {
-                            idInvalidError
+                            true
                         } else {
-                            ""
+                            false
                         }
                         template = template.copy(id = value)
                     }
-
                     TextEdit(
                         label = stringResource(R.string.module_author),
                         text = template.author
@@ -280,6 +288,10 @@ fun isTemplateValid(template: TemplateViewModel.TemplateInfo): Boolean {
     return true
 }
 
+fun idCheck(value: String): Int {
+    return if (value.isEmpty()) 0 else if (isTemplateExist(value)) 1 else if (!isValidTemplateId(value)) 2 else 0
+}
+
 fun saveTemplate(template: TemplateViewModel.TemplateInfo, isCreation: Boolean = false): Boolean {
     if (!isTemplateValid(template)) {
         return false
@@ -359,35 +371,21 @@ private fun TopBar(
 private fun TextEdit(
     label: String,
     text: String,
-    errorHint: String = "",
     isError: Boolean = false,
     onValueChange: (String) -> Unit = {}
 ) {
-    val keyboardController = LocalSoftwareKeyboardController.current
-
-    TextField(
-        value = text,
-        onValueChange = onValueChange,
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 16.dp)
-            .padding(top = 16.dp),
-        backgroundColor = colorScheme.surfaceContainer,
-        borderColor = if (isError) colorScheme.tertiaryContainer else colorScheme.primary,
+    val editText = remember { mutableStateOf(text) }
+    EditText(
+        title = label.uppercase(),
+        textValue = editText,
+        onTextValueChange = { newText ->
+            editText.value = newText
+            onValueChange(newText)
+        },
         keyboardOptions = KeyboardOptions(
-            keyboardType = KeyboardType.Number,
-            imeAction = ImeAction.Done
+            keyboardType = KeyboardType.Ascii,
         ),
-        keyboardActions = KeyboardActions(onDone = {
-            keyboardController?.hide()
-        }),
-        trailingIcon = {
-            Text(
-                text = if (isError) errorHint else label.uppercase(),
-                fontSize = 13.sp,
-                modifier = Modifier.padding(horizontal = 16.dp)
-            )
-        }
+        isError = isError,
     )
 }
 

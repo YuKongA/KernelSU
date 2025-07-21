@@ -11,7 +11,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import me.weishu.kernelsu.Natives
 import me.weishu.kernelsu.R
-import top.yukonga.miuix.kmp.basic.TextField
+import me.weishu.kernelsu.ui.component.EditText
 import top.yukonga.miuix.kmp.extra.SuperSwitch
 
 @Composable
@@ -24,11 +24,11 @@ fun AppProfileConfig(
 ) {
     Column(modifier = modifier) {
         if (!fixedName) {
-            TextField(
-                label = stringResource(R.string.profile_name),
-                useLabelAsPlaceholder = true,
-                value = profile.name,
-                onValueChange = { onProfileChange(profile.copy(name = it)) }
+            EditText(
+                title = stringResource(R.string.profile_name),
+                textValue = remember { mutableStateOf(profile.name) },
+                onTextValueChange = { onProfileChange(profile.copy(name = it)) },
+                enabled = enabled,
             )
         }
 
