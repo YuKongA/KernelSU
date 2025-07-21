@@ -59,7 +59,7 @@ fun SuperEditArrow(
         onClick = {
             showDialog.value = true
         },
-        holdDownState = holdDownState,
+        holdDownState = showDialog.value,
         enabled = enabled
     )
 
@@ -117,7 +117,15 @@ private fun EditDialog(
                 text = stringResource(R.string.confirm),
                 onClick = {
                     showDialog.value = false
-                    onValueChange(filter.getInputValue().text.toInt())
+                    with(filter.getInputValue().text){
+                        if (isEmpty()){
+                            onValueChange(0)
+                            filter.setInputValue("0")
+                        }else{
+                            onValueChange(this@with.toInt())
+                        }
+
+                    }
                 },
                 modifier = Modifier.weight(1f),
                 colors = ButtonDefaults.textButtonColorsPrimary()

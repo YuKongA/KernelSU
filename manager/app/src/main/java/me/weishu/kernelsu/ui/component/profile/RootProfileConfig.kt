@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -32,6 +33,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import androidx.core.text.isDigitsOnly
 import me.weishu.kernelsu.Natives
@@ -39,6 +41,7 @@ import me.weishu.kernelsu.R
 import me.weishu.kernelsu.profile.Capabilities
 import me.weishu.kernelsu.profile.Groups
 import me.weishu.kernelsu.ui.component.EditText
+import me.weishu.kernelsu.ui.component.SuperCheckbox
 import me.weishu.kernelsu.ui.component.SuperEditArrow
 import me.weishu.kernelsu.ui.util.isSepolicyValid
 import top.yukonga.miuix.kmp.basic.ButtonDefaults
@@ -46,11 +49,9 @@ import top.yukonga.miuix.kmp.basic.Icon
 import top.yukonga.miuix.kmp.basic.Text
 import top.yukonga.miuix.kmp.basic.TextButton
 import top.yukonga.miuix.kmp.basic.TextField
+import top.yukonga.miuix.kmp.extra.CheckboxLocation
 import top.yukonga.miuix.kmp.extra.SuperArrow
-import top.yukonga.miuix.kmp.extra.SuperCheckbox
 import top.yukonga.miuix.kmp.extra.SuperDialog
-import top.yukonga.miuix.kmp.icon.MiuixIcons
-import top.yukonga.miuix.kmp.icon.icons.basic.ArrowRight
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 import top.yukonga.miuix.kmp.theme.MiuixTheme.colorScheme
 
@@ -219,6 +220,7 @@ fun GroupsPanel(selected: List<Groups>, closeSelection: (selection: Set<Groups>)
         show = showDialog,
         title = stringResource(R.string.profile_groups),
         summary = "${currentSelection.value.size} / 32",
+        insideMargin = DpSize(0.dp, 24.dp),
         onDismissRequest = { showDialog.value = false }
     ) {
         Column(modifier = Modifier.heightIn(max = 500.dp)) {
@@ -227,7 +229,10 @@ fun GroupsPanel(selected: List<Groups>, closeSelection: (selection: Set<Groups>)
                     SuperCheckbox(
                         title = group.display,
                         summary = group.desc,
+                        insideMargin = PaddingValues(horizontal = 30.dp, vertical = 16.dp),
+                        checkboxLocation = CheckboxLocation.Right,
                         checked = currentSelection.value.contains(group),
+                        holdDownState = currentSelection.value.contains(group),
                         onCheckedChange = { isChecked ->
                             val newSelection = currentSelection.value.toMutableSet()
                             if (isChecked) {
@@ -242,6 +247,7 @@ fun GroupsPanel(selected: List<Groups>, closeSelection: (selection: Set<Groups>)
             }
             Spacer(Modifier.height(12.dp))
             Row(
+                modifier = Modifier.padding(horizontal = 24.dp),
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 TextButton(
@@ -263,42 +269,19 @@ fun GroupsPanel(selected: List<Groups>, closeSelection: (selection: Set<Groups>)
         }
     }
 
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable(onClick = { showDialog.value = true })
-            .padding(horizontal = 16.dp, vertical = 14.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Column(modifier = Modifier.weight(1f)) {
-            Text(
-                text = stringResource(R.string.profile_groups),
-                fontSize = MiuixTheme.textStyles.headline1.fontSize,
-                fontWeight = FontWeight.Medium,
-                color = colorScheme.onSurface
-            )
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-            if (selected.isEmpty()) {
-                StatusTag("None")
-            } else {
-                FlowRow(
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                    verticalArrangement = Arrangement.spacedBy(4.dp)
-                ) {
-                    selected.forEach { group ->
-                        StatusTag(group.display)
-                    }
-                }
-            }
-        }
-        Icon(
-            imageVector = MiuixIcons.Basic.ArrowRight,
-            contentDescription = null,
-            tint = colorScheme.onSurfaceVariantActions
-        )
+    val tag = if (selected.isEmpty()) {
+        "None"
+    } else {
+        selected.joinToString(separator = ",", transform = { it.display })
     }
+    SuperArrow(
+        title = stringResource(R.string.profile_groups),
+        summary = tag,
+        onClick = {
+            showDialog.value = true
+        },
+    )
+
 }
 
 @Composable
@@ -320,6 +303,7 @@ fun CapsPanel(
     SuperDialog(
         show = showDialog,
         title = stringResource(R.string.profile_capabilities),
+        insideMargin = DpSize(0.dp, 24.dp),
         onDismissRequest = { showDialog.value = false },
         content = {
             Column(modifier = Modifier.heightIn(max = 500.dp)) {
@@ -328,7 +312,10 @@ fun CapsPanel(
                         SuperCheckbox(
                             title = cap.display,
                             summary = cap.desc,
+                            insideMargin = PaddingValues(horizontal = 30.dp, vertical = 16.dp),
+                            checkboxLocation = CheckboxLocation.Right,
                             checked = currentSelection.value.contains(cap),
+                            holdDownState = currentSelection.value.contains(cap),
                             onCheckedChange = { isChecked ->
                                 val newSelection = currentSelection.value.toMutableSet()
                                 if (isChecked) {
@@ -343,6 +330,7 @@ fun CapsPanel(
                 }
                 Spacer(Modifier.height(12.dp))
                 Row(
+                    modifier = Modifier.padding(horizontal = 24.dp),
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
                     TextButton(
@@ -365,43 +353,19 @@ fun CapsPanel(
         }
     )
 
-
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable(onClick = { showDialog.value = true })
-            .padding(horizontal = 16.dp, vertical = 14.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Column(modifier = Modifier.weight(1f)) {
-            Text(
-                text = stringResource(R.string.profile_capabilities),
-                fontSize = MiuixTheme.textStyles.headline1.fontSize,
-                fontWeight = FontWeight.Medium,
-                color = colorScheme.onSurface
-            )
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-            if (selected.isEmpty()) {
-                StatusTag("None")
-            } else {
-                FlowRow(
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                    verticalArrangement = Arrangement.spacedBy(4.dp)
-                ) {
-                    selected.forEach { cap ->
-                        StatusTag(cap.display)
-                    }
-                }
-            }
-        }
-        Icon(
-            imageVector = MiuixIcons.Basic.ArrowRight,
-            contentDescription = null,
-            tint = colorScheme.onSurfaceVariantActions
-        )
+    val tag = if (selected.isEmpty()) {
+        "None"
+    } else {
+        selected.joinToString(separator = ",", transform = { it.display })
     }
+    SuperArrow(
+        title = stringResource(R.string.profile_capabilities),
+        summary = tag,
+        onClick = {
+            showDialog.value = true
+        }
+    )
+
 }
 
 @Composable
