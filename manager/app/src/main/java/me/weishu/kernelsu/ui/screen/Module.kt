@@ -556,7 +556,6 @@ private fun ModuleList(
 
                 viewModel.moduleList.isEmpty() -> {
                     item {
-                        TestModuleItem()
                         Box(
                             modifier = Modifier.fillParentMaxSize(),
                             contentAlignment = Alignment.Center
@@ -877,87 +876,3 @@ fun ModuleItemPreview() {
     ModuleItem(EmptyDestinationsNavigator, module, "", {}, {}, {}, {})
 }
 
-
-@Composable
-fun TestModuleItem() {
-    val module = ModuleViewModel.ModuleInfo(
-        id = "id",
-        name = "ModuleName",
-        version = "version",
-        versionCode = 1,
-        author = "author",
-        description = "I am a test module and i do nothing but show a very long description",
-        enabled = true,
-        update = true,
-        remove = false,
-        updateJson = "111",
-        hasWebUi = true,
-        hasActionScript = true
-    )
-    ModuleItem(EmptyDestinationsNavigator, module, "1111", {}, {}, {}, {})
-    Spacer(Modifier.height(12.dp))
-    val module0 = ModuleViewModel.ModuleInfo(
-        id = "id",
-        name = "ModuleName",
-        version = "version",
-        versionCode = 1,
-        author = "author",
-        description = "I am a test module and i do nothing but show a very long description",
-        enabled = false,
-        update = true,
-        remove = false,
-        updateJson = "111",
-        hasWebUi = true,
-        hasActionScript = true
-    )
-    ModuleItem(EmptyDestinationsNavigator, module0, "1111", {}, {}, {}, {})
-    Spacer(Modifier.height(12.dp))
-    val module2 = ModuleViewModel.ModuleInfo(
-        id = "id",
-        name = "bbbbbbbbbbbbbbbbbbModuleNamebbbbbbbbbbbbbb",
-        version = "version",
-        versionCode = 1,
-        author = "author",
-        description = "I am a test module and i do nothing but show a very long description",
-        enabled = true,
-        update = true,
-        remove = false,
-        updateJson = "111",
-        hasWebUi = true,
-        hasActionScript = true
-    )
-    ModuleItem(EmptyDestinationsNavigator, module2, "1111", {}, {}, {}, {})
-    Spacer(Modifier.height(12.dp))
-    val module3 = ModuleViewModel.ModuleInfo(
-        id = "id",
-        name = "Module",
-        version = "version",
-        versionCode = 1,
-        author = "authorrrrrrrrrrrrrrrrrrrrrrrrbbbbbbbbbbbbb",
-        description = "I am a test module and i do nothing but show a very long description",
-        enabled = true,
-        update = true,
-        remove = false,
-        updateJson = "111",
-        hasWebUi = true,
-        hasActionScript = true
-    )
-    ModuleItem(EmptyDestinationsNavigator, module3, "1111", {}, {}, {}, {})
-    Spacer(Modifier.height(12.dp))
-    val module4 = ModuleViewModel.ModuleInfo(
-        id = "id",
-        name = "bbbbbbbbbbbbbbbbbbModuleNamebbbbbbbbbbbbbb",
-        version = "version",
-        versionCode = 1,
-        author = "authorrrrrrrrrrrrrrrrrrrrrrrrbbbbbbbbbbbbb",
-        description = "I am a test module and i do nothing but show a very long description",
-        enabled = true,
-        update = true,
-        remove = false,
-        updateJson = "111",
-        hasWebUi = true,
-        hasActionScript = true
-    )
-    ModuleItem(EmptyDestinationsNavigator, module4, "1111", {}, {}, {}, {})
-    Spacer(Modifier.height(12.dp))
-}
