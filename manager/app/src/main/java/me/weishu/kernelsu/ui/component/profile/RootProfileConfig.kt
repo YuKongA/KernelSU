@@ -251,9 +251,12 @@ fun GroupsPanel(selected: List<Groups>, closeSelection: (selection: Set<Groups>)
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 TextButton(
-                    onClick = { showDialog.value = false },
+                    onClick = {
+                        currentSelection.value = selected.toSet()
+                        showDialog.value = false
+                              },
                     text = stringResource(android.R.string.cancel),
-                    modifier = Modifier.weight(1f)
+                    modifier = Modifier.weight(1f),
                 )
                 Spacer(modifier = Modifier.width(20.dp))
                 TextButton(
@@ -334,7 +337,10 @@ fun CapsPanel(
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
                     TextButton(
-                        onClick = { showDialog.value = false },
+                        onClick = { 
+                            showDialog.value = false
+                            currentSelection.value = selected.toSet()
+                        },
                         text = stringResource(android.R.string.cancel),
                         modifier = Modifier.weight(1f)
                     )
