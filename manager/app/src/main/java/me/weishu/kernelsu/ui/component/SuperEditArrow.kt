@@ -7,7 +7,6 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.foundation.text.input.InputTransformation.Companion.keyboardOptions
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableIntStateOf
@@ -41,7 +40,7 @@ fun SuperEditArrow(
     insideMargin: PaddingValues = BasicComponentDefaults.InsideMargin,
     holdDownState: Boolean = false,
     enabled: Boolean = true,
-    onValueChange: ((Int)->Unit)? = null
+    onValueChange: ((Int) -> Unit)? = null
 ) {
 
     val showDialog = remember { mutableStateOf(false) }
@@ -67,7 +66,7 @@ fun SuperEditArrow(
         title,
         showDialog,
         dialogTextFieldValue = dialogTextFieldValue.intValue,
-    ){
+    ) {
         dialogTextFieldValue.intValue = it
         onValueChange?.invoke(dialogTextFieldValue.intValue)
     }
@@ -117,11 +116,11 @@ private fun EditDialog(
                 text = stringResource(R.string.confirm),
                 onClick = {
                     showDialog.value = false
-                    with(filter.getInputValue().text){
-                        if (isEmpty()){
+                    with(filter.getInputValue().text) {
+                        if (isEmpty()) {
                             onValueChange(0)
                             filter.setInputValue("0")
-                        }else{
+                        } else {
                             onValueChange(this@with.toInt())
                         }
 

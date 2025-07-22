@@ -7,8 +7,8 @@ import androidx.compose.ui.text.input.TextFieldValue
 open class BaseFieldFilter() {
     private var inputValue = mutableStateOf(TextFieldValue())
 
-    constructor(value:String) : this() {
-        inputValue.value = TextFieldValue(value, TextRange(value.lastIndex+1))
+    constructor(value: String) : this() {
+        inputValue.value = TextFieldValue(value, TextRange(value.lastIndex + 1))
     }
 
     protected open fun onFilter(inputTextFieldValue: TextFieldValue, lastTextFieldValue: TextFieldValue): TextFieldValue {
@@ -36,7 +36,7 @@ open class BaseFieldFilter() {
     }
 
     fun setInputValue(value: String) {
-        inputValue.value = TextFieldValue(value, TextRange(value.lastIndex+1))
+        inputValue.value = TextFieldValue(value, TextRange(value.lastIndex + 1))
     }
 
     fun getInputValue(): TextFieldValue {

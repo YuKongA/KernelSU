@@ -2,13 +2,11 @@ package me.weishu.kernelsu.ui.component.filter
 
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.TextFieldValue
-import kotlin.math.abs
-import kotlin.text.iterator
 
 class FilterNumber(
-    private val value:Int,
-    private val minValue: Int =  Int.MIN_VALUE,
-    private val maxValue: Int =  Int.MAX_VALUE,
+    private val value: Int,
+    private val minValue: Int = Int.MIN_VALUE,
+    private val maxValue: Int = Int.MAX_VALUE,
 ) : BaseFieldFilter(value.toString()) {
 
     override fun onFilter(
@@ -25,7 +23,7 @@ class FilterNumber(
         maxValue: Int = Int.MAX_VALUE,
     ): TextFieldValue {
         val inputString = inputTextFieldValue.text
-        val lastString = lastInputTextFieldValue.text
+        lastInputTextFieldValue.text
 
         val newString = StringBuilder()
         val supportNegative = minValue < 0
@@ -69,8 +67,7 @@ class FilterNumber(
                     newPosition = inputTextFieldValue.selection.end
                 }
                 textRange = TextRange(newPosition)
-            }
-            else { // 光标指向了末尾
+            } else { // 光标指向了末尾
                 textRange = TextRange(newString.length)
             }
         } else {

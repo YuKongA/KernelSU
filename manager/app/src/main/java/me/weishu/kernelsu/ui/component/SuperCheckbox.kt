@@ -23,7 +23,7 @@ fun SuperCheckbox(
     checked: Boolean,
     onCheckedChange: ((Boolean) -> Unit)?,
     modifier: Modifier = Modifier,
-    titleColor: top.yukonga.miuix.kmp.basic.BasicComponentColors = BasicComponentDefaults.titleColor(),
+    titleColor: BasicComponentColors = BasicComponentDefaults.titleColor(),
     summary: String? = null,
     summaryColor: BasicComponentColors = BasicComponentDefaults.summaryColor(),
     checkboxColors: CheckboxColors = CheckboxDefaults.checkboxColors(),

@@ -1,13 +1,8 @@
 package me.weishu.kernelsu.ui.component.profile
 
-import android.util.Log
-import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -18,18 +13,15 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
@@ -40,19 +32,15 @@ import me.weishu.kernelsu.Natives
 import me.weishu.kernelsu.R
 import me.weishu.kernelsu.profile.Capabilities
 import me.weishu.kernelsu.profile.Groups
-import me.weishu.kernelsu.ui.component.EditText
 import me.weishu.kernelsu.ui.component.SuperCheckbox
 import me.weishu.kernelsu.ui.component.SuperEditArrow
 import me.weishu.kernelsu.ui.util.isSepolicyValid
 import top.yukonga.miuix.kmp.basic.ButtonDefaults
-import top.yukonga.miuix.kmp.basic.Icon
-import top.yukonga.miuix.kmp.basic.Text
 import top.yukonga.miuix.kmp.basic.TextButton
 import top.yukonga.miuix.kmp.basic.TextField
 import top.yukonga.miuix.kmp.extra.CheckboxLocation
 import top.yukonga.miuix.kmp.extra.SuperArrow
 import top.yukonga.miuix.kmp.extra.SuperDialog
-import top.yukonga.miuix.kmp.theme.MiuixTheme
 import top.yukonga.miuix.kmp.theme.MiuixTheme.colorScheme
 
 @Composable
@@ -132,7 +120,7 @@ fun RootProfileConfig(
         SuperEditArrow(
             title = "UID",
             defaultValue = profile.uid,
-        ){
+        ) {
             onProfileChange(
                 profile.copy(
                     uid = it,
@@ -145,10 +133,10 @@ fun RootProfileConfig(
         SuperEditArrow(
             title = "GID",
             defaultValue = profile.gid,
-        ){
+        ) {
             onProfileChange(
                 profile.copy(
-                    uid = it,
+                    gid = it,
                     rootUseDefault = false
                 )
             )
@@ -254,7 +242,7 @@ fun GroupsPanel(selected: List<Groups>, closeSelection: (selection: Set<Groups>)
                     onClick = {
                         currentSelection.value = selected.toSet()
                         showDialog.value = false
-                              },
+                    },
                     text = stringResource(android.R.string.cancel),
                     modifier = Modifier.weight(1f),
                 )
@@ -337,7 +325,7 @@ fun CapsPanel(
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
                     TextButton(
-                        onClick = { 
+                        onClick = {
                             showDialog.value = false
                             currentSelection.value = selected.toSet()
                         },
@@ -372,51 +360,6 @@ fun CapsPanel(
         }
     )
 
-}
-
-@Composable
-private fun StatusTag(label: String) {
-    Box(
-        modifier = Modifier
-            .background(
-                color = colorScheme.secondaryContainer.copy(alpha = 0.8f),
-                shape = RoundedCornerShape(8.dp)
-            )
-            .padding(horizontal = 8.dp, vertical = 4.dp)
-    ) {
-        Text(
-            text = label,
-            style = MiuixTheme.textStyles.body2,
-            color = colorScheme.onSecondaryContainer,
-            fontWeight = FontWeight.Medium
-        )
-    }
-}
-
-@Composable
-private fun UidPanel(uid: Int, label: String, onUidChange: (Int) -> Unit) {
-    val text = remember(uid) { mutableStateOf(uid.toString()) }
-    var isError by remember {
-        mutableStateOf(false)
-    }
-    Log.d("RootProfileConfig", "UidPanel: $label, text: ${text.value}, isError: $isError")
-    EditText(
-        title = label.uppercase(),
-        textValue = text,
-        onTextValueChange = { newText ->
-            text.value = newText
-            val valid = !isTextValidUid(text.value)
-            isError = valid
-            if (!isError) {
-                onUidChange(text.value.toIntOrNull() ?: 0)
-            }
-        },
-        keyboardOptions = KeyboardOptions(
-            keyboardType = KeyboardType.Number,
-        ),
-        enabled = true,
-        isError = isError
-    )
 }
 
 @Composable

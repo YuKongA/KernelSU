@@ -4,12 +4,14 @@ import android.app.Activity.RESULT_OK
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
+import android.util.Log
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.LocalIndication
 import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
@@ -21,27 +23,27 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.add
+import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.calculateEndPadding
 import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.layout.displayCutout
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Delete
-import androidx.compose.material.icons.outlined.Download
 import androidx.compose.material.icons.rounded.Add
 import androidx.compose.material.icons.rounded.Code
-import androidx.compose.material.icons.rounded.Delete
 import androidx.compose.material.icons.rounded.Download
 import androidx.compose.material.icons.rounded.MoreVert
 import androidx.compose.material.icons.rounded.PlayArrow
@@ -53,6 +55,7 @@ import androidx.compose.material3.SnackbarResult
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
@@ -60,7 +63,10 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
+import androidx.compose.ui.input.nestedscroll.NestedScrollSource
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLayoutDirection
@@ -72,8 +78,6 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
-import androidx.compose.ui.unit.TextUnit
-import androidx.compose.ui.unit.TextUnitType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.content.edit
@@ -112,7 +116,6 @@ import top.yukonga.miuix.kmp.basic.FloatingActionButton
 import top.yukonga.miuix.kmp.basic.HorizontalDivider
 import top.yukonga.miuix.kmp.basic.Icon
 import top.yukonga.miuix.kmp.basic.IconButton
-import top.yukonga.miuix.kmp.basic.IconButtonDefaults
 import top.yukonga.miuix.kmp.basic.ListPopup
 import top.yukonga.miuix.kmp.basic.ListPopupColumn
 import top.yukonga.miuix.kmp.basic.ListPopupDefaults
@@ -125,9 +128,7 @@ import top.yukonga.miuix.kmp.basic.Text
 import top.yukonga.miuix.kmp.basic.TopAppBar
 import top.yukonga.miuix.kmp.basic.rememberPullToRefreshState
 import top.yukonga.miuix.kmp.extra.DropdownImpl
-import top.yukonga.miuix.kmp.theme.MiuixTheme
 import top.yukonga.miuix.kmp.theme.MiuixTheme.colorScheme
-import top.yukonga.miuix.kmp.utils.SmoothRoundedCornerShape
 import top.yukonga.miuix.kmp.utils.getWindowSize
 import top.yukonga.miuix.kmp.utils.overScrollVertical
 
@@ -160,6 +161,37 @@ fun ModulePager(
     val webUILauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.StartActivityForResult()
     ) { viewModel.fetchModuleList() }
+
+    val listState = rememberLazyListState()
+    var fabVisible by remember { mutableStateOf(true) }
+    var scrollDistance by remember { mutableFloatStateOf(0f) }
+    val nestedScrollConnection = remember {
+        object : NestedScrollConnection {
+            override fun onPreScroll(available: Offset, source: NestedScrollSource): Offset {
+                val isScrolledToEnd =
+                    (listState.layoutInfo.visibleItemsInfo.lastOrNull()?.index == listState.layoutInfo.totalItemsCount - 1 && (listState.layoutInfo.visibleItemsInfo.lastOrNull()?.size
+                        ?: 0) < listState.layoutInfo.viewportEndOffset)
+
+                Log.d("ModulePager", "fabVisible: $fabVisible,isScrolledToEnd:$isScrolledToEnd")
+                val delta = available.y
+                if (!isScrolledToEnd) {
+                    scrollDistance += delta
+                    if (scrollDistance < -50f) {
+                        if (fabVisible) fabVisible = false
+                        scrollDistance = 0f
+                    } else if (scrollDistance > 50f) {
+                        if (!fabVisible) fabVisible = true
+                        scrollDistance = 0f
+                    }
+                }
+                return Offset.Zero
+            }
+        }
+    }
+    val offsetHeight by animateDpAsState(
+        targetValue = if (fabVisible) 0.dp else 200.dp + WindowInsets.systemBars.asPaddingValues().calculateBottomPadding(),
+        animationSpec = tween(durationMillis = 350)
+    )
 
     val hazeState = remember { HazeState() }
     val hazeStyle = HazeStyle(
@@ -294,10 +326,11 @@ fun ModulePager(
                 }
                 FloatingActionButton(
                     modifier = Modifier
+                        .offset(y = offsetHeight)
                         .padding(bottom = bottomInnerPadding + 27.dp, end = 20.dp)
                         .border(0.05.dp, colorScheme.outline.copy(alpha = 0.5f), CircleShape),
-                    containerColor = colorScheme.surface,
-                    shadowElevation = 3.5.dp,
+                    containerColor = colorScheme.primary,
+                    shadowElevation = 0.dp,
                     onClick = {
                         // Select the zip files to install
                         val intent = Intent(Intent.ACTION_GET_CONTENT).apply {
@@ -311,8 +344,7 @@ fun ModulePager(
                             Icons.Rounded.Add,
                             moduleInstall,
                             modifier = Modifier.size(40.dp),
-                            //Modifier.padding(start = 8.dp),
-                            tint = colorScheme.primary
+                            tint = Color.White
                         )
                     },
                 )
@@ -353,6 +385,7 @@ fun ModulePager(
                     modifier = Modifier
                         .height(getWindowSize().height.dp)
                         .overScrollVertical()
+                        .nestedScroll(nestedScrollConnection)
                         .nestedScroll(scrollBehavior.nestedScrollConnection)
                         .hazeSource(hazeState)
                         .padding(horizontal = 12.dp),
@@ -533,7 +566,7 @@ private fun ModuleList(
             verticalArrangement = Arrangement.spacedBy(12.dp),
             contentPadding = PaddingValues(
                 top = innerPadding.calculateTopPadding() + 12.dp,
-                bottom = bottomInnerPadding + 12.dp + 12.dp + 60.dp,
+                bottom = bottomInnerPadding + 12.dp,
                 start = innerPadding.calculateStartPadding(layoutDirection),
                 end = innerPadding.calculateEndPadding(layoutDirection)
             ),
@@ -733,7 +766,6 @@ fun ModuleItem(
         ) {
             if (module.hasActionScript) {
                 IconButton(
-                    //backgroundColor = Color(if (isSystemInDarkTheme()) 0xFF25354E else 0xFFEAF2FF),
                     backgroundColor = colorScheme.secondaryContainer.copy(alpha = 0.8f),
                     minHeight = 35.dp,
                     minWidth = 35.dp,
@@ -748,7 +780,6 @@ fun ModuleItem(
                     Icon(
                         modifier = Modifier.size(20.dp),
                         imageVector = Icons.Rounded.PlayArrow,
-                        //tint = Color(0xFF0D84FF),
                         tint = colorScheme.onSurface.copy(alpha = if (isSystemInDarkTheme()) 0.7f else 0.9f),
                         contentDescription = stringResource(R.string.action)
                     )
@@ -777,7 +808,6 @@ fun ModuleItem(
             if (updateUrl.isNotEmpty()) {
                 IconButton(
                     backgroundColor = Color(if (isSystemInDarkTheme()) 0xFF25354E else 0xFFEAF2FF),
-                    //backgroundColor = Color(if (isSystemInDarkTheme()) 0xFF20442D else 0xFFEBFAF0),
                     enabled = !module.remove,
                     minHeight = 35.dp,
                     minWidth = 35.dp,
@@ -787,7 +817,7 @@ fun ModuleItem(
                         modifier = Modifier.then(
                             if (updateUrl.isNotEmpty()) {
                                 Modifier.padding(horizontal = 10.dp)
-                            }else{
+                            } else {
                                 Modifier
                             }
                         ),
@@ -798,17 +828,14 @@ fun ModuleItem(
                             modifier = Modifier.size(20.dp),
                             imageVector = Icons.Rounded.Download,
                             tint = Color(0xFF0D84FF),
-                            //tint = Color(0xFF0BAE73),
                             contentDescription = stringResource(R.string.module_update),
                         )
                         Text(
                             text = stringResource(R.string.module_update),
                             color = Color(0xFF0D84FF),
-                            //color = Color(0xFF0BAE73),
                             fontWeight = FontWeight.Medium,
                             fontSize = 14.sp
                         )
-
                     }
                 }
             }
@@ -819,13 +846,12 @@ fun ModuleItem(
                 minWidth = 35.dp,
                 onClick = { onUninstall(module) },
                 backgroundColor = colorScheme.secondaryContainer.copy(alpha = 0.8f),
-                //backgroundColor = Color(if (isSystemInDarkTheme()) 0xFF4E2525 else 0xFFFFEAEA),
             ) {
                 Row(
                     modifier = Modifier.then(
                         if (updateUrl.isEmpty()) {
                             Modifier.padding(horizontal = 10.dp)
-                        }else{
+                        } else {
                             Modifier
                         }
                     ),
@@ -837,15 +863,13 @@ fun ModuleItem(
                             .size(20.dp),
                         imageVector = Icons.Outlined.Delete,
                         tint = colorScheme.onSurface.copy(alpha = if (isSystemInDarkTheme()) 0.7f else 0.9f),
-                        //tint = Color( if (isSystemInDarkTheme()) 0xFFF72727 else 0xFFFF3434),
                         contentDescription = null
                     )
                     if (updateUrl.isEmpty()) {
-
                         Text(
+                            modifier = Modifier.padding(end = 3.dp),
                             text = stringResource(R.string.uninstall),
                             color = colorScheme.onSurface.copy(alpha = if (isSystemInDarkTheme()) 0.7f else 0.9f),
-                            //color = Color( if (isSystemInDarkTheme()) 0xFFF72727 else 0xFFFF3434),
                             fontWeight = FontWeight.Medium,
                             fontSize = 15.sp
                         )

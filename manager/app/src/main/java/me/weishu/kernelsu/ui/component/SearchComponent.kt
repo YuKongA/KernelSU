@@ -1,17 +1,12 @@
 package me.weishu.kernelsu.ui.component
 
 import android.R
-import android.util.Log
 import androidx.activity.compose.LocalActivity
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.FastOutSlowInEasing
-import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.LinearOutSlowInEasing
-import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.expandHorizontally
 import androidx.compose.animation.fadeIn
@@ -38,14 +33,9 @@ import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.navigationBarsPadding
-import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.statusBars
-import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.systemBars
-import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.runtime.Composable
@@ -60,10 +50,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
-import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
-import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.positionInWindow
@@ -74,20 +62,16 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
-import kotlinx.coroutines.launch
 import top.yukonga.miuix.kmp.basic.Icon
 import top.yukonga.miuix.kmp.basic.InfiniteProgressIndicator
 import top.yukonga.miuix.kmp.basic.InputField
-import top.yukonga.miuix.kmp.basic.SearchBar
 import top.yukonga.miuix.kmp.basic.Text
 import top.yukonga.miuix.kmp.icon.MiuixIcons
 import top.yukonga.miuix.kmp.icon.icons.basic.Search
 import top.yukonga.miuix.kmp.icon.icons.basic.SearchCleanup
-import top.yukonga.miuix.kmp.icon.icons.useful.Refresh
 import top.yukonga.miuix.kmp.theme.MiuixTheme.colorScheme
 import top.yukonga.miuix.kmp.utils.BackHandler
 import top.yukonga.miuix.kmp.utils.overScrollVertical
-import kotlin.apply
 
 // Remember Search Status
 @Composable
@@ -134,6 +118,7 @@ class SearchStatus(val label: String) {
                 searchText = ""
                 Status.COLLAPSED
             }
+
             else -> current
         }
     }
@@ -146,9 +131,9 @@ class SearchStatus(val label: String) {
     ) {
         val topAppBarAlpha = animateFloatAsState(
             if (visible) 1f else 0f,
-            animationSpec = tween(if (visible) 550 else 0,easing = FastOutSlowInEasing),
+            animationSpec = tween(if (visible) 550 else 0, easing = FastOutSlowInEasing),
 
-        )
+            )
         Box(
             modifier = modifier.alpha(topAppBarAlpha.value),
         ) {
@@ -158,7 +143,7 @@ class SearchStatus(val label: String) {
     }
 
 
-    enum class Status { EXPANDED,EXPANDING, COLLAPSED,COLLAPSING }
+    enum class Status { EXPANDED, EXPANDING, COLLAPSED, COLLAPSING }
     enum class ResultStatus { DEFAULT, EMPTY, LOAD, SHOW }
 }
 
@@ -172,11 +157,12 @@ fun SearchStatus.SearchBox(
     val searchStatus = this
     val density = LocalDensity.current
 
-    val collapseBarScale = animateFloatAsState(if (searchStatus.shouldCollapsed()) 1f else 0f)
+    animateFloatAsState(if (searchStatus.shouldCollapsed()) 1f else 0f)
 
     val offsetY = remember { mutableIntStateOf(0) }
 
-    Column(modifier = modifier
+    Column(
+        modifier = modifier
     ) {
         Box(
             modifier = Modifier
@@ -213,14 +199,13 @@ fun SearchStatus.SearchBox(
                     + slideInVertically(
                 tween(300, easing = LinearOutSlowInEasing)
             ) {
-                - offsetY.intValue
-              }
-            ,
+                -offsetY.intValue
+            },
             exit = fadeOut(tween(300, easing = LinearOutSlowInEasing))
                     + slideOutVertically(
                 tween(300, easing = LinearOutSlowInEasing)
             ) {
-                - offsetY.intValue
+                -offsetY.intValue
             }
         ) {
             content()
@@ -319,6 +304,7 @@ fun SearchStatus.SearchPager(
 
                     Loading()
                 }
+
                 SearchStatus.ResultStatus.SHOW -> LazyColumn(
                     Modifier
                         .fillMaxSize()
@@ -335,7 +321,7 @@ fun SearchStatus.SearchPager(
 @Composable
 fun SearchBar(
     searchStatus: SearchStatus
-){
+) {
     val focusRequester = remember { FocusRequester() }
     var expanded by rememberSaveable { mutableStateOf(false) }
 
@@ -355,11 +341,11 @@ fun SearchBar(
                 tint = colorScheme.onSurfaceContainerHigh,
             )
         },
-        trailingIcon= {
+        trailingIcon = {
             AnimatedVisibility(
                 searchStatus.searchText.isNotEmpty(),
                 enter = fadeIn() + scaleIn(),
-                exit =  fadeOut() + scaleOut(),
+                exit = fadeOut() + scaleOut(),
             ) {
                 Icon(
                     imageVector = MiuixIcons.Basic.SearchCleanup,
@@ -389,12 +375,11 @@ fun SearchBar(
         }
     )
     LaunchedEffect(Unit) {
-        if ( !expanded && searchStatus.shouldExpand()){
+        if (!expanded && searchStatus.shouldExpand()) {
             focusRequester.requestFocus()
             expanded = true
         }
     }
-
 
 
 }
@@ -402,7 +387,7 @@ fun SearchBar(
 @Composable
 fun SearchBarFake(
     label: String
-){
+) {
 
     InputField(
         query = "",
@@ -422,7 +407,7 @@ fun SearchBarFake(
         onSearch = { it },
         enabled = false,
         expanded = false,
-        onExpandedChange = {  }
+        onExpandedChange = { }
     )
 
 }
@@ -434,7 +419,6 @@ fun Loading() {
         modifier = Modifier
             .fillMaxWidth()
     )
-
 
 
 }
