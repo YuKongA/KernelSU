@@ -1,6 +1,8 @@
 package me.weishu.kernelsu.ui.screen
 
 import android.widget.Toast
+import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -16,6 +18,7 @@ import androidx.compose.foundation.layout.displayCutout
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBars
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -23,6 +26,7 @@ import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ArrowBack
@@ -35,13 +39,19 @@ import androidx.compose.material.icons.rounded.Sync
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
+import androidx.compose.ui.input.nestedscroll.NestedScrollSource
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
@@ -83,7 +93,6 @@ import top.yukonga.miuix.kmp.basic.TopAppBar
 import top.yukonga.miuix.kmp.basic.rememberPullToRefreshState
 import top.yukonga.miuix.kmp.theme.MiuixTheme.colorScheme
 import top.yukonga.miuix.kmp.utils.PressFeedbackType
-import top.yukonga.miuix.kmp.utils.SmoothRoundedCornerShape
 import top.yukonga.miuix.kmp.utils.getWindowSize
 import top.yukonga.miuix.kmp.utils.overScrollVertical
 
@@ -113,6 +122,35 @@ fun AppProfileTemplateScreen(
             scope.launch { viewModel.fetchTemplates() }
         }
     }
+
+    val listState = rememberLazyListState()
+    var fabVisible by remember { mutableStateOf(true) }
+    var scrollDistance by remember { mutableFloatStateOf(0f) }
+    val nestedScrollConnection = remember {
+        object : NestedScrollConnection {
+            override fun onPreScroll(available: Offset, source: NestedScrollSource): Offset {
+                val isScrolledToEnd =
+                    (listState.layoutInfo.visibleItemsInfo.lastOrNull()?.index == listState.layoutInfo.totalItemsCount - 1
+                            && (listState.layoutInfo.visibleItemsInfo.lastOrNull()?.size ?: 0) < listState.layoutInfo.viewportEndOffset)
+                val delta = available.y
+                if (!isScrolledToEnd) {
+                    scrollDistance += delta
+                    if (scrollDistance < -50f) {
+                        if (fabVisible) fabVisible = false
+                        scrollDistance = 0f
+                    } else if (scrollDistance > 50f) {
+                        if (!fabVisible) fabVisible = true
+                        scrollDistance = 0f
+                    }
+                }
+                return Offset.Zero
+            }
+        }
+    }
+    val offsetHeight by animateDpAsState(
+        targetValue = if (fabVisible) 0.dp else 100.dp + WindowInsets.systemBars.asPaddingValues().calculateBottomPadding(),
+        animationSpec = tween(durationMillis = 350)
+    )
 
     val hazeState = remember { HazeState() }
     val hazeStyle = HazeStyle(
@@ -169,23 +207,26 @@ fun AppProfileTemplateScreen(
         },
         floatingActionButton = {
             FloatingActionButton(
-                containerColor = colorScheme.surface,
-                shadowElevation = 3.5.dp,
+                containerColor = colorScheme.primary,
+                shadowElevation = 0.dp,
                 onClick = {
                     navigator.navigate(TemplateEditorScreenDestination(TemplateViewModel.TemplateInfo(), false)) {
                         launchSingleTop = true
                     }
                 },
-                modifier = Modifier.padding(
-                    bottom = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding() +
-                            WindowInsets.captionBar.asPaddingValues().calculateBottomPadding() + 10.dp, end = 20.dp)
+                modifier = Modifier
+                    .offset(y = offsetHeight)
+                    .padding(
+                        bottom = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding() +
+                                WindowInsets.captionBar.asPaddingValues().calculateBottomPadding() + 10.dp, end = 20.dp
+                    )
                     .border(0.05.dp, colorScheme.outline.copy(alpha = 0.5f), CircleShape),
                 content = {
                     Icon(
                         Icons.Rounded.Add,
                         null,
                         Modifier.size(40.dp),
-                        tint = colorScheme.primary
+                        tint = Color.White
                     )
                 },
             )
@@ -206,6 +247,7 @@ fun AppProfileTemplateScreen(
                 modifier = Modifier
                     .height(getWindowSize().height.dp)
                     .overScrollVertical()
+                    .nestedScroll(nestedScrollConnection)
                     .nestedScroll(scrollBehavior.nestedScrollConnection)
                     .hazeSource(hazeState)
                     .padding(horizontal = 12.dp),
@@ -221,8 +263,7 @@ fun AppProfileTemplateScreen(
                 item {
                     Spacer(
                         Modifier.height(
-                            60.dp + 12.dp +
-                                    WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding() +
+                            WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding() +
                                     WindowInsets.captionBar.asPaddingValues().calculateBottomPadding()
                         )
                     )

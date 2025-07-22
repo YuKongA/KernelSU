@@ -4,7 +4,6 @@ import android.app.Activity.RESULT_OK
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
-import android.util.Log
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -169,10 +168,8 @@ fun ModulePager(
         object : NestedScrollConnection {
             override fun onPreScroll(available: Offset, source: NestedScrollSource): Offset {
                 val isScrolledToEnd =
-                    (listState.layoutInfo.visibleItemsInfo.lastOrNull()?.index == listState.layoutInfo.totalItemsCount - 1 && (listState.layoutInfo.visibleItemsInfo.lastOrNull()?.size
-                        ?: 0) < listState.layoutInfo.viewportEndOffset)
-
-                Log.d("ModulePager", "fabVisible: $fabVisible,isScrolledToEnd:$isScrolledToEnd")
+                    (listState.layoutInfo.visibleItemsInfo.lastOrNull()?.index == listState.layoutInfo.totalItemsCount - 1
+                            && (listState.layoutInfo.visibleItemsInfo.lastOrNull()?.size ?: 0) < listState.layoutInfo.viewportEndOffset)
                 val delta = available.y
                 if (!isScrolledToEnd) {
                     scrollDistance += delta
@@ -189,7 +186,7 @@ fun ModulePager(
         }
     }
     val offsetHeight by animateDpAsState(
-        targetValue = if (fabVisible) 0.dp else 200.dp + WindowInsets.systemBars.asPaddingValues().calculateBottomPadding(),
+        targetValue = if (fabVisible) 0.dp else 180.dp + WindowInsets.systemBars.asPaddingValues().calculateBottomPadding(),
         animationSpec = tween(durationMillis = 350)
     )
 

@@ -38,11 +38,9 @@ fun SuperEditArrow(
     rightActionColor: RightActionColors = SuperArrowDefaults.rightActionColors(),
     modifier: Modifier = Modifier,
     insideMargin: PaddingValues = BasicComponentDefaults.InsideMargin,
-    holdDownState: Boolean = false,
     enabled: Boolean = true,
     onValueChange: ((Int) -> Unit)? = null
 ) {
-
     val showDialog = remember { mutableStateOf(false) }
     val dialogTextFieldValue = remember { mutableIntStateOf(defaultValue) }
 
