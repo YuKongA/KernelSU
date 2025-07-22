@@ -1,5 +1,6 @@
 package me.weishu.kernelsu.ui.screen
 
+import android.content.pm.PackageInfo
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -30,10 +31,14 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
@@ -42,12 +47,13 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.graphics.drawable.toBitmap
 import androidx.lifecycle.viewmodel.compose.viewModel
-import coil.compose.AsyncImage
-import coil.request.ImageRequest
 import com.ramcosta.composedestinations.generated.destinations.AppProfileScreenDestination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import me.weishu.kernelsu.Natives
 import me.weishu.kernelsu.R
 import me.weishu.kernelsu.ui.component.DropdownItem
@@ -74,6 +80,7 @@ import top.yukonga.miuix.kmp.icon.icons.basic.ArrowRight
 import top.yukonga.miuix.kmp.icon.icons.useful.ImmersionMore
 import top.yukonga.miuix.kmp.theme.MiuixTheme.colorScheme
 import top.yukonga.miuix.kmp.utils.PressFeedbackType
+import top.yukonga.miuix.kmp.utils.SmoothRoundedCornerShape
 import top.yukonga.miuix.kmp.utils.overScrollVertical
 
 @Composable
@@ -263,12 +270,9 @@ private fun AppItem(
             title = app.label,
             summary = app.packageName,
             leftAction = {
-                AsyncImage(
-                    model = ImageRequest.Builder(LocalContext.current)
-                        .data(app.packageInfo)
-                        .crossfade(true)
-                        .build(),
-                    contentDescription = app.label,
+                AppIconImage(
+                    packageInfo = app.packageInfo,
+                    label = app.label,
                     modifier = Modifier
                         .padding(end = 12.dp)
                         .size(48.dp)
@@ -336,4 +340,37 @@ private fun StatusTag(label: String, backgroundColor: Color, contentColor: Color
             fontWeight = FontWeight.Bold
         )
     }
+}
+
+@Composable
+private fun AppIconImage(
+    packageInfo: PackageInfo,
+    label: String,
+    modifier: Modifier = Modifier
+) {
+    val context = LocalContext.current
+    var icon by remember(packageInfo.packageName) { mutableStateOf<ImageBitmap?>(null) }
+
+    LaunchedEffect(packageInfo.packageName) {
+        withContext(Dispatchers.IO) {
+            val drawable = packageInfo.applicationInfo?.loadIcon(context.packageManager)
+            val bitmap = drawable?.toBitmap()?.asImageBitmap()
+            icon = bitmap
+        }
+    }
+
+    icon.let { imageBitmap ->
+        imageBitmap?.let {
+            Image(
+                bitmap = it,
+                contentDescription = label,
+                modifier = modifier
+            )
+        }
+    } ?: Box(
+        modifier = modifier
+            .clip(SmoothRoundedCornerShape(12.dp))
+            .background(colorScheme.secondaryContainer),
+        contentAlignment = Alignment.Center
+    ) {}
 }

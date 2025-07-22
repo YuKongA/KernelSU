@@ -81,7 +81,6 @@ import top.yukonga.miuix.kmp.extra.SuperSwitch
 import top.yukonga.miuix.kmp.icon.MiuixIcons
 import top.yukonga.miuix.kmp.icon.icons.useful.Back
 import top.yukonga.miuix.kmp.icon.icons.useful.ImmersionMore
-import top.yukonga.miuix.kmp.icon.icons.useful.More
 import top.yukonga.miuix.kmp.theme.MiuixTheme.colorScheme
 import top.yukonga.miuix.kmp.utils.getWindowSize
 import top.yukonga.miuix.kmp.utils.overScrollVertical
@@ -151,19 +150,12 @@ fun AppProfileScreen(
                     appLabel = appInfo.label,
                     appIcon = {
                         val packageManager = context.packageManager
-                        val c = appInfo.packageInfo.applicationInfo!!.loadIcon(packageManager).toBitmap().asImageBitmap()
                         Image(
-                            bitmap = c,
+                            bitmap = appInfo.packageInfo.applicationInfo!!.loadIcon(packageManager).toBitmap().asImageBitmap(),
                             contentDescription = appInfo.label,
                             modifier = Modifier
                                 .size(60.dp)
                         )
-//                        AsyncImage(
-//                            model = ImageRequest.Builder(context).data(appInfo.packageInfo).crossfade(true).build(),
-//                            contentDescription = appInfo.label,
-//                            modifier = Modifier
-//                                .size(80.dp)
-//                        )
                     },
                     profile = profile,
                     onViewTemplate = {
