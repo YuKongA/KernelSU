@@ -29,13 +29,10 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.rounded.ArrowBack
 import androidx.compose.material.icons.outlined.Fingerprint
 import androidx.compose.material.icons.outlined.Group
 import androidx.compose.material.icons.outlined.Shield
 import androidx.compose.material.icons.rounded.Add
-import androidx.compose.material.icons.rounded.ImportExport
-import androidx.compose.material.icons.rounded.Sync
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -67,11 +64,6 @@ import com.ramcosta.composedestinations.generated.destinations.TemplateEditorScr
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import com.ramcosta.composedestinations.result.ResultRecipient
 import com.ramcosta.composedestinations.result.getOr
-import dev.chrisbanes.haze.HazeState
-import dev.chrisbanes.haze.HazeStyle
-import dev.chrisbanes.haze.HazeTint
-import dev.chrisbanes.haze.hazeEffect
-import dev.chrisbanes.haze.hazeSource
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import me.weishu.kernelsu.R
@@ -84,13 +76,19 @@ import top.yukonga.miuix.kmp.basic.Icon
 import top.yukonga.miuix.kmp.basic.IconButton
 import top.yukonga.miuix.kmp.basic.ListPopup
 import top.yukonga.miuix.kmp.basic.ListPopupColumn
+import top.yukonga.miuix.kmp.basic.ListPopupDefaults
 import top.yukonga.miuix.kmp.basic.MiuixScrollBehavior
+import top.yukonga.miuix.kmp.basic.PopupPositionProvider
 import top.yukonga.miuix.kmp.basic.PullToRefresh
 import top.yukonga.miuix.kmp.basic.Scaffold
 import top.yukonga.miuix.kmp.basic.ScrollBehavior
 import top.yukonga.miuix.kmp.basic.Text
 import top.yukonga.miuix.kmp.basic.TopAppBar
 import top.yukonga.miuix.kmp.basic.rememberPullToRefreshState
+import top.yukonga.miuix.kmp.icon.MiuixIcons
+import top.yukonga.miuix.kmp.icon.icons.useful.Back
+import top.yukonga.miuix.kmp.icon.icons.useful.Copy
+import top.yukonga.miuix.kmp.icon.icons.useful.Refresh
 import top.yukonga.miuix.kmp.theme.MiuixTheme.colorScheme
 import top.yukonga.miuix.kmp.utils.PressFeedbackType
 import top.yukonga.miuix.kmp.utils.getWindowSize
@@ -152,12 +150,6 @@ fun AppProfileTemplateScreen(
         animationSpec = tween(durationMillis = 350)
     )
 
-    val hazeState = remember { HazeState() }
-    val hazeStyle = HazeStyle(
-        backgroundColor = colorScheme.background,
-        tint = HazeTint(colorScheme.background.copy(0.67f))
-    )
-
     Scaffold(
         topBar = {
             val clipboardManager = LocalClipboardManager.current
@@ -201,8 +193,6 @@ fun AppProfileTemplateScreen(
                     }
                 },
                 scrollBehavior = scrollBehavior,
-                hazeState = hazeState,
-                hazeStyle = hazeStyle
             )
         },
         floatingActionButton = {
@@ -249,7 +239,6 @@ fun AppProfileTemplateScreen(
                     .overScrollVertical()
                     .nestedScroll(nestedScrollConnection)
                     .nestedScroll(scrollBehavior.nestedScrollConnection)
-                    .hazeSource(hazeState)
                     .padding(horizontal = 12.dp),
                 contentPadding = innerPadding,
                 overscrollEffect = null
@@ -389,17 +378,8 @@ private fun TopBar(
     onImport: () -> Unit = {},
     onExport: () -> Unit = {},
     scrollBehavior: ScrollBehavior,
-    hazeState: HazeState,
-    hazeStyle: HazeStyle
 ) {
     TopAppBar(
-        modifier = Modifier
-            .hazeEffect(state = hazeState) {
-                style = hazeStyle
-                blurRadius = 25.dp
-                noiseFactor = 0f
-            },
-        color = Color.Transparent,
         title = stringResource(R.string.settings_profile_template),
         navigationIcon = {
             IconButton(
@@ -407,7 +387,7 @@ private fun TopBar(
                 onClick = onBack
             ) {
                 Icon(
-                    Icons.AutoMirrored.Rounded.ArrowBack,
+                    imageVector = MiuixIcons.Useful.Back,
                     contentDescription = null,
                     tint = colorScheme.onBackground
                 )
@@ -419,50 +399,53 @@ private fun TopBar(
                 onClick = onSync
             ) {
                 Icon(
-                    Icons.Rounded.Sync,
+                    imageVector = MiuixIcons.Useful.Refresh,
                     contentDescription = stringResource(id = R.string.app_profile_template_sync),
                     tint = colorScheme.onBackground
                 )
             }
 
-            val showDropdown = remember { mutableStateOf(false) }
+            val showTopPopup = remember { mutableStateOf(false) }
+            ListPopup(
+                show = showTopPopup,
+                popupPositionProvider = ListPopupDefaults.ContextMenuPositionProvider,
+                alignment = PopupPositionProvider.Align.TopRight,
+                onDismissRequest = {
+                    showTopPopup.value = false
+                }
+            ) {
+                ListPopupColumn {
+                    val items = listOf(
+                        stringResource(id = R.string.app_profile_import_from_clipboard),
+                        stringResource(id = R.string.app_profile_export_to_clipboard)
+                    )
+                    items.forEachIndexed { index, text ->
+                        DropdownItem(
+                            text = text,
+                            optionSize = items.size,
+                            index = index,
+                            onSelectedIndexChange = { selectedIndex ->
+                                if (selectedIndex == 0) {
+                                    onImport()
+                                } else {
+                                    onExport()
+                                }
+                                showTopPopup.value = false
+                            }
+                        )
+                    }
+                }
+            }
             IconButton(
                 modifier = Modifier.padding(end = 16.dp),
-                onClick = { showDropdown.value = true }
+                onClick = { showTopPopup.value = true },
+                holdDownState = showTopPopup.value
             ) {
                 Icon(
-                    imageVector = Icons.Rounded.ImportExport,
+                    imageVector = MiuixIcons.Useful.Copy,
                     contentDescription = stringResource(id = R.string.app_profile_import_export),
                     tint = colorScheme.onBackground
                 )
-
-                ListPopup(
-                    show = showDropdown,
-                    onDismissRequest = { showDropdown.value = false }
-                ) {
-                    ListPopupColumn {
-                        val items = listOf(
-                            stringResource(id = R.string.app_profile_import_from_clipboard),
-                            stringResource(id = R.string.app_profile_export_to_clipboard)
-                        )
-
-                        items.forEachIndexed { index, text ->
-                            DropdownItem(
-                                text = text,
-                                optionSize = items.size,
-                                index = index,
-                                onSelectedIndexChange = { selectedIndex ->
-                                    if (selectedIndex == 0) {
-                                        onImport()
-                                    } else {
-                                        onExport()
-                                    }
-                                    showDropdown.value = false
-                                }
-                            )
-                        }
-                    }
-                }
             }
         },
         scrollBehavior = scrollBehavior

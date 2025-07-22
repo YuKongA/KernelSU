@@ -23,7 +23,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ArrowBack
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -40,11 +39,6 @@ import androidx.lifecycle.compose.dropUnlessResumed
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootGraph
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
-import dev.chrisbanes.haze.HazeState
-import dev.chrisbanes.haze.HazeStyle
-import dev.chrisbanes.haze.HazeTint
-import dev.chrisbanes.haze.hazeEffect
-import dev.chrisbanes.haze.hazeSource
 import me.weishu.kernelsu.BuildConfig
 import me.weishu.kernelsu.R
 import top.yukonga.miuix.kmp.basic.Card
@@ -55,6 +49,8 @@ import top.yukonga.miuix.kmp.basic.Scaffold
 import top.yukonga.miuix.kmp.basic.Text
 import top.yukonga.miuix.kmp.basic.TopAppBar
 import top.yukonga.miuix.kmp.extra.SuperArrow
+import top.yukonga.miuix.kmp.icon.MiuixIcons
+import top.yukonga.miuix.kmp.icon.icons.useful.Back
 import top.yukonga.miuix.kmp.theme.MiuixTheme.colorScheme
 import top.yukonga.miuix.kmp.utils.SmoothRoundedCornerShape
 import top.yukonga.miuix.kmp.utils.getWindowSize
@@ -73,22 +69,9 @@ fun AboutScreen(navigator: DestinationsNavigator) {
     ).replace("<br/>", "\n")
     val result = extractLinks(htmlString)
 
-    val hazeState = remember { HazeState() }
-    val hazeStyle = HazeStyle(
-        backgroundColor = colorScheme.background,
-        tint = HazeTint(colorScheme.background.copy(0.67f))
-    )
-
     Scaffold(
         topBar = {
             TopAppBar(
-                modifier = Modifier
-                    .hazeEffect(state = hazeState) {
-                        style = hazeStyle
-                        blurRadius = 25.dp
-                        noiseFactor = 0f
-                    },
-                color = Color.Transparent,
                 title = stringResource(R.string.about) + stringResource(id = R.string.app_name),
                 navigationIcon = {
                     IconButton(
@@ -96,7 +79,7 @@ fun AboutScreen(navigator: DestinationsNavigator) {
                         onClick = dropUnlessResumed { navigator.popBackStack() }
                     ) {
                         Icon(
-                            Icons.AutoMirrored.Rounded.ArrowBack,
+                            imageVector = MiuixIcons.Useful.Back,
                             contentDescription = null,
                             tint = colorScheme.onBackground
                         )
@@ -113,7 +96,6 @@ fun AboutScreen(navigator: DestinationsNavigator) {
                 .height(getWindowSize().height.dp)
                 .overScrollVertical()
                 .nestedScroll(scrollBehavior.nestedScrollConnection)
-                .hazeSource(hazeState)
                 .padding(horizontal = 12.dp),
             contentPadding = innerPadding,
             overscrollEffect = null,

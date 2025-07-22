@@ -129,7 +129,7 @@ fun MainScreen(navController: DestinationsNavigator) {
     val hazeState = remember { HazeState() }
     val hazeStyle = HazeStyle(
         backgroundColor = MiuixTheme.colorScheme.background,
-        tint = HazeTint(MiuixTheme.colorScheme.background.copy(0.67f))
+        tint = HazeTint(MiuixTheme.colorScheme.background.copy(0.8f))
     )
 
     Scaffold(
@@ -167,12 +167,9 @@ private fun BottomBar(
     val coroutineScope = rememberCoroutineScope()
 
     val item = BottomBarDestination.entries.mapIndexed { index, destination ->
-
-        val isSelected = currentPager == index
-
         NavigationItem(
             label = stringResource(destination.label),
-            icon = if (isSelected) destination.iconSelected else destination.iconNotSelected,
+            icon = if (currentPager == index) destination.iconSelected else destination.iconNotSelected,
         )
     }
 
@@ -180,7 +177,7 @@ private fun BottomBar(
         modifier = Modifier
             .hazeEffect(hazeState) {
                 style = hazeStyle
-                blurRadius = 25.dp
+                blurRadius = 30.dp
                 noiseFactor = 0f
             },
         color = Color.Transparent,

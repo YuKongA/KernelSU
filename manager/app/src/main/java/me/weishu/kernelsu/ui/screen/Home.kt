@@ -33,12 +33,9 @@ import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.pager.PagerState
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.Archive
 import androidx.compose.material.icons.rounded.CheckCircleOutline
 import androidx.compose.material.icons.rounded.ErrorOutline
 import androidx.compose.material.icons.rounded.Link
-import androidx.compose.material.icons.rounded.Refresh
-import androidx.compose.material.icons.rounded.Settings
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
@@ -62,11 +59,6 @@ import androidx.core.content.pm.PackageInfoCompat
 import com.ramcosta.composedestinations.generated.destinations.InstallScreenDestination
 import com.ramcosta.composedestinations.generated.destinations.SettingScreenDestination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
-import dev.chrisbanes.haze.HazeState
-import dev.chrisbanes.haze.HazeStyle
-import dev.chrisbanes.haze.HazeTint
-import dev.chrisbanes.haze.hazeEffect
-import dev.chrisbanes.haze.hazeSource
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -98,6 +90,10 @@ import top.yukonga.miuix.kmp.basic.Scaffold
 import top.yukonga.miuix.kmp.basic.ScrollBehavior
 import top.yukonga.miuix.kmp.basic.Text
 import top.yukonga.miuix.kmp.basic.TopAppBar
+import top.yukonga.miuix.kmp.icon.MiuixIcons
+import top.yukonga.miuix.kmp.icon.icons.useful.Reboot
+import top.yukonga.miuix.kmp.icon.icons.useful.Save
+import top.yukonga.miuix.kmp.icon.icons.useful.Settings
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 import top.yukonga.miuix.kmp.theme.MiuixTheme.colorScheme
 import top.yukonga.miuix.kmp.utils.PressFeedbackType
@@ -114,16 +110,10 @@ fun HomePager(
     val scrollBehavior = MiuixScrollBehavior()
     val coroutineScope = rememberCoroutineScope()
 
-    val hazeState = remember { HazeState() }
-    val hazeStyle = HazeStyle(
-        backgroundColor = colorScheme.background,
-        tint = HazeTint(colorScheme.background.copy(0.67f))
-    )
-
     Scaffold(
         topBar = {
             TopBar(
-                kernelVersion,
+                kernelVersion = kernelVersion,
                 onSettingsClick = {
                     navigator.navigate(SettingScreenDestination) {
                         popUpTo(SettingScreenDestination) {
@@ -141,8 +131,6 @@ fun HomePager(
                     }
                 },
                 scrollBehavior = scrollBehavior,
-                hazeState = hazeState,
-                hazeStyle = hazeStyle
             )
         },
         popupHost = { },
@@ -153,7 +141,6 @@ fun HomePager(
                 .height(getWindowSize().height.dp)
                 .overScrollVertical()
                 .nestedScroll(scrollBehavior.nestedScrollConnection)
-                .hazeSource(hazeState)
                 .padding(horizontal = 12.dp),
             contentPadding = innerPadding,
             overscrollEffect = null,
@@ -284,18 +271,9 @@ private fun TopBar(
     kernelVersion: KernelVersion,
     onInstallClick: () -> Unit,
     onSettingsClick: () -> Unit,
-    scrollBehavior: ScrollBehavior? = null,
-    hazeState: HazeState,
-    hazeStyle: HazeStyle
+    scrollBehavior: ScrollBehavior,
 ) {
     TopAppBar(
-        modifier = Modifier
-            .hazeEffect(state = hazeState) {
-                style = hazeStyle
-                blurRadius = 25.dp
-                noiseFactor = 0f
-            },
-        color = Color.Transparent,
         title = stringResource(R.string.app_name),
         navigationIcon = {
             IconButton(
@@ -303,7 +281,7 @@ private fun TopBar(
                 onClick = onSettingsClick
             ) {
                 Icon(
-                    imageVector = Icons.Rounded.Settings,
+                    imageVector = MiuixIcons.Useful.Settings,
                     contentDescription = stringResource(id = R.string.settings),
                     tint = colorScheme.onBackground
                 )
@@ -316,7 +294,7 @@ private fun TopBar(
                     onClick = onInstallClick,
                 ) {
                     Icon(
-                        imageVector = Icons.Rounded.Archive,
+                        imageVector = MiuixIcons.Useful.Save,
                         contentDescription = stringResource(id = R.string.install),
                         tint = colorScheme.onBackground
                     )
@@ -330,7 +308,7 @@ private fun TopBar(
                     holdDownState = showTopPopup.value
                 ) {
                     Icon(
-                        imageVector = Icons.Rounded.Refresh,
+                        imageVector = MiuixIcons.Useful.Reboot,
                         contentDescription = stringResource(id = R.string.reboot),
                         tint = colorScheme.onBackground
                     )

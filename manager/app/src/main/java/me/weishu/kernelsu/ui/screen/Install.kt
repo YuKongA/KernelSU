@@ -25,9 +25,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.selection.toggleable
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.rounded.ArrowBack
-import androidx.compose.material.icons.rounded.FileUpload
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -37,7 +34,6 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
@@ -49,11 +45,6 @@ import com.ramcosta.composedestinations.annotation.RootGraph
 import com.ramcosta.composedestinations.generated.destinations.FlashScreenDestination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import com.ramcosta.composedestinations.navigation.EmptyDestinationsNavigator
-import dev.chrisbanes.haze.HazeState
-import dev.chrisbanes.haze.HazeStyle
-import dev.chrisbanes.haze.HazeTint
-import dev.chrisbanes.haze.hazeEffect
-import dev.chrisbanes.haze.hazeSource
 import me.weishu.kernelsu.R
 import me.weishu.kernelsu.ui.component.ChooseKmiDialog
 import me.weishu.kernelsu.ui.component.rememberConfirmDialog
@@ -73,6 +64,10 @@ import top.yukonga.miuix.kmp.basic.ScrollBehavior
 import top.yukonga.miuix.kmp.basic.Text
 import top.yukonga.miuix.kmp.basic.TopAppBar
 import top.yukonga.miuix.kmp.extra.SuperCheckbox
+import top.yukonga.miuix.kmp.icon.MiuixIcons
+import top.yukonga.miuix.kmp.icon.icons.useful.Back
+import top.yukonga.miuix.kmp.icon.icons.useful.ImmersionMore
+import top.yukonga.miuix.kmp.icon.icons.useful.Move
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 import top.yukonga.miuix.kmp.theme.MiuixTheme.colorScheme
 import top.yukonga.miuix.kmp.utils.getWindowSize
@@ -143,20 +138,12 @@ fun InstallScreen(navigator: DestinationsNavigator) {
 
     val scrollBehavior = MiuixScrollBehavior()
 
-    val hazeState = remember { HazeState() }
-    val hazeStyle = HazeStyle(
-        backgroundColor = colorScheme.background,
-        tint = HazeTint(colorScheme.background.copy(0.67f))
-    )
-
     Scaffold(
         topBar = {
             TopBar(
                 onBack = dropUnlessResumed { navigator.popBackStack() },
                 onLkmUpload = onLkmUpload,
                 scrollBehavior = scrollBehavior,
-                hazeState = hazeState,
-                hazeStyle = hazeStyle
             )
         },
         popupHost = { },
@@ -167,7 +154,6 @@ fun InstallScreen(navigator: DestinationsNavigator) {
                 .height(getWindowSize().height.dp)
                 .overScrollVertical()
                 .nestedScroll(scrollBehavior.nestedScrollConnection)
-                .hazeSource(hazeState)
                 .padding(top = 12.dp)
                 .padding(horizontal = 16.dp),
             contentPadding = innerPadding,
@@ -333,17 +319,8 @@ private fun TopBar(
     onBack: () -> Unit = {},
     onLkmUpload: () -> Unit = {},
     scrollBehavior: ScrollBehavior,
-    hazeState: HazeState,
-    hazeStyle: HazeStyle
 ) {
     TopAppBar(
-        modifier = Modifier
-            .hazeEffect(state = hazeState) {
-                style = hazeStyle
-                blurRadius = 25.dp
-                noiseFactor = 0f
-            },
-        color = Color.Transparent,
         title = stringResource(R.string.install),
         navigationIcon = {
             IconButton(
@@ -351,7 +328,7 @@ private fun TopBar(
                 onClick = onBack
             ) {
                 Icon(
-                    Icons.AutoMirrored.Rounded.ArrowBack,
+                    MiuixIcons.Useful.Back,
                     tint = colorScheme.onSurface,
                     contentDescription = null,
                 )
@@ -363,7 +340,7 @@ private fun TopBar(
                 onClick = onLkmUpload
             ) {
                 Icon(
-                    Icons.Rounded.FileUpload,
+                    MiuixIcons.Useful.ImmersionMore,
                     tint = colorScheme.onSurface,
                     contentDescription = null
                 )

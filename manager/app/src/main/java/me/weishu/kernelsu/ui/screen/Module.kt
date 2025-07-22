@@ -44,7 +44,6 @@ import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material.icons.rounded.Add
 import androidx.compose.material.icons.rounded.Code
 import androidx.compose.material.icons.rounded.Download
-import androidx.compose.material.icons.rounded.MoreVert
 import androidx.compose.material.icons.rounded.PlayArrow
 import androidx.compose.material3.Snackbar
 import androidx.compose.material3.SnackbarDuration
@@ -86,11 +85,6 @@ import com.ramcosta.composedestinations.generated.destinations.ExecuteModuleActi
 import com.ramcosta.composedestinations.generated.destinations.FlashScreenDestination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import com.ramcosta.composedestinations.navigation.EmptyDestinationsNavigator
-import dev.chrisbanes.haze.HazeState
-import dev.chrisbanes.haze.HazeStyle
-import dev.chrisbanes.haze.HazeTint
-import dev.chrisbanes.haze.hazeEffect
-import dev.chrisbanes.haze.hazeSource
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -127,6 +121,8 @@ import top.yukonga.miuix.kmp.basic.Text
 import top.yukonga.miuix.kmp.basic.TopAppBar
 import top.yukonga.miuix.kmp.basic.rememberPullToRefreshState
 import top.yukonga.miuix.kmp.extra.DropdownImpl
+import top.yukonga.miuix.kmp.icon.MiuixIcons
+import top.yukonga.miuix.kmp.icon.icons.useful.ImmersionMore
 import top.yukonga.miuix.kmp.theme.MiuixTheme.colorScheme
 import top.yukonga.miuix.kmp.utils.getWindowSize
 import top.yukonga.miuix.kmp.utils.overScrollVertical
@@ -190,87 +186,74 @@ fun ModulePager(
         animationSpec = tween(durationMillis = 350)
     )
 
-    val hazeState = remember { HazeState() }
-    val hazeStyle = HazeStyle(
-        backgroundColor = colorScheme.background,
-        tint = HazeTint(colorScheme.background.copy(0.67f))
-    )
-
     Scaffold(
         topBar = {
             TopAppBar(
-                modifier = Modifier
-                    .hazeEffect(state = hazeState) {
-                        style = hazeStyle
-                        blurRadius = 25.dp
-                        noiseFactor = 0f
-                    },
-                color = Color.Transparent,
                 title = stringResource(R.string.module),
                 actions = {
                     val showTopPopup = remember { mutableStateOf(false) }
-
+                    ListPopup(
+                        show = showTopPopup,
+                        popupPositionProvider = ListPopupDefaults.ContextMenuPositionProvider,
+                        alignment = PopupPositionProvider.Align.TopRight,
+                        onDismissRequest = {
+                            showTopPopup.value = false
+                        }
+                    ) {
+                        ListPopupColumn {
+                            DropdownImpl(
+                                text = stringResource(R.string.module_sort_action_first),
+                                optionSize = 2,
+                                isSelected = viewModel.sortActionFirst,
+                                onSelectedIndexChange = {
+                                    viewModel.sortActionFirst =
+                                        !viewModel.sortActionFirst
+                                    prefs.edit {
+                                        putBoolean(
+                                            "module_sort_action_first",
+                                            viewModel.sortActionFirst
+                                        )
+                                    }
+                                    scope.launch {
+                                        viewModel.fetchModuleList()
+                                    }
+                                    showTopPopup.value = false
+                                },
+                                index = 0
+                            )
+                            DropdownImpl(
+                                text = stringResource(R.string.module_sort_enabled_first),
+                                optionSize = 2,
+                                isSelected = viewModel.sortEnabledFirst,
+                                onSelectedIndexChange = {
+                                    viewModel.sortEnabledFirst =
+                                        !viewModel.sortEnabledFirst
+                                    prefs.edit {
+                                        putBoolean(
+                                            "module_sort_enabled_first",
+                                            viewModel.sortEnabledFirst
+                                        )
+                                    }
+                                    scope.launch {
+                                        viewModel.fetchModuleList()
+                                    }
+                                    showTopPopup.value = false
+                                },
+                                index = 1
+                            )
+                        }
+                    }
                     IconButton(
                         modifier = Modifier.padding(end = 16.dp),
                         onClick = { showTopPopup.value = true },
                         holdDownState = showTopPopup.value
                     ) {
                         Icon(
-                            imageVector = Icons.Rounded.MoreVert,
+                            imageVector = MiuixIcons.Useful.ImmersionMore,
                             tint = colorScheme.onSurface,
                             contentDescription = stringResource(id = R.string.settings)
                         )
-                        ListPopup(
-                            show = showTopPopup,
-                            popupPositionProvider = ListPopupDefaults.ContextMenuPositionProvider,
-                            alignment = PopupPositionProvider.Align.TopRight,
-                            onDismissRequest = {
-                                showTopPopup.value = false
-                            }
-                        ) {
-                            ListPopupColumn {
-                                DropdownImpl(
-                                    text = stringResource(R.string.module_sort_action_first),
-                                    optionSize = 2,
-                                    isSelected = viewModel.sortActionFirst,
-                                    onSelectedIndexChange = {
-                                        viewModel.sortActionFirst =
-                                            !viewModel.sortActionFirst
-                                        prefs.edit {
-                                            putBoolean(
-                                                "module_sort_action_first",
-                                                viewModel.sortActionFirst
-                                            )
-                                        }
-                                        scope.launch {
-                                            viewModel.fetchModuleList()
-                                        }
-                                        showTopPopup.value = false
-                                    },
-                                    index = 0
-                                )
-                                DropdownImpl(
-                                    text = stringResource(R.string.module_sort_enabled_first),
-                                    optionSize = 2,
-                                    isSelected = viewModel.sortEnabledFirst,
-                                    onSelectedIndexChange = {
-                                        viewModel.sortEnabledFirst =
-                                            !viewModel.sortEnabledFirst
-                                        prefs.edit {
-                                            putBoolean(
-                                                "module_sort_enabled_first",
-                                                viewModel.sortEnabledFirst
-                                            )
-                                        }
-                                        scope.launch {
-                                            viewModel.fetchModuleList()
-                                        }
-                                        showTopPopup.value = false
-                                    },
-                                    index = 1
-                                )
-                            }
-                        }
+
                     }
                 },
                 scrollBehavior = scrollBehavior
@@ -384,7 +367,6 @@ fun ModulePager(
                         .overScrollVertical()
                         .nestedScroll(nestedScrollConnection)
                         .nestedScroll(scrollBehavior.nestedScrollConnection)
-                        .hazeSource(hazeState)
                         .padding(horizontal = 12.dp),
                     onInstallModule = {
                         navigator.navigate(FlashScreenDestination(FlashIt.FlashModules(listOf(it)))) {

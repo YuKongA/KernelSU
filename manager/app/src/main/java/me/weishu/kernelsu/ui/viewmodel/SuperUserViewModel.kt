@@ -1,6 +1,5 @@
 package me.weishu.kernelsu.ui.viewmodel
 
-import android.app.Application
 import android.content.ComponentName
 import android.content.Intent
 import android.content.ServiceConnection
@@ -11,16 +10,12 @@ import android.os.Parcelable
 import android.os.SystemClock
 import android.util.Log
 import androidx.compose.runtime.State
-import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
 import com.topjohnwu.superuser.Shell
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlinx.parcelize.Parcelize
 import me.weishu.kernelsu.IKsuInterface
@@ -31,7 +26,7 @@ import me.weishu.kernelsu.ui.component.SearchStatus
 import me.weishu.kernelsu.ui.util.HanziToPinyin
 import me.weishu.kernelsu.ui.util.KsuCli
 import java.text.Collator
-import java.util.*
+import java.util.Locale
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
 
@@ -79,8 +74,8 @@ class SuperUserViewModel : ViewModel() {
     var isRefreshing by mutableStateOf(false)
         private set
 
-    private val _searchResults = mutableStateOf<List<SuperUserViewModel.AppInfo>>(emptyList())
-    val searchResults: State<List<SuperUserViewModel.AppInfo>> = _searchResults
+    private val _searchResults = mutableStateOf<List<AppInfo>>(emptyList())
+    val searchResults: State<List<AppInfo>> = _searchResults
 
     suspend fun updateSearchText(text: String) {
         _searchStatus.value.searchText = text
@@ -102,10 +97,10 @@ class SuperUserViewModel : ViewModel() {
             }
         }
 
-        if (_searchResults.value == result){
+        if (_searchResults.value == result) {
             fetchAppList()
             updateSearchText(text)
-        } else{
+        } else {
             _searchResults.value = result
 
         }

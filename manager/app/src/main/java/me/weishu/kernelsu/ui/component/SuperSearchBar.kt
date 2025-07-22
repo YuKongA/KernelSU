@@ -123,7 +123,6 @@ class SearchStatus(val label: String) {
 // Search Box Composable
 @Composable
 fun SearchStatus.SearchBox(
-    modifier: Modifier = Modifier,
     collapseBar: @Composable (SearchStatus, Dp) -> Unit = { searchStatus, padding ->
         SearchBarFake(searchStatus.label, padding)
     },
@@ -157,7 +156,7 @@ fun SearchStatus.SearchBox(
             .pointerInput(Unit) {
                 detectTapGestures { searchStatus.current = SearchStatus.Status.EXPANDING }
             }
-            .then(modifier)
+            .background(colorScheme.background)
     ) {
         collapseBar(searchStatus, searchBarTopPadding)
     }

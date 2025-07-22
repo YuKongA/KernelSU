@@ -24,8 +24,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.MoreVert
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -49,11 +47,6 @@ import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.ramcosta.composedestinations.generated.destinations.AppProfileScreenDestination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
-import dev.chrisbanes.haze.HazeState
-import dev.chrisbanes.haze.HazeStyle
-import dev.chrisbanes.haze.HazeTint
-import dev.chrisbanes.haze.hazeEffect
-import dev.chrisbanes.haze.hazeSource
 import kotlinx.coroutines.launch
 import me.weishu.kernelsu.Natives
 import me.weishu.kernelsu.R
@@ -78,6 +71,7 @@ import top.yukonga.miuix.kmp.basic.TopAppBar
 import top.yukonga.miuix.kmp.basic.rememberPullToRefreshState
 import top.yukonga.miuix.kmp.icon.MiuixIcons
 import top.yukonga.miuix.kmp.icon.icons.basic.ArrowRight
+import top.yukonga.miuix.kmp.icon.icons.useful.ImmersionMore
 import top.yukonga.miuix.kmp.theme.MiuixTheme.colorScheme
 import top.yukonga.miuix.kmp.utils.PressFeedbackType
 import top.yukonga.miuix.kmp.utils.overScrollVertical
@@ -107,23 +101,10 @@ fun SuperUserPager(
         targetValue = 12.dp * (1f - scrollBehavior.state.collapsedFraction)
     )
 
-    val hazeState = remember { HazeState() }
-    val hazeStyle = HazeStyle(
-        backgroundColor = colorScheme.background,
-        tint = HazeTint(colorScheme.background.copy(0.67f))
-    )
-
     Scaffold(
         topBar = {
             searchStatus.TopAppBarAnim {
                 TopAppBar(
-                    modifier = Modifier
-                        .hazeEffect(state = hazeState) {
-                            style = hazeStyle
-                            blurRadius = 25.dp
-                            noiseFactor = 0f
-                        },
-                    color = Color.Transparent,
                     title = stringResource(R.string.superuser),
                     actions = {
                         val showTopPopup = remember { mutableStateOf(false) }
@@ -173,7 +154,7 @@ fun SuperUserPager(
                             holdDownState = showTopPopup.value
                         ) {
                             Icon(
-                                imageVector = Icons.Rounded.MoreVert,
+                                imageVector = MiuixIcons.Useful.ImmersionMore,
                                 tint = colorScheme.onSurface,
                                 contentDescription = stringResource(id = R.string.settings)
                             )
@@ -203,12 +184,6 @@ fun SuperUserPager(
         contentWindowInsets = WindowInsets.systemBars.add(WindowInsets.displayCutout).only(WindowInsetsSides.Horizontal)
     ) { innerPadding ->
         searchStatus.SearchBox(
-            modifier = Modifier
-                .hazeEffect(state = hazeState) {
-                    style = hazeStyle
-                    blurRadius = 25.dp
-                    noiseFactor = 0f
-                },
             searchBarTopPadding = dynamicTopPadding,
             contentPadding = PaddingValues(top = innerPadding.calculateTopPadding()),
         ) { boxHeight ->
@@ -228,8 +203,7 @@ fun SuperUserPager(
                     modifier = Modifier
                         .fillMaxHeight()
                         .overScrollVertical()
-                        .nestedScroll(scrollBehavior.nestedScrollConnection)
-                        .hazeSource(hazeState),
+                        .nestedScroll(scrollBehavior.nestedScrollConnection),
                     contentPadding = PaddingValues(top = innerPadding.calculateTopPadding() + boxHeight.value + 6.dp),
                     overscrollEffect = null,
                 ) {
