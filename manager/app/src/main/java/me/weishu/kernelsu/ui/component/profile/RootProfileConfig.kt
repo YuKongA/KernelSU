@@ -1,13 +1,9 @@
 package me.weishu.kernelsu.ui.component.profile
 
-import android.util.Log
-import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -17,40 +13,34 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import androidx.core.text.isDigitsOnly
 import me.weishu.kernelsu.Natives
 import me.weishu.kernelsu.R
 import me.weishu.kernelsu.profile.Capabilities
 import me.weishu.kernelsu.profile.Groups
-import me.weishu.kernelsu.ui.component.EditText
+import me.weishu.kernelsu.ui.component.SuperCheckbox
+import me.weishu.kernelsu.ui.component.SuperEditArrow
 import me.weishu.kernelsu.ui.util.isSepolicyValid
 import top.yukonga.miuix.kmp.basic.ButtonDefaults
-import top.yukonga.miuix.kmp.basic.Icon
-import top.yukonga.miuix.kmp.basic.Text
 import top.yukonga.miuix.kmp.basic.TextButton
 import top.yukonga.miuix.kmp.basic.TextField
+import top.yukonga.miuix.kmp.extra.CheckboxLocation
 import top.yukonga.miuix.kmp.extra.SuperArrow
-import top.yukonga.miuix.kmp.extra.SuperCheckbox
 import top.yukonga.miuix.kmp.extra.SuperDialog
-import top.yukonga.miuix.kmp.icon.MiuixIcons
-import top.yukonga.miuix.kmp.icon.icons.basic.ArrowRight
-import top.yukonga.miuix.kmp.theme.MiuixTheme
 import top.yukonga.miuix.kmp.theme.MiuixTheme.colorScheme
 
 @Composable
@@ -127,23 +117,31 @@ fun RootProfileConfig(
         })
         */
 
-        UidPanel(uid = profile.uid, label = "uid", onUidChange = {
+        SuperEditArrow(
+            title = "UID",
+            defaultValue = profile.uid,
+        ) {
             onProfileChange(
                 profile.copy(
                     uid = it,
                     rootUseDefault = false
                 )
             )
-        })
 
-        UidPanel(uid = profile.gid, label = "gid", onUidChange = {
+        }
+
+        SuperEditArrow(
+            title = "GID",
+            defaultValue = profile.gid,
+        ) {
             onProfileChange(
                 profile.copy(
                     gid = it,
                     rootUseDefault = false
                 )
             )
-        })
+
+        }
 
         val selectedGroups = profile.groups.ifEmpty { listOf(0) }.let { e ->
             e.mapNotNull { g ->
@@ -210,6 +208,7 @@ fun GroupsPanel(selected: List<Groups>, closeSelection: (selection: Set<Groups>)
         show = showDialog,
         title = stringResource(R.string.profile_groups),
         summary = "${currentSelection.value.size} / 32",
+        insideMargin = DpSize(0.dp, 24.dp),
         onDismissRequest = { showDialog.value = false }
     ) {
         Column(modifier = Modifier.heightIn(max = 500.dp)) {
@@ -218,7 +217,10 @@ fun GroupsPanel(selected: List<Groups>, closeSelection: (selection: Set<Groups>)
                     SuperCheckbox(
                         title = group.display,
                         summary = group.desc,
+                        insideMargin = PaddingValues(horizontal = 30.dp, vertical = 16.dp),
+                        checkboxLocation = CheckboxLocation.Right,
                         checked = currentSelection.value.contains(group),
+                        holdDownState = currentSelection.value.contains(group),
                         onCheckedChange = { isChecked ->
                             val newSelection = currentSelection.value.toMutableSet()
                             if (isChecked) {
@@ -233,12 +235,16 @@ fun GroupsPanel(selected: List<Groups>, closeSelection: (selection: Set<Groups>)
             }
             Spacer(Modifier.height(12.dp))
             Row(
+                modifier = Modifier.padding(horizontal = 24.dp),
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 TextButton(
-                    onClick = { showDialog.value = false },
+                    onClick = {
+                        currentSelection.value = selected.toSet()
+                        showDialog.value = false
+                    },
                     text = stringResource(android.R.string.cancel),
-                    modifier = Modifier.weight(1f)
+                    modifier = Modifier.weight(1f),
                 )
                 Spacer(modifier = Modifier.width(20.dp))
                 TextButton(
@@ -254,42 +260,19 @@ fun GroupsPanel(selected: List<Groups>, closeSelection: (selection: Set<Groups>)
         }
     }
 
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable(onClick = { showDialog.value = true })
-            .padding(horizontal = 16.dp, vertical = 14.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Column(modifier = Modifier.weight(1f)) {
-            Text(
-                text = stringResource(R.string.profile_groups),
-                fontSize = MiuixTheme.textStyles.headline1.fontSize,
-                fontWeight = FontWeight.Medium,
-                color = colorScheme.onSurface
-            )
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-            if (selected.isEmpty()) {
-                StatusTag("None")
-            } else {
-                FlowRow(
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                    verticalArrangement = Arrangement.spacedBy(4.dp)
-                ) {
-                    selected.forEach { group ->
-                        StatusTag(group.display)
-                    }
-                }
-            }
-        }
-        Icon(
-            imageVector = MiuixIcons.Basic.ArrowRight,
-            contentDescription = null,
-            tint = colorScheme.onSurfaceVariantActions
-        )
+    val tag = if (selected.isEmpty()) {
+        "None"
+    } else {
+        selected.joinToString(separator = ",", transform = { it.display })
     }
+    SuperArrow(
+        title = stringResource(R.string.profile_groups),
+        summary = tag,
+        onClick = {
+            showDialog.value = true
+        },
+    )
+
 }
 
 @Composable
@@ -311,6 +294,7 @@ fun CapsPanel(
     SuperDialog(
         show = showDialog,
         title = stringResource(R.string.profile_capabilities),
+        insideMargin = DpSize(0.dp, 24.dp),
         onDismissRequest = { showDialog.value = false },
         content = {
             Column(modifier = Modifier.heightIn(max = 500.dp)) {
@@ -319,7 +303,10 @@ fun CapsPanel(
                         SuperCheckbox(
                             title = cap.display,
                             summary = cap.desc,
+                            insideMargin = PaddingValues(horizontal = 30.dp, vertical = 16.dp),
+                            checkboxLocation = CheckboxLocation.Right,
                             checked = currentSelection.value.contains(cap),
+                            holdDownState = currentSelection.value.contains(cap),
                             onCheckedChange = { isChecked ->
                                 val newSelection = currentSelection.value.toMutableSet()
                                 if (isChecked) {
@@ -334,10 +321,14 @@ fun CapsPanel(
                 }
                 Spacer(Modifier.height(12.dp))
                 Row(
+                    modifier = Modifier.padding(horizontal = 24.dp),
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
                     TextButton(
-                        onClick = { showDialog.value = false },
+                        onClick = {
+                            showDialog.value = false
+                            currentSelection.value = selected.toSet()
+                        },
                         text = stringResource(android.R.string.cancel),
                         modifier = Modifier.weight(1f)
                     )
@@ -356,88 +347,19 @@ fun CapsPanel(
         }
     )
 
-
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable(onClick = { showDialog.value = true })
-            .padding(horizontal = 16.dp, vertical = 14.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Column(modifier = Modifier.weight(1f)) {
-            Text(
-                text = stringResource(R.string.profile_capabilities),
-                fontSize = MiuixTheme.textStyles.headline1.fontSize,
-                fontWeight = FontWeight.Medium,
-                color = colorScheme.onSurface
-            )
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-            if (selected.isEmpty()) {
-                StatusTag("None")
-            } else {
-                FlowRow(
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                    verticalArrangement = Arrangement.spacedBy(4.dp)
-                ) {
-                    selected.forEach { cap ->
-                        StatusTag(cap.display)
-                    }
-                }
-            }
+    val tag = if (selected.isEmpty()) {
+        "None"
+    } else {
+        selected.joinToString(separator = ",", transform = { it.display })
+    }
+    SuperArrow(
+        title = stringResource(R.string.profile_capabilities),
+        summary = tag,
+        onClick = {
+            showDialog.value = true
         }
-        Icon(
-            imageVector = MiuixIcons.Basic.ArrowRight,
-            contentDescription = null,
-            tint = colorScheme.onSurfaceVariantActions
-        )
-    }
-}
-
-@Composable
-private fun StatusTag(label: String) {
-    Box(
-        modifier = Modifier
-            .background(
-                color = colorScheme.secondaryContainer.copy(alpha = 0.8f),
-                shape = RoundedCornerShape(8.dp)
-            )
-            .padding(horizontal = 8.dp, vertical = 4.dp)
-    ) {
-        Text(
-            text = label,
-            style = MiuixTheme.textStyles.body2,
-            color = colorScheme.onSecondaryContainer,
-            fontWeight = FontWeight.Medium
-        )
-    }
-}
-
-@Composable
-private fun UidPanel(uid: Int, label: String, onUidChange: (Int) -> Unit) {
-    val text = remember(uid) { mutableStateOf(uid.toString()) }
-    var isError by remember {
-        mutableStateOf(false)
-    }
-    Log.d("RootProfileConfig", "UidPanel: $label, text: ${text.value}, isError: $isError")
-    EditText(
-        title = label.uppercase(),
-        textValue = text,
-        onTextValueChange = { newText ->
-            text.value = newText
-            val valid = !isTextValidUid(text.value)
-            isError = valid
-            if (!isError) {
-                onUidChange(text.value.toIntOrNull() ?: 0)
-            }
-        },
-        keyboardOptions = KeyboardOptions(
-            keyboardType = KeyboardType.Number,
-        ),
-        enabled = true,
-        isError = isError
     )
+
 }
 
 @Composable

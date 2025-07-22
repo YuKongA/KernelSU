@@ -7,7 +7,10 @@ import android.net.Uri
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.LocalIndication
+import androidx.compose.foundation.border
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
@@ -19,26 +22,28 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.add
+import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.calculateEndPadding
 import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.layout.displayCutout
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.selection.toggleable
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.Download
+import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material.icons.rounded.Add
 import androidx.compose.material.icons.rounded.Code
-import androidx.compose.material.icons.rounded.Delete
-import androidx.compose.material.icons.rounded.MoreVert
+import androidx.compose.material.icons.rounded.Download
 import androidx.compose.material.icons.rounded.PlayArrow
 import androidx.compose.material3.Snackbar
 import androidx.compose.material3.SnackbarDuration
@@ -48,6 +53,7 @@ import androidx.compose.material3.SnackbarResult
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
@@ -55,7 +61,10 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
+import androidx.compose.ui.input.nestedscroll.NestedScrollSource
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLayoutDirection
@@ -76,11 +85,6 @@ import com.ramcosta.composedestinations.generated.destinations.ExecuteModuleActi
 import com.ramcosta.composedestinations.generated.destinations.FlashScreenDestination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import com.ramcosta.composedestinations.navigation.EmptyDestinationsNavigator
-import dev.chrisbanes.haze.HazeState
-import dev.chrisbanes.haze.HazeStyle
-import dev.chrisbanes.haze.HazeTint
-import dev.chrisbanes.haze.hazeEffect
-import dev.chrisbanes.haze.hazeSource
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -117,9 +121,9 @@ import top.yukonga.miuix.kmp.basic.Text
 import top.yukonga.miuix.kmp.basic.TopAppBar
 import top.yukonga.miuix.kmp.basic.rememberPullToRefreshState
 import top.yukonga.miuix.kmp.extra.DropdownImpl
-import top.yukonga.miuix.kmp.theme.MiuixTheme
+import top.yukonga.miuix.kmp.icon.MiuixIcons
+import top.yukonga.miuix.kmp.icon.icons.useful.ImmersionMore
 import top.yukonga.miuix.kmp.theme.MiuixTheme.colorScheme
-import top.yukonga.miuix.kmp.utils.SmoothRoundedCornerShape
 import top.yukonga.miuix.kmp.utils.getWindowSize
 import top.yukonga.miuix.kmp.utils.overScrollVertical
 
@@ -153,87 +157,103 @@ fun ModulePager(
         contract = ActivityResultContracts.StartActivityForResult()
     ) { viewModel.fetchModuleList() }
 
-    val hazeState = remember { HazeState() }
-    val hazeStyle = HazeStyle(
-        backgroundColor = colorScheme.background,
-        tint = HazeTint(colorScheme.background.copy(0.67f))
+    val listState = rememberLazyListState()
+    var fabVisible by remember { mutableStateOf(true) }
+    var scrollDistance by remember { mutableFloatStateOf(0f) }
+    val nestedScrollConnection = remember {
+        object : NestedScrollConnection {
+            override fun onPreScroll(available: Offset, source: NestedScrollSource): Offset {
+                val isScrolledToEnd =
+                    (listState.layoutInfo.visibleItemsInfo.lastOrNull()?.index == listState.layoutInfo.totalItemsCount - 1
+                            && (listState.layoutInfo.visibleItemsInfo.lastOrNull()?.size ?: 0) < listState.layoutInfo.viewportEndOffset)
+                val delta = available.y
+                if (!isScrolledToEnd) {
+                    scrollDistance += delta
+                    if (scrollDistance < -50f) {
+                        if (fabVisible) fabVisible = false
+                        scrollDistance = 0f
+                    } else if (scrollDistance > 50f) {
+                        if (!fabVisible) fabVisible = true
+                        scrollDistance = 0f
+                    }
+                }
+                return Offset.Zero
+            }
+        }
+    }
+    val offsetHeight by animateDpAsState(
+        targetValue = if (fabVisible) 0.dp else 180.dp + WindowInsets.systemBars.asPaddingValues().calculateBottomPadding(),
+        animationSpec = tween(durationMillis = 350)
     )
 
     Scaffold(
         topBar = {
             TopAppBar(
-                modifier = Modifier
-                    .hazeEffect(state = hazeState) {
-                        style = hazeStyle
-                        blurRadius = 25.dp
-                        noiseFactor = 0f
-                    },
-                color = Color.Transparent,
                 title = stringResource(R.string.module),
                 actions = {
                     val showTopPopup = remember { mutableStateOf(false) }
-
+                    ListPopup(
+                        show = showTopPopup,
+                        popupPositionProvider = ListPopupDefaults.ContextMenuPositionProvider,
+                        alignment = PopupPositionProvider.Align.TopRight,
+                        onDismissRequest = {
+                            showTopPopup.value = false
+                        }
+                    ) {
+                        ListPopupColumn {
+                            DropdownImpl(
+                                text = stringResource(R.string.module_sort_action_first),
+                                optionSize = 2,
+                                isSelected = viewModel.sortActionFirst,
+                                onSelectedIndexChange = {
+                                    viewModel.sortActionFirst =
+                                        !viewModel.sortActionFirst
+                                    prefs.edit {
+                                        putBoolean(
+                                            "module_sort_action_first",
+                                            viewModel.sortActionFirst
+                                        )
+                                    }
+                                    scope.launch {
+                                        viewModel.fetchModuleList()
+                                    }
+                                    showTopPopup.value = false
+                                },
+                                index = 0
+                            )
+                            DropdownImpl(
+                                text = stringResource(R.string.module_sort_enabled_first),
+                                optionSize = 2,
+                                isSelected = viewModel.sortEnabledFirst,
+                                onSelectedIndexChange = {
+                                    viewModel.sortEnabledFirst =
+                                        !viewModel.sortEnabledFirst
+                                    prefs.edit {
+                                        putBoolean(
+                                            "module_sort_enabled_first",
+                                            viewModel.sortEnabledFirst
+                                        )
+                                    }
+                                    scope.launch {
+                                        viewModel.fetchModuleList()
+                                    }
+                                    showTopPopup.value = false
+                                },
+                                index = 1
+                            )
+                        }
+                    }
                     IconButton(
                         modifier = Modifier.padding(end = 16.dp),
                         onClick = { showTopPopup.value = true },
                         holdDownState = showTopPopup.value
                     ) {
                         Icon(
-                            imageVector = Icons.Rounded.MoreVert,
+                            imageVector = MiuixIcons.Useful.ImmersionMore,
                             tint = colorScheme.onSurface,
                             contentDescription = stringResource(id = R.string.settings)
                         )
-                        ListPopup(
-                            show = showTopPopup,
-                            popupPositionProvider = ListPopupDefaults.ContextMenuPositionProvider,
-                            alignment = PopupPositionProvider.Align.TopRight,
-                            onDismissRequest = {
-                                showTopPopup.value = false
-                            }
-                        ) {
-                            ListPopupColumn {
-                                DropdownImpl(
-                                    text = stringResource(R.string.module_sort_action_first),
-                                    optionSize = 2,
-                                    isSelected = viewModel.sortActionFirst,
-                                    onSelectedIndexChange = {
-                                        viewModel.sortActionFirst =
-                                            !viewModel.sortActionFirst
-                                        prefs.edit {
-                                            putBoolean(
-                                                "module_sort_action_first",
-                                                viewModel.sortActionFirst
-                                            )
-                                        }
-                                        scope.launch {
-                                            viewModel.fetchModuleList()
-                                        }
-                                        showTopPopup.value = false
-                                    },
-                                    index = 0
-                                )
-                                DropdownImpl(
-                                    text = stringResource(R.string.module_sort_enabled_first),
-                                    optionSize = 2,
-                                    isSelected = viewModel.sortEnabledFirst,
-                                    onSelectedIndexChange = {
-                                        viewModel.sortEnabledFirst =
-                                            !viewModel.sortEnabledFirst
-                                        prefs.edit {
-                                            putBoolean(
-                                                "module_sort_enabled_first",
-                                                viewModel.sortEnabledFirst
-                                            )
-                                        }
-                                        scope.launch {
-                                            viewModel.fetchModuleList()
-                                        }
-                                        showTopPopup.value = false
-                                    },
-                                    index = 1
-                                )
-                            }
-                        }
+
                     }
                 },
                 scrollBehavior = scrollBehavior
@@ -286,7 +306,11 @@ fun ModulePager(
                 }
                 FloatingActionButton(
                     modifier = Modifier
-                        .padding(bottom = bottomInnerPadding),
+                        .offset(y = offsetHeight)
+                        .padding(bottom = bottomInnerPadding + 27.dp, end = 20.dp)
+                        .border(0.05.dp, colorScheme.outline.copy(alpha = 0.5f), CircleShape),
+                    containerColor = colorScheme.primary,
+                    shadowElevation = 0.dp,
                     onClick = {
                         // Select the zip files to install
                         val intent = Intent(Intent.ACTION_GET_CONTENT).apply {
@@ -295,26 +319,13 @@ fun ModulePager(
                         }
                         selectZipLauncher.launch(intent)
                     },
-                    shape = SmoothRoundedCornerShape(16.dp),
-                    minWidth = 100.dp,
                     content = {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(4.dp),
-                        ) {
-                            Icon(
-                                Icons.Rounded.Add,
-                                moduleInstall,
-                                Modifier.padding(start = 8.dp),
-                                tint = Color.White
-                            )
-                            Text(
-                                modifier = Modifier.padding(end = 12.dp),
-                                text = moduleInstall,
-                                color = Color.White,
-                                fontWeight = FontWeight.Medium,
-                            )
-                        }
+                        Icon(
+                            Icons.Rounded.Add,
+                            moduleInstall,
+                            modifier = Modifier.size(40.dp),
+                            tint = Color.White
+                        )
                     },
                 )
             }
@@ -354,8 +365,8 @@ fun ModulePager(
                     modifier = Modifier
                         .height(getWindowSize().height.dp)
                         .overScrollVertical()
+                        .nestedScroll(nestedScrollConnection)
                         .nestedScroll(scrollBehavior.nestedScrollConnection)
-                        .hazeSource(hazeState)
                         .padding(horizontal = 12.dp),
                     onInstallModule = {
                         navigator.navigate(FlashScreenDestination(FlashIt.FlashModules(listOf(it)))) {
@@ -534,7 +545,7 @@ private fun ModuleList(
             verticalArrangement = Arrangement.spacedBy(12.dp),
             contentPadding = PaddingValues(
                 top = innerPadding.calculateTopPadding() + 12.dp,
-                bottom = bottomInnerPadding + 12.dp + 12.dp + 60.dp,
+                bottom = bottomInnerPadding + 12.dp,
                 start = innerPadding.calculateStartPadding(layoutDirection),
                 end = innerPadding.calculateEndPadding(layoutDirection)
             ),
@@ -652,10 +663,14 @@ fun ModuleItem(
         val indication = LocalIndication.current
         val viewModel = viewModel<ModuleViewModel>()
 
-        Row {
+        Row(
+            modifier = Modifier,
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
             Column(
                 modifier = Modifier
                     .weight(1f)
+                    .padding(end = 4.dp)
                     .run {
                         if (module.hasWebUi) {
                             toggleable(
@@ -676,33 +691,32 @@ fun ModuleItem(
 
                 Text(
                     text = module.name,
-                    fontSize = MiuixTheme.textStyles.body1.fontSize,
-                    fontWeight = FontWeight.Medium,
+                    fontSize = 17.sp,
+                    fontWeight = FontWeight(550),
                     color = colorScheme.onSurface,
                     textDecoration = textDecoration,
                 )
 
-                Spacer(Modifier.height(0.5.dp))
-
                 Text(
                     text = "$moduleVersion: ${module.version}",
-                    fontSize = MiuixTheme.textStyles.body2.fontSize,
+                    fontSize = 14.sp,
+                    modifier = Modifier.padding(top = 1.dp),
+                    fontWeight = FontWeight(500),
                     color = colorScheme.onSurfaceVariantSummary,
                     textDecoration = textDecoration,
                 )
 
                 Text(
                     text = "$moduleAuthor: ${module.author}",
-                    fontSize = MiuixTheme.textStyles.body2.fontSize,
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight(500),
                     color = colorScheme.onSurfaceVariantSummary,
                     textDecoration = textDecoration,
                 )
             }
 
             Switch(
-                modifier = Modifier
-                    .fillMaxHeight()
-                    .align(Alignment.CenterVertically),
+                modifier = Modifier,
                 checked = module.enabled,
                 onCheckedChange = onCheckChanged
             )
@@ -710,27 +724,30 @@ fun ModuleItem(
 
         Text(
             text = module.description,
-            fontSize = MiuixTheme.textStyles.body2.fontSize,
+            fontSize = 14.5.sp,
             color = colorScheme.onSurfaceVariantSummary,
-            modifier = Modifier.padding(top = 4.dp),
+            modifier = Modifier.padding(top = 2.dp),
             overflow = TextOverflow.Ellipsis,
             maxLines = 4,
             textDecoration = textDecoration
         )
 
         HorizontalDivider(
-            modifier = Modifier.padding(vertical = 8.dp),
+            modifier = Modifier.padding(top = 10.dp, bottom = 10.dp),
             thickness = 0.5.dp,
             color = colorScheme.outline.copy(alpha = 0.5f)
         )
 
         Row(
+            modifier = Modifier,
             horizontalArrangement = Arrangement.spacedBy(16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             if (module.hasActionScript) {
                 IconButton(
                     backgroundColor = colorScheme.secondaryContainer.copy(alpha = 0.8f),
+                    minHeight = 35.dp,
+                    minWidth = 35.dp,
                     enabled = !module.remove && module.enabled,
                     onClick = {
                         navigator.navigate(ExecuteModuleActionScreenDestination(module.id)) {
@@ -752,6 +769,8 @@ fun ModuleItem(
                 IconButton(
                     backgroundColor = colorScheme.secondaryContainer.copy(alpha = 0.8f),
                     enabled = !module.remove && module.enabled,
+                    minHeight = 35.dp,
+                    minWidth = 35.dp,
                     onClick = { onClick(module) },
                 ) {
                     Icon(
@@ -767,43 +786,73 @@ fun ModuleItem(
 
             if (updateUrl.isNotEmpty()) {
                 IconButton(
-                    backgroundColor = colorScheme.secondaryContainer.copy(alpha = 0.8f),
+                    backgroundColor = Color(if (isSystemInDarkTheme()) 0xFF25354E else 0xFFEAF2FF),
                     enabled = !module.remove,
+                    minHeight = 35.dp,
+                    minWidth = 35.dp,
                     onClick = { onUpdate(module) },
                 ) {
-                    Icon(
-                        modifier = Modifier.size(20.dp),
-                        imageVector = Icons.Outlined.Download,
-                        tint = colorScheme.onSurface.copy(alpha = if (isSystemInDarkTheme()) 0.7f else 0.9f),
-                        contentDescription = stringResource(R.string.module_update),
-                    )
+                    Row(
+                        modifier = Modifier.then(
+                            if (updateUrl.isNotEmpty()) {
+                                Modifier.padding(horizontal = 10.dp)
+                            } else {
+                                Modifier
+                            }
+                        ),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(2.dp),
+                    ) {
+                        Icon(
+                            modifier = Modifier.size(20.dp),
+                            imageVector = Icons.Rounded.Download,
+                            tint = Color(0xFF0D84FF),
+                            contentDescription = stringResource(R.string.module_update),
+                        )
+                        Text(
+                            text = stringResource(R.string.module_update),
+                            color = Color(0xFF0D84FF),
+                            fontWeight = FontWeight.Medium,
+                            fontSize = 14.sp
+                        )
+                    }
                 }
             }
 
             IconButton(
                 enabled = !module.remove,
+                minHeight = 35.dp,
+                minWidth = 35.dp,
                 onClick = { onUninstall(module) },
-                backgroundColor = Color.Red.copy(alpha = if (isSystemInDarkTheme()) 0.3f else 0.6f),
+                backgroundColor = colorScheme.secondaryContainer.copy(alpha = 0.8f),
             ) {
                 Row(
+                    modifier = Modifier.then(
+                        if (updateUrl.isEmpty()) {
+                            Modifier.padding(horizontal = 10.dp)
+                        } else {
+                            Modifier
+                        }
+                    ),
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(4.dp),
                 ) {
                     Icon(
                         modifier = Modifier
-                            .padding(start = 10.dp)
                             .size(20.dp),
-                        imageVector = Icons.Rounded.Delete,
-                        tint = Color.White.copy(alpha = if (isSystemInDarkTheme()) 0.78f else 0.98f),
+                        imageVector = Icons.Outlined.Delete,
+                        tint = colorScheme.onSurface.copy(alpha = if (isSystemInDarkTheme()) 0.7f else 0.9f),
                         contentDescription = null
                     )
-                    Text(
-                        modifier = Modifier.padding(end = 12.dp),
-                        text = stringResource(R.string.uninstall),
-                        color = Color.White.copy(alpha = if (isSystemInDarkTheme()) 0.78f else 0.98f),
-                        fontWeight = FontWeight.Medium,
-                        fontSize = 15.sp
-                    )
+                    if (updateUrl.isEmpty()) {
+                        Text(
+                            modifier = Modifier.padding(end = 3.dp),
+                            text = stringResource(R.string.uninstall),
+                            color = colorScheme.onSurface.copy(alpha = if (isSystemInDarkTheme()) 0.7f else 0.9f),
+                            fontWeight = FontWeight.Medium,
+                            fontSize = 15.sp
+                        )
+                    }
                 }
             }
         }
@@ -829,3 +878,4 @@ fun ModuleItemPreview() {
     )
     ModuleItem(EmptyDestinationsNavigator, module, "", {}, {}, {}, {})
 }
+

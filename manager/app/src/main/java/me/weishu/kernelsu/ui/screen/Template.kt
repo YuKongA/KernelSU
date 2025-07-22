@@ -1,6 +1,9 @@
 package me.weishu.kernelsu.ui.screen
 
 import android.widget.Toast
+import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.animation.core.tween
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.FlowRow
@@ -15,6 +18,7 @@ import androidx.compose.foundation.layout.displayCutout
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBars
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -22,24 +26,29 @@ import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.rounded.ArrowBack
 import androidx.compose.material.icons.outlined.Fingerprint
 import androidx.compose.material.icons.outlined.Group
 import androidx.compose.material.icons.outlined.Shield
 import androidx.compose.material.icons.rounded.Add
-import androidx.compose.material.icons.rounded.ImportExport
-import androidx.compose.material.icons.rounded.Sync
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
+import androidx.compose.ui.input.nestedscroll.NestedScrollSource
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
@@ -55,11 +64,6 @@ import com.ramcosta.composedestinations.generated.destinations.TemplateEditorScr
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import com.ramcosta.composedestinations.result.ResultRecipient
 import com.ramcosta.composedestinations.result.getOr
-import dev.chrisbanes.haze.HazeState
-import dev.chrisbanes.haze.HazeStyle
-import dev.chrisbanes.haze.HazeTint
-import dev.chrisbanes.haze.hazeEffect
-import dev.chrisbanes.haze.hazeSource
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import me.weishu.kernelsu.R
@@ -72,16 +76,21 @@ import top.yukonga.miuix.kmp.basic.Icon
 import top.yukonga.miuix.kmp.basic.IconButton
 import top.yukonga.miuix.kmp.basic.ListPopup
 import top.yukonga.miuix.kmp.basic.ListPopupColumn
+import top.yukonga.miuix.kmp.basic.ListPopupDefaults
 import top.yukonga.miuix.kmp.basic.MiuixScrollBehavior
+import top.yukonga.miuix.kmp.basic.PopupPositionProvider
 import top.yukonga.miuix.kmp.basic.PullToRefresh
 import top.yukonga.miuix.kmp.basic.Scaffold
 import top.yukonga.miuix.kmp.basic.ScrollBehavior
 import top.yukonga.miuix.kmp.basic.Text
 import top.yukonga.miuix.kmp.basic.TopAppBar
 import top.yukonga.miuix.kmp.basic.rememberPullToRefreshState
+import top.yukonga.miuix.kmp.icon.MiuixIcons
+import top.yukonga.miuix.kmp.icon.icons.useful.Back
+import top.yukonga.miuix.kmp.icon.icons.useful.Copy
+import top.yukonga.miuix.kmp.icon.icons.useful.Refresh
 import top.yukonga.miuix.kmp.theme.MiuixTheme.colorScheme
 import top.yukonga.miuix.kmp.utils.PressFeedbackType
-import top.yukonga.miuix.kmp.utils.SmoothRoundedCornerShape
 import top.yukonga.miuix.kmp.utils.getWindowSize
 import top.yukonga.miuix.kmp.utils.overScrollVertical
 
@@ -112,10 +121,33 @@ fun AppProfileTemplateScreen(
         }
     }
 
-    val hazeState = remember { HazeState() }
-    val hazeStyle = HazeStyle(
-        backgroundColor = colorScheme.background,
-        tint = HazeTint(colorScheme.background.copy(0.67f))
+    val listState = rememberLazyListState()
+    var fabVisible by remember { mutableStateOf(true) }
+    var scrollDistance by remember { mutableFloatStateOf(0f) }
+    val nestedScrollConnection = remember {
+        object : NestedScrollConnection {
+            override fun onPreScroll(available: Offset, source: NestedScrollSource): Offset {
+                val isScrolledToEnd =
+                    (listState.layoutInfo.visibleItemsInfo.lastOrNull()?.index == listState.layoutInfo.totalItemsCount - 1
+                            && (listState.layoutInfo.visibleItemsInfo.lastOrNull()?.size ?: 0) < listState.layoutInfo.viewportEndOffset)
+                val delta = available.y
+                if (!isScrolledToEnd) {
+                    scrollDistance += delta
+                    if (scrollDistance < -50f) {
+                        if (fabVisible) fabVisible = false
+                        scrollDistance = 0f
+                    } else if (scrollDistance > 50f) {
+                        if (!fabVisible) fabVisible = true
+                        scrollDistance = 0f
+                    }
+                }
+                return Offset.Zero
+            }
+        }
+    }
+    val offsetHeight by animateDpAsState(
+        targetValue = if (fabVisible) 0.dp else 100.dp + WindowInsets.systemBars.asPaddingValues().calculateBottomPadding(),
+        animationSpec = tween(durationMillis = 350)
     )
 
     Scaffold(
@@ -161,40 +193,31 @@ fun AppProfileTemplateScreen(
                     }
                 },
                 scrollBehavior = scrollBehavior,
-                hazeState = hazeState,
-                hazeStyle = hazeStyle
             )
         },
         floatingActionButton = {
             FloatingActionButton(
+                containerColor = colorScheme.primary,
+                shadowElevation = 0.dp,
                 onClick = {
                     navigator.navigate(TemplateEditorScreenDestination(TemplateViewModel.TemplateInfo(), false)) {
                         launchSingleTop = true
                     }
                 },
-                modifier = Modifier.padding(
-                    bottom = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding() +
-                            WindowInsets.captionBar.asPaddingValues().calculateBottomPadding()
-                ),
-                shape = SmoothRoundedCornerShape(20.dp),
+                modifier = Modifier
+                    .offset(y = offsetHeight)
+                    .padding(
+                        bottom = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding() +
+                                WindowInsets.captionBar.asPaddingValues().calculateBottomPadding() + 10.dp, end = 20.dp
+                    )
+                    .border(0.05.dp, colorScheme.outline.copy(alpha = 0.5f), CircleShape),
                 content = {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(4.dp),
-                    ) {
-                        Icon(
-                            Icons.Rounded.Add,
-                            null,
-                            Modifier.padding(start = 8.dp),
-                            tint = Color.White
-                        )
-                        Text(
-                            modifier = Modifier.padding(end = 12.dp),
-                            text = stringResource(id = R.string.app_profile_template_create),
-                            color = Color.White,
-                            fontWeight = FontWeight.Medium,
-                        )
-                    }
+                    Icon(
+                        Icons.Rounded.Add,
+                        null,
+                        Modifier.size(40.dp),
+                        tint = Color.White
+                    )
                 },
             )
         },
@@ -214,8 +237,8 @@ fun AppProfileTemplateScreen(
                 modifier = Modifier
                     .height(getWindowSize().height.dp)
                     .overScrollVertical()
+                    .nestedScroll(nestedScrollConnection)
                     .nestedScroll(scrollBehavior.nestedScrollConnection)
-                    .hazeSource(hazeState)
                     .padding(horizontal = 12.dp),
                 contentPadding = innerPadding,
                 overscrollEffect = null
@@ -229,8 +252,7 @@ fun AppProfileTemplateScreen(
                 item {
                     Spacer(
                         Modifier.height(
-                            60.dp + 12.dp +
-                                    WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding() +
+                            WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding() +
                                     WindowInsets.captionBar.asPaddingValues().calculateBottomPadding()
                         )
                     )
@@ -356,17 +378,8 @@ private fun TopBar(
     onImport: () -> Unit = {},
     onExport: () -> Unit = {},
     scrollBehavior: ScrollBehavior,
-    hazeState: HazeState,
-    hazeStyle: HazeStyle
 ) {
     TopAppBar(
-        modifier = Modifier
-            .hazeEffect(state = hazeState) {
-                style = hazeStyle
-                blurRadius = 25.dp
-                noiseFactor = 0f
-            },
-        color = Color.Transparent,
         title = stringResource(R.string.settings_profile_template),
         navigationIcon = {
             IconButton(
@@ -374,7 +387,7 @@ private fun TopBar(
                 onClick = onBack
             ) {
                 Icon(
-                    Icons.AutoMirrored.Rounded.ArrowBack,
+                    imageVector = MiuixIcons.Useful.Back,
                     contentDescription = null,
                     tint = colorScheme.onBackground
                 )
@@ -386,50 +399,53 @@ private fun TopBar(
                 onClick = onSync
             ) {
                 Icon(
-                    Icons.Rounded.Sync,
+                    imageVector = MiuixIcons.Useful.Refresh,
                     contentDescription = stringResource(id = R.string.app_profile_template_sync),
                     tint = colorScheme.onBackground
                 )
             }
 
-            val showDropdown = remember { mutableStateOf(false) }
+            val showTopPopup = remember { mutableStateOf(false) }
+            ListPopup(
+                show = showTopPopup,
+                popupPositionProvider = ListPopupDefaults.ContextMenuPositionProvider,
+                alignment = PopupPositionProvider.Align.TopRight,
+                onDismissRequest = {
+                    showTopPopup.value = false
+                }
+            ) {
+                ListPopupColumn {
+                    val items = listOf(
+                        stringResource(id = R.string.app_profile_import_from_clipboard),
+                        stringResource(id = R.string.app_profile_export_to_clipboard)
+                    )
+                    items.forEachIndexed { index, text ->
+                        DropdownItem(
+                            text = text,
+                            optionSize = items.size,
+                            index = index,
+                            onSelectedIndexChange = { selectedIndex ->
+                                if (selectedIndex == 0) {
+                                    onImport()
+                                } else {
+                                    onExport()
+                                }
+                                showTopPopup.value = false
+                            }
+                        )
+                    }
+                }
+            }
             IconButton(
                 modifier = Modifier.padding(end = 16.dp),
-                onClick = { showDropdown.value = true }
+                onClick = { showTopPopup.value = true },
+                holdDownState = showTopPopup.value
             ) {
                 Icon(
-                    imageVector = Icons.Rounded.ImportExport,
+                    imageVector = MiuixIcons.Useful.Copy,
                     contentDescription = stringResource(id = R.string.app_profile_import_export),
                     tint = colorScheme.onBackground
                 )
-
-                ListPopup(
-                    show = showDropdown,
-                    onDismissRequest = { showDropdown.value = false }
-                ) {
-                    ListPopupColumn {
-                        val items = listOf(
-                            stringResource(id = R.string.app_profile_import_from_clipboard),
-                            stringResource(id = R.string.app_profile_export_to_clipboard)
-                        )
-
-                        items.forEachIndexed { index, text ->
-                            DropdownItem(
-                                text = text,
-                                optionSize = items.size,
-                                index = index,
-                                onSelectedIndexChange = { selectedIndex ->
-                                    if (selectedIndex == 0) {
-                                        onImport()
-                                    } else {
-                                        onExport()
-                                    }
-                                    showDropdown.value = false
-                                }
-                            )
-                        }
-                    }
-                }
             }
         },
         scrollBehavior = scrollBehavior

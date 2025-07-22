@@ -143,8 +143,8 @@ class ModuleViewModel : ViewModel() {
             val url = m.updateJson
             Log.i(TAG, "checkUpdate url: $url")
             val response = ksuApp.okhttpClient.newCall(
-                    okhttp3.Request.Builder().url(url).build()
-                ).execute()
+                okhttp3.Request.Builder().url(url).build()
+            ).execute()
             Log.d(TAG, "checkUpdate code: ${response.code}")
             if (response.isSuccessful) {
                 response.body?.string() ?: ""
