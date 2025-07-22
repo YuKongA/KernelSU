@@ -86,7 +86,8 @@ jobs:
           cp -f ../aarch64-linux-android/release/ksud ../manager/app/src/main/jniLibs/arm64-v8a/libksud.so
           cp -f ../x86_64-linux-android/release/ksud ../manager/app/src/main/jniLibs/x86_64/libksud.so
 
-      - name: Build with Gradle
+      - name: Build with Gradle (Release)
+        if: ${{ ( github.event_name != 'pull_request' && github.ref == 'refs/heads/main' ) || github.ref_type == 'tag' }}
         run: |
           echo ${{ secrets.KEYSTORE }} | base64 -d > keystore.jks
           ./gradlew clean assembleRelease
@@ -95,6 +96,11 @@ jobs:
           KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
           KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
           KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+
+      - name: Build with Gradle (Pull Request)
+        if: github.event_name == 'pull_request'
+        run: |
+          ./gradlew clean assembleDebug
 
       - name: Upload build artifact
         uses: actions/upload-artifact@v4
