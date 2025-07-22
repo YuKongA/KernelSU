@@ -46,6 +46,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalUriHandler
@@ -310,6 +311,7 @@ private fun TopBar(
                     Icon(
                         imageVector = MiuixIcons.Useful.Reboot,
                         contentDescription = stringResource(id = R.string.reboot),
+                        modifier = Modifier.graphicsLayer(scaleX = -1f),
                         tint = colorScheme.onBackground
                     )
                 }
