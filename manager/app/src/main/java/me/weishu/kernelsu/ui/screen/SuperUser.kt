@@ -32,6 +32,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -193,15 +195,18 @@ fun SuperUserPager(
                 end = innerPadding.calculateEndPadding(layoutDirection)
             ),
         ) { boxHeight ->
+            var isRefreshing by rememberSaveable { mutableStateOf(false) }
             val pullToRefreshState = rememberPullToRefreshState()
+            LaunchedEffect(isRefreshing) {
+                if (isRefreshing) {
+                    viewModel.fetchAppList()
+                    isRefreshing = false
+                }
+            }
             PullToRefresh(
+                isRefreshing = isRefreshing,
                 pullToRefreshState = pullToRefreshState,
-                onRefresh = {
-                    scope.launch {
-                        viewModel.fetchAppList()
-                        pullToRefreshState.completeRefreshing { }
-                    }
-                },
+                onRefresh = { isRefreshing = true },
                 contentPadding = PaddingValues(
                     top = innerPadding.calculateTopPadding() + boxHeight.value + 6.dp,
                     start = innerPadding.calculateStartPadding(layoutDirection),

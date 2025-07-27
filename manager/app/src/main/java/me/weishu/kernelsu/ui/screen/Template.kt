@@ -41,6 +41,7 @@ import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -224,13 +225,18 @@ fun AppProfileTemplateScreen(
         popupHost = { },
         contentWindowInsets = WindowInsets.systemBars.add(WindowInsets.displayCutout).only(WindowInsetsSides.Horizontal)
     ) { innerPadding ->
+        var isRefreshing by rememberSaveable { mutableStateOf(false) }
         val pullToRefreshState = rememberPullToRefreshState()
+        LaunchedEffect(isRefreshing) {
+            if (isRefreshing) {
+                viewModel.fetchTemplates()
+                isRefreshing = false
+            }
+        }
         PullToRefresh(
+            isRefreshing = isRefreshing,
             pullToRefreshState = pullToRefreshState,
-            onRefresh = {
-                scope.launch { viewModel.fetchTemplates() }
-                pullToRefreshState.completeRefreshing { }
-            },
+            onRefresh = { isRefreshing = true },
             contentPadding = innerPadding
         ) {
             LazyColumn(

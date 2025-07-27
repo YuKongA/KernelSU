@@ -14,7 +14,7 @@ webkit = "1.14.0"
 parcelablelist = "2.0.1"
 libsu = "6.0.0"
 cmaker = "1.2"
-miuix = "0.4.7"
+miuix = "0.4.8"
 haze = "1.6.9"
 
 [plugins]

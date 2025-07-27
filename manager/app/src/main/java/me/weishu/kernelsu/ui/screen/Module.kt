@@ -58,6 +58,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -528,13 +529,18 @@ private fun ModuleList(
         }
     }
 
+    var isRefreshing by rememberSaveable { mutableStateOf(false) }
     val pullToRefreshState = rememberPullToRefreshState()
-    PullToRefresh(
-        pullToRefreshState = pullToRefreshState,
-        onRefresh = {
+    LaunchedEffect(isRefreshing) {
+        if (isRefreshing) {
             viewModel.fetchModuleList()
-            pullToRefreshState.completeRefreshing { }
-        },
+            isRefreshing = false
+        }
+    }
+    PullToRefresh(
+        isRefreshing = isRefreshing,
+        pullToRefreshState = pullToRefreshState,
+        onRefresh = { isRefreshing = true },
         contentPadding = PaddingValues(top = innerPadding.calculateTopPadding() + 12.dp)
     ) {
         val layoutDirection = LocalLayoutDirection.current
