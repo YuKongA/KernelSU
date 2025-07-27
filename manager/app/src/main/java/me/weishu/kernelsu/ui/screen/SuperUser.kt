@@ -1,6 +1,11 @@
 package me.weishu.kernelsu.ui.screen
 
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -15,7 +20,6 @@ import androidx.compose.foundation.layout.add
 import androidx.compose.foundation.layout.calculateEndPadding
 import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.layout.displayCutout
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.only
@@ -55,7 +59,6 @@ import me.weishu.kernelsu.Natives
 import me.weishu.kernelsu.R
 import me.weishu.kernelsu.ui.component.AppIconImage
 import me.weishu.kernelsu.ui.component.DropdownItem
-import me.weishu.kernelsu.ui.component.Loading
 import me.weishu.kernelsu.ui.component.SearchBox
 import me.weishu.kernelsu.ui.component.SearchPager
 import me.weishu.kernelsu.ui.viewmodel.SuperUserViewModel
@@ -78,6 +81,7 @@ import top.yukonga.miuix.kmp.icon.icons.basic.ArrowRight
 import top.yukonga.miuix.kmp.icon.icons.useful.ImmersionMore
 import top.yukonga.miuix.kmp.theme.MiuixTheme.colorScheme
 import top.yukonga.miuix.kmp.utils.PressFeedbackType
+import top.yukonga.miuix.kmp.utils.getWindowSize
 import top.yukonga.miuix.kmp.utils.overScrollVertical
 
 @Composable
@@ -90,7 +94,6 @@ fun SuperUserPager(
     val scrollBehavior = MiuixScrollBehavior()
     val listState = rememberLazyListState()
     val searchStatus by viewModel.searchStatus
-
     LaunchedEffect(key1 = navigator) {
         if (viewModel.appList.value.isEmpty() || viewModel.searchResults.value.isEmpty()) {
             viewModel.fetchAppList()
@@ -174,9 +177,15 @@ fun SuperUserPager(
                 searchBarTopPadding = dynamicTopPadding,
             ) {
                 items(viewModel.searchResults.value, key = { it.packageName + it.uid }) { app ->
-                    AppItem(app) {
-                        navigator.navigate(AppProfileScreenDestination(app)) {
-                            launchSingleTop = true
+                    AnimatedVisibility(
+                        visible = viewModel.searchResults.value.isNotEmpty(),
+                        enter = fadeIn() + expandVertically(),
+                        exit = fadeOut() + shrinkVertically()
+                    ) {
+                        AppItem(app) {
+                            navigator.navigate(AppProfileScreenDestination(app)) {
+                                launchSingleTop = true
+                            }
                         }
                     }
                 }
@@ -215,54 +224,54 @@ fun SuperUserPager(
                     end = innerPadding.calculateEndPadding(layoutDirection)
                 ),
             ) {
-                LazyColumn(
-                    state = listState,
-                    modifier = Modifier
-                        .fillMaxHeight()
-                        .overScrollVertical()
-                        .nestedScroll(scrollBehavior.nestedScrollConnection),
-                    contentPadding = PaddingValues(
-                        top = innerPadding.calculateTopPadding() + boxHeight.value + 6.dp,
-                        start = innerPadding.calculateStartPadding(layoutDirection),
-                        end = innerPadding.calculateEndPadding(layoutDirection)
-                    ),
-                    overscrollEffect = null,
-                ) {
-                    item {
-                        if (viewModel.appList.value.isEmpty()) {
-                            if (viewModel.isRefreshing) {
-                                Loading()
-                                Text(
-                                    modifier = Modifier.fillMaxSize(),
-                                    text = "Refresh...",
-                                    textAlign = TextAlign.Center,
-                                    color = colorScheme.onSecondaryContainer,
-                                )
-                            } else {
-                                Text(
-                                    modifier = Modifier.fillMaxSize(),
-                                    text = "empty",
-                                    textAlign = TextAlign.Center,
-                                    color = colorScheme.onSecondaryContainer,
-                                )
+                if (viewModel.appList.value.isEmpty()) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(
+                                top = innerPadding.calculateTopPadding() + boxHeight.value + 6.dp,
+                                start = innerPadding.calculateStartPadding(layoutDirection),
+                                end = innerPadding.calculateEndPadding(layoutDirection),
+                                bottom = bottomInnerPadding
+                            ),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = if (viewModel.isRefreshing) "Loading..." else "Empty",
+                            textAlign = TextAlign.Center,
+                            color = Color.Gray,
+                        )
+                    }
+                } else {
+                    LazyColumn(
+                        state = listState,
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .height(getWindowSize().height.dp)
+                            .overScrollVertical()
+                            .nestedScroll(scrollBehavior.nestedScrollConnection),
+                        contentPadding = PaddingValues(
+                            top = innerPadding.calculateTopPadding() + boxHeight.value + 6.dp,
+                            start = innerPadding.calculateStartPadding(layoutDirection),
+                            end = innerPadding.calculateEndPadding(layoutDirection)
+                        ),
+                        overscrollEffect = null,
+                    ) {
+                        items(viewModel.appList.value, key = { it.packageName + it.uid }) { app ->
+                            AppItem(app) {
+                                navigator.navigate(AppProfileScreenDestination(app)) {
+                                    launchSingleTop = true
+                                }
                             }
                         }
-                    }
-                    items(viewModel.appList.value, key = { it.packageName + it.uid }) { app ->
-                        AppItem(app) {
-                            navigator.navigate(AppProfileScreenDestination(app)) {
-                                launchSingleTop = true
-                            }
+                        item {
+                            Spacer(Modifier.height(bottomInnerPadding))
                         }
-                    }
-                    item {
-                        Spacer(Modifier.height(bottomInnerPadding))
                     }
                 }
             }
         }
     }
-
 }
 
 @Composable

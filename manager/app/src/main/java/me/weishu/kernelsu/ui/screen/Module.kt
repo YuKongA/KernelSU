@@ -167,7 +167,8 @@ fun ModulePager(
             override fun onPreScroll(available: Offset, source: NestedScrollSource): Offset {
                 val isScrolledToEnd =
                     (listState.layoutInfo.visibleItemsInfo.lastOrNull()?.index == listState.layoutInfo.totalItemsCount - 1
-                            && (listState.layoutInfo.visibleItemsInfo.lastOrNull()?.size ?: 0) < listState.layoutInfo.viewportEndOffset)
+                            && (listState.layoutInfo.visibleItemsInfo.lastOrNull()?.size
+                        ?: 0) < listState.layoutInfo.viewportEndOffset)
                 val delta = available.y
                 if (!isScrolledToEnd) {
                     scrollDistance += delta
@@ -548,7 +549,7 @@ private fun ModuleList(
         val layoutDirection = LocalLayoutDirection.current
 
         LazyColumn(
-            modifier = modifier,
+            modifier = modifier.height(getWindowSize().height.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp),
             contentPadding = PaddingValues(
                 top = innerPadding.calculateTopPadding() + 12.dp,

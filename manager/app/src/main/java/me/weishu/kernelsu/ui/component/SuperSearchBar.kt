@@ -64,7 +64,6 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
 import top.yukonga.miuix.kmp.basic.Icon
-import top.yukonga.miuix.kmp.basic.InfiniteProgressIndicator
 import top.yukonga.miuix.kmp.basic.InputField
 import top.yukonga.miuix.kmp.basic.Text
 import top.yukonga.miuix.kmp.icon.MiuixIcons
@@ -266,15 +265,7 @@ fun SearchStatus.SearchPager(
             when (searchStatus.resultStatus) {
                 SearchStatus.ResultStatus.DEFAULT -> defaultResult()
                 SearchStatus.ResultStatus.EMPTY -> {}
-                SearchStatus.ResultStatus.LOAD -> Box(
-                    Modifier
-                        .padding(vertical = 12.dp)
-                        .fillMaxWidth(),
-                    contentAlignment = Alignment.TopCenter
-                ) {
-                    Loading()
-                }
-
+                SearchStatus.ResultStatus.LOAD -> {}
                 SearchStatus.ResultStatus.SHOW -> LazyColumn(
                     Modifier
                         .fillMaxSize()
@@ -382,13 +373,5 @@ fun SearchBarFake(
         enabled = false,
         expanded = false,
         onExpandedChange = { }
-    )
-}
-
-@Composable
-fun Loading() {
-    InfiniteProgressIndicator(
-        modifier = Modifier
-            .fillMaxWidth()
     )
 }

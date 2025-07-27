@@ -7,12 +7,15 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.add
 import androidx.compose.foundation.layout.asPaddingValues
+import androidx.compose.foundation.layout.calculateEndPadding
+import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.layout.captionBar
 import androidx.compose.foundation.layout.displayCutout
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -53,6 +56,7 @@ import androidx.compose.ui.input.nestedscroll.NestedScrollSource
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontWeight
@@ -131,7 +135,8 @@ fun AppProfileTemplateScreen(
             override fun onPreScroll(available: Offset, source: NestedScrollSource): Offset {
                 val isScrolledToEnd =
                     (listState.layoutInfo.visibleItemsInfo.lastOrNull()?.index == listState.layoutInfo.totalItemsCount - 1
-                            && (listState.layoutInfo.visibleItemsInfo.lastOrNull()?.size ?: 0) < listState.layoutInfo.viewportEndOffset)
+                            && (listState.layoutInfo.visibleItemsInfo.lastOrNull()?.size
+                        ?: 0) < listState.layoutInfo.viewportEndOffset)
                 val delta = available.y
                 if (!isScrolledToEnd) {
                     scrollDistance += delta
@@ -235,11 +240,16 @@ fun AppProfileTemplateScreen(
                 isRefreshing = false
             }
         }
+        val layoutDirection = LocalLayoutDirection.current
         PullToRefresh(
             isRefreshing = isRefreshing,
             pullToRefreshState = pullToRefreshState,
             onRefresh = { isRefreshing = true },
-            contentPadding = innerPadding
+            contentPadding = PaddingValues(
+                top = innerPadding.calculateTopPadding() + 12.dp,
+                start = innerPadding.calculateStartPadding(layoutDirection),
+                end = innerPadding.calculateEndPadding(layoutDirection)
+            ),
         ) {
             LazyColumn(
                 modifier = Modifier
