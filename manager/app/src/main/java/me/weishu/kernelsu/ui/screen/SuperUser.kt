@@ -49,6 +49,7 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.ramcosta.composedestinations.generated.destinations.AppProfileScreenDestination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import me.weishu.kernelsu.Natives
 import me.weishu.kernelsu.R
@@ -199,6 +200,7 @@ fun SuperUserPager(
             val pullToRefreshState = rememberPullToRefreshState()
             LaunchedEffect(isRefreshing) {
                 if (isRefreshing) {
+                    delay(350)
                     viewModel.fetchAppList()
                     isRefreshing = false
                 }

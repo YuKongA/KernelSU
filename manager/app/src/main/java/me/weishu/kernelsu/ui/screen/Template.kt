@@ -66,6 +66,7 @@ import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import com.ramcosta.composedestinations.result.ResultRecipient
 import com.ramcosta.composedestinations.result.getOr
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import me.weishu.kernelsu.R
 import me.weishu.kernelsu.ui.component.DropdownItem
@@ -229,6 +230,7 @@ fun AppProfileTemplateScreen(
         val pullToRefreshState = rememberPullToRefreshState()
         LaunchedEffect(isRefreshing) {
             if (isRefreshing) {
+                delay(350)
                 viewModel.fetchTemplates()
                 isRefreshing = false
             }
