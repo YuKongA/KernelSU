@@ -13,6 +13,8 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.add
+import androidx.compose.foundation.layout.calculateEndPadding
+import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.layout.displayCutout
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
@@ -41,6 +43,7 @@ import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -190,9 +193,14 @@ fun SuperUserPager(
         },
         contentWindowInsets = WindowInsets.systemBars.add(WindowInsets.displayCutout).only(WindowInsetsSides.Horizontal)
     ) { innerPadding ->
+        val layoutDirection = LocalLayoutDirection.current
         searchStatus.SearchBox(
             searchBarTopPadding = dynamicTopPadding,
-            contentPadding = PaddingValues(top = innerPadding.calculateTopPadding()),
+            contentPadding = PaddingValues(
+                top = innerPadding.calculateTopPadding(),
+                start = innerPadding.calculateStartPadding(layoutDirection),
+                end = innerPadding.calculateEndPadding(layoutDirection)
+            ),
         ) { boxHeight ->
             val pullToRefreshState = rememberPullToRefreshState()
             PullToRefresh(
@@ -203,7 +211,11 @@ fun SuperUserPager(
                         pullToRefreshState.completeRefreshing { }
                     }
                 },
-                contentPadding = PaddingValues(top = innerPadding.calculateTopPadding() + boxHeight.value + 6.dp),
+                contentPadding = PaddingValues(
+                    top = innerPadding.calculateTopPadding() + boxHeight.value + 6.dp,
+                    start = innerPadding.calculateStartPadding(layoutDirection),
+                    end = innerPadding.calculateEndPadding(layoutDirection)
+                ),
             ) {
                 LazyColumn(
                     state = listState,
@@ -211,7 +223,11 @@ fun SuperUserPager(
                         .fillMaxHeight()
                         .overScrollVertical()
                         .nestedScroll(scrollBehavior.nestedScrollConnection),
-                    contentPadding = PaddingValues(top = innerPadding.calculateTopPadding() + boxHeight.value + 6.dp),
+                    contentPadding = PaddingValues(
+                        top = innerPadding.calculateTopPadding() + boxHeight.value + 6.dp,
+                        start = innerPadding.calculateStartPadding(layoutDirection),
+                        end = innerPadding.calculateEndPadding(layoutDirection)
+                    ),
                     overscrollEffect = null,
                 ) {
                     item {

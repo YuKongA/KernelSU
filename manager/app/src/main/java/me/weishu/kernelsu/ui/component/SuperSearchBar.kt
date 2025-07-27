@@ -26,6 +26,8 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.asPaddingValues
+import androidx.compose.foundation.layout.calculateEndPadding
+import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.offset
@@ -53,6 +55,7 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.positionInWindow
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.onClick
 import androidx.compose.ui.semantics.semantics
@@ -123,8 +126,8 @@ class SearchStatus(val label: String) {
 // Search Box Composable
 @Composable
 fun SearchStatus.SearchBox(
-    collapseBar: @Composable (SearchStatus, Dp) -> Unit = { searchStatus, padding ->
-        SearchBarFake(searchStatus.label, padding)
+    collapseBar: @Composable (SearchStatus, Dp, PaddingValues) -> Unit = { searchStatus, topPadding, innerPadding ->
+        SearchBarFake(searchStatus.label, topPadding, innerPadding)
     },
     searchBarTopPadding: Dp = 12.dp,
     contentPadding: PaddingValues = PaddingValues(0.dp),
@@ -158,7 +161,7 @@ fun SearchStatus.SearchBox(
             }
             .background(colorScheme.background)
     ) {
-        collapseBar(searchStatus, searchBarTopPadding)
+        collapseBar(searchStatus, searchBarTopPadding, contentPadding)
     }
     Box {
         AnimatedVisibility(
@@ -350,8 +353,10 @@ fun SearchBar(
 @Composable
 fun SearchBarFake(
     label: String,
-    searchBarTopPadding: Dp = 12.dp
+    searchBarTopPadding: Dp = 12.dp,
+    innerPadding: PaddingValues = PaddingValues(0.dp)
 ) {
+    val layoutDirection = LocalLayoutDirection.current
     InputField(
         query = "",
         onQueryChange = { },
@@ -368,6 +373,10 @@ fun SearchBarFake(
         },
         modifier = Modifier
             .padding(horizontal = 12.dp)
+            .padding(
+                start = innerPadding.calculateStartPadding(layoutDirection),
+                end = innerPadding.calculateEndPadding(layoutDirection)
+            )
             .padding(top = searchBarTopPadding, bottom = 6.dp),
         onSearch = { it },
         enabled = false,

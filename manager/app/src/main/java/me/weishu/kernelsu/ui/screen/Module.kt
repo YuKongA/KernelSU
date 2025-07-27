@@ -309,7 +309,6 @@ fun ModulePager(
                         .offset(y = offsetHeight)
                         .padding(bottom = bottomInnerPadding + 27.dp, end = 20.dp)
                         .border(0.05.dp, colorScheme.outline.copy(alpha = 0.5f), CircleShape),
-                    containerColor = colorScheme.primary,
                     shadowElevation = 0.dp,
                     onClick = {
                         // Select the zip files to install
@@ -522,7 +521,7 @@ private fun ModuleList(
         val result = snackBarHost.showSnackbar(
             message = message,
             actionLabel = actionLabel,
-            duration = SnackbarDuration.Long
+            duration = SnackbarDuration.Short
         )
         if (result == SnackbarResult.ActionPerformed) {
             reboot()
@@ -609,7 +608,7 @@ private fun ModuleList(
                                         val result = snackBarHost.showSnackbar(
                                             message = rebootToApply,
                                             actionLabel = reboot,
-                                            duration = SnackbarDuration.Long
+                                            duration = SnackbarDuration.Short
                                         )
                                         if (result == SnackbarResult.ActionPerformed) {
                                             reboot()

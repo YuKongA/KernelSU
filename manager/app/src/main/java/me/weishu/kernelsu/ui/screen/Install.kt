@@ -66,7 +66,6 @@ import top.yukonga.miuix.kmp.basic.TopAppBar
 import top.yukonga.miuix.kmp.extra.SuperCheckbox
 import top.yukonga.miuix.kmp.icon.MiuixIcons
 import top.yukonga.miuix.kmp.icon.icons.useful.Back
-import top.yukonga.miuix.kmp.icon.icons.useful.ImmersionMore
 import top.yukonga.miuix.kmp.icon.icons.useful.Move
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 import top.yukonga.miuix.kmp.theme.MiuixTheme.colorScheme
@@ -340,7 +339,7 @@ private fun TopBar(
                 onClick = onLkmUpload
             ) {
                 Icon(
-                    MiuixIcons.Useful.ImmersionMore,
+                    MiuixIcons.Useful.Move,
                     tint = colorScheme.onSurface,
                     contentDescription = null
                 )
