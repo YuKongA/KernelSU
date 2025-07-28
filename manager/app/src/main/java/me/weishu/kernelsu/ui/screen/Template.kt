@@ -36,7 +36,6 @@ import androidx.compose.material.icons.outlined.Fingerprint
 import androidx.compose.material.icons.outlined.Group
 import androidx.compose.material.icons.outlined.Shield
 import androidx.compose.material.icons.rounded.Add
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -61,6 +60,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.dropUnlessResumed
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.ramcosta.composedestinations.annotation.Destination
@@ -95,6 +95,7 @@ import top.yukonga.miuix.kmp.icon.MiuixIcons
 import top.yukonga.miuix.kmp.icon.icons.useful.Back
 import top.yukonga.miuix.kmp.icon.icons.useful.Copy
 import top.yukonga.miuix.kmp.icon.icons.useful.Refresh
+import top.yukonga.miuix.kmp.theme.MiuixTheme
 import top.yukonga.miuix.kmp.theme.MiuixTheme.colorScheme
 import top.yukonga.miuix.kmp.utils.PressFeedbackType
 import top.yukonga.miuix.kmp.utils.getWindowSize
@@ -309,39 +310,42 @@ private fun TemplateItem(
             ) {
                 Text(
                     text = template.name,
-                    fontWeight = FontWeight.SemiBold,
-                    style = MaterialTheme.typography.titleMedium
+                    fontSize = 17.sp,
+                    fontWeight = FontWeight(550),
+                    color = colorScheme.onSurface,
                 )
                 Spacer(modifier = Modifier.weight(1f))
                 if (template.local) {
                     Text(
                         text = "LOCAL",
-                        style = MaterialTheme.typography.labelSmall,
                         color = colorScheme.onTertiaryContainer,
-                        fontWeight = FontWeight.Bold
+                        fontWeight = FontWeight.Bold,
+                        style = MiuixTheme.textStyles.footnote1
                     )
                 } else {
                     Text(
                         text = "REMOTE",
-                        style = MaterialTheme.typography.labelSmall,
                         color = colorScheme.onSurfaceSecondary,
-                        fontWeight = FontWeight.Bold
+                        fontWeight = FontWeight.Bold,
+                        style = MiuixTheme.textStyles.footnote1
                     )
                 }
             }
 
             Text(
                 text = "${template.id}${if (template.author.isEmpty()) "" else " by @${template.author}"}",
-                style = MaterialTheme.typography.bodySmall,
-                color = colorScheme.onSurfaceSecondary
+                modifier = Modifier.padding(top = 1.dp),
+                fontSize = 14.sp,
+                color = colorScheme.onSurfaceVariantSummary,
+                fontWeight = FontWeight.Medium,
             )
 
             Spacer(modifier = Modifier.height(4.dp))
 
             Text(
                 text = template.description,
-                style = MaterialTheme.typography.bodyMedium,
-                color = colorScheme.onSurface
+                fontSize = 14.5.sp,
+                color = colorScheme.onSurfaceVariantSummary,
             )
 
             HorizontalDivider(
@@ -383,7 +387,7 @@ private fun InfoChip(icon: ImageVector, text: String) {
         Spacer(modifier = Modifier.width(6.dp))
         Text(
             text = text,
-            style = MaterialTheme.typography.bodySmall,
+            style = MiuixTheme.textStyles.body2,
             color = colorScheme.onSurfaceSecondary
         )
     }

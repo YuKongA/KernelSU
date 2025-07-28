@@ -2,6 +2,7 @@ package me.weishu.kernelsu.ui.component
 
 import android.content.Intent
 import android.net.Uri
+import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.PaddingValues
@@ -10,7 +11,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Save
 import androidx.compose.material.icons.rounded.Share
-import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.rememberCoroutineScope
@@ -42,7 +42,6 @@ import java.time.format.DateTimeFormatter
 fun SendLogDialog(
     showDialog: MutableState<Boolean>,
     loadingDialog: LoadingDialogHandle,
-    snackBarHost: SnackbarHostState,
 ) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
@@ -58,7 +57,7 @@ fun SendLogDialog(
                 }
             }
             loadingDialog.hide()
-            snackBarHost.showSnackbar(context.getString(R.string.log_saved))
+            Toast.makeText(context, context.getString(R.string.log_saved), Toast.LENGTH_SHORT).show()
         }
     }
     SuperDialog(

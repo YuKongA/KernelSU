@@ -28,8 +28,6 @@ import androidx.compose.material.icons.rounded.FolderDelete
 import androidx.compose.material.icons.rounded.RemoveModerator
 import androidx.compose.material.icons.rounded.RestartAlt
 import androidx.compose.material.icons.rounded.Update
-import androidx.compose.material3.Snackbar
-import androidx.compose.material3.SnackbarHost
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -60,7 +58,6 @@ import me.weishu.kernelsu.ui.component.SendLogDialog
 import me.weishu.kernelsu.ui.component.UninstallDialog
 import me.weishu.kernelsu.ui.component.rememberConfirmDialog
 import me.weishu.kernelsu.ui.component.rememberLoadingDialog
-import me.weishu.kernelsu.ui.util.LocalSnackbarHost
 import me.weishu.kernelsu.ui.util.shrinkModules
 import top.yukonga.miuix.kmp.basic.Card
 import top.yukonga.miuix.kmp.basic.Icon
@@ -85,7 +82,6 @@ import top.yukonga.miuix.kmp.utils.overScrollVertical
 @Destination<RootGraph>
 fun SettingScreen(navigator: DestinationsNavigator) {
     val scrollBehavior = MiuixScrollBehavior()
-    val snackBarHost = LocalSnackbarHost.current
 
     Scaffold(
         topBar = {
@@ -93,16 +89,6 @@ fun SettingScreen(navigator: DestinationsNavigator) {
                 onBack = dropUnlessResumed { navigator.popBackStack() },
                 scrollBehavior = scrollBehavior,
             )
-        },
-        snackbarHost = {
-            SnackbarHost(hostState = snackBarHost) {
-                Snackbar(
-                    snackbarData = it,
-                    containerColor = colorScheme.onBackground,
-                    contentColor = colorScheme.background,
-                    actionColor = colorScheme.primary
-                )
-            }
         },
         popupHost = { },
         contentWindowInsets = WindowInsets.systemBars.add(WindowInsets.displayCutout).only(WindowInsetsSides.Horizontal)
@@ -113,7 +99,7 @@ fun SettingScreen(navigator: DestinationsNavigator) {
         val showUninstallDialog = rememberSaveable { mutableStateOf(false) }
         val uninstallDialog = UninstallDialog(showUninstallDialog, navigator)
         val showSendLogDialog = rememberSaveable { mutableStateOf(false) }
-        val sendLogDialog = SendLogDialog(showSendLogDialog, loadingDialog, snackBarHost)
+        val sendLogDialog = SendLogDialog(showSendLogDialog, loadingDialog)
 
         LazyColumn(
             modifier = Modifier

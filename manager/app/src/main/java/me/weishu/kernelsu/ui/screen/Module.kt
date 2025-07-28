@@ -45,11 +45,6 @@ import androidx.compose.material.icons.rounded.Add
 import androidx.compose.material.icons.rounded.Code
 import androidx.compose.material.icons.rounded.Download
 import androidx.compose.material.icons.rounded.PlayArrow
-import androidx.compose.material3.Snackbar
-import androidx.compose.material3.SnackbarDuration
-import androidx.compose.material3.SnackbarHost
-import androidx.compose.material3.SnackbarHostState
-import androidx.compose.material3.SnackbarResult
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -97,11 +92,9 @@ import me.weishu.kernelsu.ui.component.ConfirmResult
 import me.weishu.kernelsu.ui.component.rememberConfirmDialog
 import me.weishu.kernelsu.ui.component.rememberLoadingDialog
 import me.weishu.kernelsu.ui.util.DownloadListener
-import me.weishu.kernelsu.ui.util.LocalSnackbarHost
 import me.weishu.kernelsu.ui.util.download
 import me.weishu.kernelsu.ui.util.getFileName
 import me.weishu.kernelsu.ui.util.hasMagisk
-import me.weishu.kernelsu.ui.util.reboot
 import me.weishu.kernelsu.ui.util.toggleModule
 import me.weishu.kernelsu.ui.util.uninstallModule
 import me.weishu.kernelsu.ui.viewmodel.ModuleViewModel
@@ -136,7 +129,6 @@ fun ModulePager(
 ) {
     val viewModel = viewModel<ModuleViewModel>()
     val context = LocalContext.current
-    val snackBarHost = LocalSnackbarHost.current
     val scope = rememberCoroutineScope()
     val prefs = context.getSharedPreferences("settings", Context.MODE_PRIVATE)
 
@@ -332,16 +324,6 @@ fun ModulePager(
                 )
             }
         },
-        snackbarHost = {
-            SnackbarHost(hostState = snackBarHost) {
-                Snackbar(
-                    snackbarData = it,
-                    containerColor = colorScheme.onBackground,
-                    contentColor = colorScheme.background,
-                    actionColor = colorScheme.primary
-                )
-            }
-        },
         popupHost = { },
         contentWindowInsets = WindowInsets.systemBars.add(WindowInsets.displayCutout).only(WindowInsetsSides.Horizontal)
     ) { innerPadding ->
@@ -386,7 +368,6 @@ fun ModulePager(
                         }
                     },
                     context = context,
-                    snackBarHost = LocalSnackbarHost.current,
                     innerPadding = innerPadding,
                     bottomInnerPadding = bottomInnerPadding
                 )
@@ -403,7 +384,6 @@ private fun ModuleList(
     onInstallModule: (Uri) -> Unit,
     onClickModule: (id: String, name: String, hasWebUi: Boolean) -> Unit,
     context: Context,
-    snackBarHost: SnackbarHostState,
     innerPadding: PaddingValues,
     bottomInnerPadding: Dp
 ) {
@@ -411,7 +391,7 @@ private fun ModuleList(
     val failedDisable = stringResource(R.string.module_failed_to_disable)
     val failedUninstall = stringResource(R.string.module_uninstall_failed)
     val successUninstall = stringResource(R.string.module_uninstall_success)
-    val reboot = stringResource(R.string.reboot)
+    stringResource(R.string.reboot)
     val rebootToApply = stringResource(R.string.reboot_to_apply)
     val moduleStr = stringResource(R.string.module)
     val uninstall = stringResource(R.string.uninstall)
@@ -516,19 +496,7 @@ private fun ModuleList(
         } else {
             failedUninstall.format(module.name)
         }
-        val actionLabel = if (success) {
-            reboot
-        } else {
-            null
-        }
-        val result = snackBarHost.showSnackbar(
-            message = message,
-            actionLabel = actionLabel,
-            duration = SnackbarDuration.Short
-        )
-        if (result == SnackbarResult.ActionPerformed) {
-            reboot()
-        }
+        Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
     }
 
     var isRefreshing by rememberSaveable { mutableStateOf(false) }
@@ -613,18 +581,10 @@ private fun ModuleList(
                                     }
                                     if (success) {
                                         viewModel.fetchModuleList()
-
-                                        val result = snackBarHost.showSnackbar(
-                                            message = rebootToApply,
-                                            actionLabel = reboot,
-                                            duration = SnackbarDuration.Short
-                                        )
-                                        if (result == SnackbarResult.ActionPerformed) {
-                                            reboot()
-                                        }
+                                        Toast.makeText(context, rebootToApply, Toast.LENGTH_SHORT).show()
                                     } else {
                                         val message = if (module.enabled) failedDisable else failedEnable
-                                        snackBarHost.showSnackbar(message.format(module.name))
+                                        Toast.makeText(context, message.format(module.name), Toast.LENGTH_SHORT).show()
                                     }
                                 }
                             },
@@ -709,7 +669,7 @@ fun ModuleItem(
                     text = "$moduleVersion: ${module.version}",
                     fontSize = 14.sp,
                     modifier = Modifier.padding(top = 1.dp),
-                    fontWeight = FontWeight(500),
+                    fontWeight = FontWeight.Medium,
                     color = colorScheme.onSurfaceVariantSummary,
                     textDecoration = textDecoration,
                 )
@@ -717,7 +677,7 @@ fun ModuleItem(
                 Text(
                     text = "$moduleAuthor: ${module.author}",
                     fontSize = 14.sp,
-                    fontWeight = FontWeight(500),
+                    fontWeight = FontWeight.Medium,
                     color = colorScheme.onSurfaceVariantSummary,
                     textDecoration = textDecoration,
                 )

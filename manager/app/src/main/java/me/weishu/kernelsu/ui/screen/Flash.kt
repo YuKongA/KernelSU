@@ -3,6 +3,7 @@ package me.weishu.kernelsu.ui.screen
 import android.net.Uri
 import android.os.Environment
 import android.os.Parcelable
+import android.widget.Toast
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -25,8 +26,6 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Refresh
-import androidx.compose.material3.Snackbar
-import androidx.compose.material3.SnackbarHost
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -38,6 +37,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.input.key.key
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontFamily
@@ -57,7 +57,6 @@ import me.weishu.kernelsu.R
 import me.weishu.kernelsu.ui.component.KeyEventBlocker
 import me.weishu.kernelsu.ui.util.FlashResult
 import me.weishu.kernelsu.ui.util.LkmSelection
-import me.weishu.kernelsu.ui.util.LocalSnackbarHost
 import me.weishu.kernelsu.ui.util.flashModule
 import me.weishu.kernelsu.ui.util.installBoot
 import me.weishu.kernelsu.ui.util.reboot
@@ -116,7 +115,7 @@ fun FlashScreen(
     val logContent = rememberSaveable { StringBuilder() }
     var showFloatAction by rememberSaveable { mutableStateOf(false) }
 
-    val snackBarHost = LocalSnackbarHost.current
+    val context = LocalContext.current
     val scope = rememberCoroutineScope()
     val scrollState = rememberScrollState()
     var flashing by rememberSaveable {
@@ -165,7 +164,7 @@ fun FlashScreen(
                             "KernelSU_install_log_${date}.log"
                         )
                         file.writeText(logContent.toString())
-                        snackBarHost.showSnackbar("Log saved to ${file.absolutePath}")
+                        Toast.makeText(context, "Log saved to ${file.absolutePath}", Toast.LENGTH_SHORT).show()
                     }
                 },
             )
@@ -196,16 +195,6 @@ fun FlashScreen(
                             tint = Color.White
                         )
                     },
-                )
-            }
-        },
-        snackbarHost = {
-            SnackbarHost(hostState = snackBarHost) {
-                Snackbar(
-                    snackbarData = it,
-                    containerColor = colorScheme.onBackground,
-                    contentColor = colorScheme.background,
-                    actionColor = colorScheme.primary
                 )
             }
         },

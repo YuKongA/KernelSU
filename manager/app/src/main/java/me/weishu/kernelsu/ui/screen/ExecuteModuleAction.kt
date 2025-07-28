@@ -1,6 +1,7 @@
 package me.weishu.kernelsu.ui.screen
 
 import android.os.Environment
+import android.widget.Toast
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
@@ -18,8 +19,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.Snackbar
-import androidx.compose.material3.SnackbarHost
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -30,6 +29,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.input.key.key
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontFamily
@@ -44,7 +44,6 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import me.weishu.kernelsu.R
 import me.weishu.kernelsu.ui.component.KeyEventBlocker
-import me.weishu.kernelsu.ui.util.LocalSnackbarHost
 import me.weishu.kernelsu.ui.util.runModuleAction
 import top.yukonga.miuix.kmp.basic.Icon
 import top.yukonga.miuix.kmp.basic.IconButton
@@ -66,7 +65,7 @@ fun ExecuteModuleActionScreen(navigator: DestinationsNavigator, moduleId: String
     var text by rememberSaveable { mutableStateOf("") }
     var tempText: String
     val logContent = rememberSaveable { StringBuilder() }
-    val snackBarHost = LocalSnackbarHost.current
+    val context = LocalContext.current
     val scope = rememberCoroutineScope()
     val scrollState = rememberScrollState()
     var actionResult: Boolean
@@ -112,20 +111,10 @@ fun ExecuteModuleActionScreen(navigator: DestinationsNavigator, moduleId: String
                             "KernelSU_module_action_log_${date}.log"
                         )
                         file.writeText(logContent.toString())
-                        snackBarHost.showSnackbar("Log saved to ${file.absolutePath}")
+                        Toast.makeText(context, "Log saved to ${file.absolutePath}", Toast.LENGTH_SHORT).show()
                     }
                 },
             )
-        },
-        snackbarHost = {
-            SnackbarHost(hostState = snackBarHost) {
-                Snackbar(
-                    snackbarData = it,
-                    containerColor = colorScheme.onBackground,
-                    contentColor = colorScheme.background,
-                    actionColor = colorScheme.primary
-                )
-            }
         },
         popupHost = { },
         contentWindowInsets = WindowInsets.systemBars.add(WindowInsets.displayCutout).only(WindowInsetsSides.Horizontal)

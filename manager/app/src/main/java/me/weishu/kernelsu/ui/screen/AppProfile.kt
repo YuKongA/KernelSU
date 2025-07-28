@@ -1,5 +1,6 @@
 package me.weishu.kernelsu.ui.screen
 
+import android.widget.Toast
 import androidx.compose.animation.Crossfade
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -22,9 +23,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.AccountCircle
 import androidx.compose.material.icons.rounded.Android
 import androidx.compose.material.icons.rounded.Security
-import androidx.compose.material3.Snackbar
-import androidx.compose.material3.SnackbarHost
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -56,7 +54,6 @@ import me.weishu.kernelsu.ui.component.SuperDropdown
 import me.weishu.kernelsu.ui.component.profile.AppProfileConfig
 import me.weishu.kernelsu.ui.component.profile.RootProfileConfig
 import me.weishu.kernelsu.ui.component.profile.TemplateConfig
-import me.weishu.kernelsu.ui.util.LocalSnackbarHost
 import me.weishu.kernelsu.ui.util.forceStopApp
 import me.weishu.kernelsu.ui.util.getSepolicy
 import me.weishu.kernelsu.ui.util.launchApp
@@ -74,6 +71,7 @@ import top.yukonga.miuix.kmp.basic.MiuixScrollBehavior
 import top.yukonga.miuix.kmp.basic.PopupPositionProvider
 import top.yukonga.miuix.kmp.basic.Scaffold
 import top.yukonga.miuix.kmp.basic.ScrollBehavior
+import top.yukonga.miuix.kmp.basic.Text
 import top.yukonga.miuix.kmp.basic.TopAppBar
 import top.yukonga.miuix.kmp.extra.SuperSwitch
 import top.yukonga.miuix.kmp.icon.MiuixIcons
@@ -93,11 +91,10 @@ fun AppProfileScreen(
     navigator: DestinationsNavigator,
     appInfo: SuperUserViewModel.AppInfo,
 ) {
-    LocalContext.current
-    val snackBarHost = LocalSnackbarHost.current
+    val context = LocalContext.current
     val scrollBehavior = MiuixScrollBehavior()
     val scope = rememberCoroutineScope()
-    val failToUpdateAppProfile = stringResource(R.string.failed_to_update_app_profile).format(appInfo.label)
+    val failToUpdateAppProfile = stringResource(R.string.failed_to_update_app_profile).format(appInfo.label).format(appInfo.uid)
     val failToUpdateSepolicy = stringResource(R.string.failed_to_update_sepolicy).format(appInfo.label)
     val suNotAllowed = stringResource(R.string.su_not_allowed).format(appInfo.label)
 
@@ -117,18 +114,6 @@ fun AppProfileScreen(
                 packageName = packageName,
                 scrollBehavior = scrollBehavior,
             )
-        },
-        snackbarHost = {
-            SnackbarHost(
-                hostState = snackBarHost
-            ) {
-                Snackbar(
-                    snackbarData = it,
-                    containerColor = colorScheme.onBackground,
-                    contentColor = colorScheme.background,
-                    actionColor = colorScheme.primary
-                )
-            }
         },
         popupHost = { },
         contentWindowInsets = WindowInsets.systemBars.add(WindowInsets.displayCutout).only(WindowInsetsSides.Horizontal)
@@ -172,16 +157,16 @@ fun AppProfileScreen(
                             if (it.allowSu) {
                                 // sync with allowlist.c - forbid_system_uid
                                 if (appInfo.uid < 2000 && appInfo.uid != 1000) {
-                                    snackBarHost.showSnackbar(suNotAllowed)
+                                    Toast.makeText(context, suNotAllowed, Toast.LENGTH_SHORT).show()
                                     return@launch
                                 }
                                 if (!it.rootUseDefault && it.rules.isNotEmpty() && !setSepolicy(profile.name, it.rules)) {
-                                    snackBarHost.showSnackbar(failToUpdateSepolicy)
+                                    Toast.makeText(context, failToUpdateSepolicy, Toast.LENGTH_SHORT).show()
                                     return@launch
                                 }
                             }
                             if (!Natives.setAppProfile(it)) {
-                                snackBarHost.showSnackbar(failToUpdateAppProfile.format(appInfo.uid))
+                                Toast.makeText(context, failToUpdateAppProfile, Toast.LENGTH_SHORT).show()
                             } else {
                                 profile = it
                             }

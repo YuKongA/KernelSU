@@ -15,9 +15,7 @@ import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.PagerState
 import androidx.compose.foundation.pager.rememberPagerState
-import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
@@ -45,7 +43,6 @@ import me.weishu.kernelsu.ui.screen.HomePager
 import me.weishu.kernelsu.ui.screen.ModulePager
 import me.weishu.kernelsu.ui.screen.SuperUserPager
 import me.weishu.kernelsu.ui.theme.KernelSUTheme
-import me.weishu.kernelsu.ui.util.LocalSnackbarHost
 import me.weishu.kernelsu.ui.util.install
 import me.weishu.kernelsu.ui.util.rootAvailable
 import top.yukonga.miuix.kmp.basic.NavigationBar
@@ -71,51 +68,46 @@ class MainActivity : ComponentActivity() {
         setContent {
             KernelSUTheme {
                 val navController = rememberNavController()
-                val snackBarHostState = remember { SnackbarHostState() }
 
                 Scaffold { innerPadding ->
-                    CompositionLocalProvider(
-                        LocalSnackbarHost provides snackBarHostState,
-                    ) {
-                        DestinationsNavHost(
-                            modifier = Modifier,
-                            navGraph = NavGraphs.root,
-                            navController = navController,
-                            defaultTransitions = object : NavHostAnimatedDestinationStyle() {
-                                override val enterTransition: AnimatedContentTransitionScope<NavBackStackEntry>.() -> EnterTransition =
-                                    {
-                                        slideInHorizontally(
-                                            initialOffsetX = { it },
-                                            animationSpec = tween(durationMillis = 500, easing = FastOutSlowInEasing)
-                                        )
-                                    }
+                    DestinationsNavHost(
+                        modifier = Modifier,
+                        navGraph = NavGraphs.root,
+                        navController = navController,
+                        defaultTransitions = object : NavHostAnimatedDestinationStyle() {
+                            override val enterTransition: AnimatedContentTransitionScope<NavBackStackEntry>.() -> EnterTransition =
+                                {
+                                    slideInHorizontally(
+                                        initialOffsetX = { it },
+                                        animationSpec = tween(durationMillis = 500, easing = FastOutSlowInEasing)
+                                    )
+                                }
 
-                                override val exitTransition: AnimatedContentTransitionScope<NavBackStackEntry>.() -> ExitTransition =
-                                    {
-                                        slideOutHorizontally(
-                                            targetOffsetX = { -it / 5 },
-                                            animationSpec = tween(durationMillis = 500, easing = FastOutSlowInEasing)
-                                        )
-                                    }
+                            override val exitTransition: AnimatedContentTransitionScope<NavBackStackEntry>.() -> ExitTransition =
+                                {
+                                    slideOutHorizontally(
+                                        targetOffsetX = { -it / 5 },
+                                        animationSpec = tween(durationMillis = 500, easing = FastOutSlowInEasing)
+                                    )
+                                }
 
-                                override val popEnterTransition: AnimatedContentTransitionScope<NavBackStackEntry>.() -> EnterTransition =
-                                    {
-                                        slideInHorizontally(
-                                            initialOffsetX = { -it / 5 },
-                                            animationSpec = tween(durationMillis = 500, easing = FastOutSlowInEasing)
-                                        )
-                                    }
+                            override val popEnterTransition: AnimatedContentTransitionScope<NavBackStackEntry>.() -> EnterTransition =
+                                {
+                                    slideInHorizontally(
+                                        initialOffsetX = { -it / 5 },
+                                        animationSpec = tween(durationMillis = 500, easing = FastOutSlowInEasing)
+                                    )
+                                }
 
-                                override val popExitTransition: AnimatedContentTransitionScope<NavBackStackEntry>.() -> ExitTransition =
-                                    {
-                                        slideOutHorizontally(
-                                            targetOffsetX = { it },
-                                            animationSpec = tween(durationMillis = 500, easing = FastOutSlowInEasing)
-                                        )
-                                    }
-                            }
-                        )
-                    }
+                            override val popExitTransition: AnimatedContentTransitionScope<NavBackStackEntry>.() -> ExitTransition =
+                                {
+                                    slideOutHorizontally(
+                                        targetOffsetX = { it },
+                                        animationSpec = tween(durationMillis = 500, easing = FastOutSlowInEasing)
+                                    )
+                                }
+                        }
+                    )
                 }
             }
         }
