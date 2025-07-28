@@ -30,6 +30,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import io.noties.markwon.Markwon
@@ -45,6 +46,7 @@ import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.parcelize.Parcelize
+import me.weishu.kernelsu.R
 import top.yukonga.miuix.kmp.basic.ButtonDefaults
 import top.yukonga.miuix.kmp.basic.InfiniteProgressIndicator
 import top.yukonga.miuix.kmp.basic.Text
@@ -384,7 +386,16 @@ private fun LoadingDialog(showDialog: MutableState<Boolean>) {
                 modifier = Modifier.fillMaxWidth(),
                 contentAlignment = Alignment.CenterStart
             ) {
-                InfiniteProgressIndicator()
+                Row {
+                    InfiniteProgressIndicator(
+                        color = MiuixTheme.colorScheme.onBackground
+                    )
+                    Text(
+                        modifier = Modifier.padding(start = 12.dp),
+                        text = stringResource(R.string.processing),
+                        fontWeight = FontWeight.Medium
+                    )
+                }
             }
         }
     )

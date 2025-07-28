@@ -241,11 +241,18 @@ fun AppProfileTemplateScreen(
                 isRefreshing = false
             }
         }
+        val refreshTexts = listOf(
+            stringResource(R.string.refresh_pulling),
+            stringResource(R.string.refresh_release),
+            stringResource(R.string.refresh_refresh),
+            stringResource(R.string.refresh_complete),
+        )
         val layoutDirection = LocalLayoutDirection.current
         PullToRefresh(
             isRefreshing = isRefreshing,
             pullToRefreshState = pullToRefreshState,
             onRefresh = { isRefreshing = true },
+            refreshTexts = refreshTexts,
             contentPadding = PaddingValues(
                 top = innerPadding.calculateTopPadding() + 12.dp,
                 start = innerPadding.calculateStartPadding(layoutDirection),

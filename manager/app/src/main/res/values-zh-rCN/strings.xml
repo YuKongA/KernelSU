@@ -138,4 +138,9 @@
     <string name="settings_disable_su_summary">临时禁止任何应用通过 su 命令获取 root 权限（已运行的 root 进程不受影响）</string>
     <string name="module_install_prompt_with_name">将安装以下模块：%1$s</string>
     <string name="confirm">确认</string>
+    <string name="processing">处理中…</string>
+    <string name="refresh_pulling">下拉刷新</string>
+    <string name="refresh_release">松开刷新</string>
+    <string name="refresh_refresh">正在刷新…</string>
+    <string name="refresh_complete">刷新成功</string>
 </resources>
