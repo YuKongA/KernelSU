@@ -17,10 +17,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.rounded.ArrowBack
-import androidx.compose.material.icons.rounded.DeleteForever
-import androidx.compose.material.icons.rounded.Save
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -54,6 +50,10 @@ import top.yukonga.miuix.kmp.basic.MiuixScrollBehavior
 import top.yukonga.miuix.kmp.basic.Scaffold
 import top.yukonga.miuix.kmp.basic.ScrollBehavior
 import top.yukonga.miuix.kmp.basic.TopAppBar
+import top.yukonga.miuix.kmp.icon.MiuixIcons
+import top.yukonga.miuix.kmp.icon.icons.useful.Back
+import top.yukonga.miuix.kmp.icon.icons.useful.Confirm
+import top.yukonga.miuix.kmp.icon.icons.useful.Delete
 import top.yukonga.miuix.kmp.theme.MiuixTheme.colorScheme
 import top.yukonga.miuix.kmp.utils.getWindowSize
 import top.yukonga.miuix.kmp.utils.overScrollVertical
@@ -308,7 +308,7 @@ private fun TopBar(
                 onClick = onBack
             ) {
                 Icon(
-                    Icons.AutoMirrored.Rounded.ArrowBack,
+                    imageVector = MiuixIcons.Useful.Back,
                     contentDescription = null,
                     tint = colorScheme.onBackground
                 )
@@ -323,7 +323,7 @@ private fun TopBar(
                 onClick = onDelete
             ) {
                 Icon(
-                    Icons.Rounded.DeleteForever,
+                    imageVector = MiuixIcons.Useful.Delete,
                     contentDescription = stringResource(id = R.string.app_profile_template_delete),
                     tint = colorScheme.onBackground
                 )
@@ -333,7 +333,7 @@ private fun TopBar(
                 onClick = onSave
             ) {
                 Icon(
-                    imageVector = Icons.Rounded.Save,
+                    imageVector = MiuixIcons.Useful.Confirm,
                     contentDescription = stringResource(id = R.string.app_profile_template_save),
                     tint = colorScheme.onBackground
                 )
