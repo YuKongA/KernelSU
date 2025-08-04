@@ -79,6 +79,7 @@ import me.weishu.kernelsu.ui.util.reboot
 import me.weishu.kernelsu.ui.util.rootAvailable
 import top.yukonga.miuix.kmp.basic.BasicComponent
 import top.yukonga.miuix.kmp.basic.Card
+import top.yukonga.miuix.kmp.basic.CardDefaults
 import top.yukonga.miuix.kmp.basic.Icon
 import top.yukonga.miuix.kmp.basic.IconButton
 import top.yukonga.miuix.kmp.basic.ListPopup
@@ -419,7 +420,9 @@ private fun StatusCard(
                         modifier = Modifier
                             .padding(end = 12.dp)
                             .weight(1f),
-                        color = if (isSystemInDarkTheme()) Color(0xFF1A3825) else Color(0xFFDFFAE4),
+                        colors = CardDefaults.defaultColors(
+                            color = if (isSystemInDarkTheme()) Color(0xFF1A3825) else Color(0xFFDFFAE4)
+                        ),
                         onClick = {
                             if (kernelVersion.isGKI()) onClickInstall()
                         },
@@ -579,10 +582,12 @@ fun WarningCard(
     onClick: (() -> Unit)? = null
 ) {
     Card(
-        color = color,
         onClick = {
             onClick?.invoke()
         },
+        colors = CardDefaults.defaultColors(
+            color = color
+        ),
         showIndication = onClick != null,
         pressFeedbackType = PressFeedbackType.Tilt
     ) {

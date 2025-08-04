@@ -233,8 +233,7 @@ private fun SelectInstallMethod(onSelected: (InstallMethod) -> Unit = {}) {
     val selectFileTip = stringResource(
         id = R.string.select_file_tip, if (isInitBoot()) "init_boot" else "boot"
     )
-    val radioOptions =
-        mutableListOf<InstallMethod>(InstallMethod.SelectFile(summary = selectFileTip))
+    val radioOptions = mutableListOf<InstallMethod>(InstallMethod.SelectFile(summary = selectFileTip))
     if (rootAvailable) {
         radioOptions.add(InstallMethod.DirectInstall)
 
@@ -256,10 +255,13 @@ private fun SelectInstallMethod(onSelected: (InstallMethod) -> Unit = {}) {
         }
     }
 
-    val confirmDialog = rememberConfirmDialog(onConfirm = {
-        selectedOption = InstallMethod.DirectInstallToInactiveSlot
-        onSelected(InstallMethod.DirectInstallToInactiveSlot)
-    }, onDismiss = null)
+    val confirmDialog = rememberConfirmDialog(
+        onConfirm = {
+            selectedOption = InstallMethod.DirectInstallToInactiveSlot
+            onSelected(InstallMethod.DirectInstallToInactiveSlot)
+        },
+        onDismiss = null
+    )
     val dialogTitle = stringResource(id = android.R.string.dialog_alert_title)
     val dialogContent = stringResource(id = R.string.install_inactive_slot_warning)
 

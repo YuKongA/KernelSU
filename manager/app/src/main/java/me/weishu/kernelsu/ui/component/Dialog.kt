@@ -52,7 +52,6 @@ import top.yukonga.miuix.kmp.basic.InfiniteProgressIndicator
 import top.yukonga.miuix.kmp.basic.Text
 import top.yukonga.miuix.kmp.basic.TextButton
 import top.yukonga.miuix.kmp.extra.SuperDialog
-import top.yukonga.miuix.kmp.theme.LocalColors
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 import kotlin.coroutines.resume
 
@@ -386,7 +385,10 @@ private fun LoadingDialog(showDialog: MutableState<Boolean>) {
                 modifier = Modifier.fillMaxWidth(),
                 contentAlignment = Alignment.CenterStart
             ) {
-                Row {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.Start,
+                ) {
                     InfiniteProgressIndicator(
                         color = MiuixTheme.colorScheme.onBackground
                     )
@@ -420,10 +422,7 @@ private fun ConfirmDialog(
                     if (visuals.isMarkdown) {
                         MarkdownContent(content = visuals.content!!)
                     } else {
-                        Text(
-                            text = visuals.content!!,
-                            fontSize = MiuixTheme.textStyles.body2.fontSize
-                        )
+                        Text(text = visuals.content!!)
                     }
                 }
                 Row(
@@ -456,7 +455,7 @@ private fun ConfirmDialog(
 
 @Composable
 private fun MarkdownContent(content: String) {
-    val contentColor = LocalColors.current
+    val contentColor = MiuixTheme.colorScheme.onBackground.toArgb()
 
     AndroidView(
         factory = { context ->
@@ -477,7 +476,7 @@ private fun MarkdownContent(content: String) {
             .wrapContentHeight(),
         update = {
             Markwon.create(it.context).setMarkdown(it, content)
-            it.setTextColor(contentColor.onBackground.toArgb())
+            it.setTextColor(contentColor)
         }
     )
 }
