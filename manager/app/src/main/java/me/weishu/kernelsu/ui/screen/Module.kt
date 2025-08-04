@@ -9,9 +9,7 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.tween
-import androidx.compose.foundation.LocalIndication
 import androidx.compose.foundation.border
-import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -37,7 +35,6 @@ import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Delete
@@ -65,7 +62,6 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
@@ -119,6 +115,7 @@ import top.yukonga.miuix.kmp.extra.DropdownImpl
 import top.yukonga.miuix.kmp.icon.MiuixIcons
 import top.yukonga.miuix.kmp.icon.icons.useful.ImmersionMore
 import top.yukonga.miuix.kmp.theme.MiuixTheme.colorScheme
+import top.yukonga.miuix.kmp.utils.PressFeedbackType
 import top.yukonga.miuix.kmp.utils.getWindowSize
 import top.yukonga.miuix.kmp.utils.overScrollVertical
 
@@ -629,15 +626,28 @@ fun ModuleItem(
     onUpdate: (ModuleViewModel.ModuleInfo) -> Unit,
     onClick: (ModuleViewModel.ModuleInfo) -> Unit
 ) {
+    val textDecoration = if (!module.remove) null else TextDecoration.LineThrough
+    val viewModel = viewModel<ModuleViewModel>()
+
     Card(
         modifier = Modifier.fillMaxWidth(),
-        insideMargin = PaddingValues(16.dp)
+        insideMargin = PaddingValues(16.dp),
+        onClick = {
+            if (module.hasWebUi && module.enabled && !module.remove) {
+                onClick(module)
+            }
+        },
+        onLongPress = {
+            if (module.hasActionScript && module.enabled && !module.remove) {
+                navigator.navigate(ExecuteModuleActionScreenDestination(module.id)) {
+                    launchSingleTop = true
+                }
+                viewModel.markNeedRefresh()
+            }
+        },
+        showIndication = module.hasWebUi && module.enabled && !module.remove,
+        pressFeedbackType = if (module.hasActionScript && module.enabled && !module.remove) PressFeedbackType.Sink else PressFeedbackType.None,
     ) {
-        val textDecoration = if (!module.remove) null else TextDecoration.LineThrough
-        val interactionSource = remember { MutableInteractionSource() }
-        val indication = LocalIndication.current
-        val viewModel = viewModel<ModuleViewModel>()
-
         Row(
             modifier = Modifier,
             verticalAlignment = Alignment.CenterVertically,
@@ -646,20 +656,6 @@ fun ModuleItem(
                 modifier = Modifier
                     .weight(1f)
                     .padding(end = 4.dp)
-                    .run {
-                        if (module.hasWebUi) {
-                            toggleable(
-                                value = module.enabled,
-                                enabled = !module.remove && module.enabled,
-                                interactionSource = interactionSource,
-                                role = Role.Button,
-                                indication = indication,
-                                onValueChange = { onClick(module) }
-                            )
-                        } else {
-                            this
-                        }
-                    }
             ) {
                 val moduleVersion = stringResource(id = R.string.module_version)
                 val moduleAuthor = stringResource(id = R.string.module_author)
@@ -689,7 +685,6 @@ fun ModuleItem(
                     textDecoration = textDecoration,
                 )
             }
-
             Switch(
                 modifier = Modifier,
                 checked = module.enabled,
