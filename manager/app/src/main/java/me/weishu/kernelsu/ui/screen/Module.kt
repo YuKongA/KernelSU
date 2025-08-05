@@ -115,7 +115,6 @@ import top.yukonga.miuix.kmp.extra.DropdownImpl
 import top.yukonga.miuix.kmp.icon.MiuixIcons
 import top.yukonga.miuix.kmp.icon.icons.useful.ImmersionMore
 import top.yukonga.miuix.kmp.theme.MiuixTheme.colorScheme
-import top.yukonga.miuix.kmp.utils.PressFeedbackType
 import top.yukonga.miuix.kmp.utils.getWindowSize
 import top.yukonga.miuix.kmp.utils.overScrollVertical
 
@@ -631,22 +630,7 @@ fun ModuleItem(
 
     Card(
         modifier = Modifier.fillMaxWidth(),
-        insideMargin = PaddingValues(16.dp),
-        onClick = {
-            if (module.hasWebUi && module.enabled && !module.remove) {
-                onClick(module)
-            }
-        },
-        onLongPress = {
-            if (module.hasActionScript && module.enabled && !module.remove) {
-                navigator.navigate(ExecuteModuleActionScreenDestination(module.id)) {
-                    launchSingleTop = true
-                }
-                viewModel.markNeedRefresh()
-            }
-        },
-        showIndication = module.hasWebUi && module.enabled && !module.remove,
-        pressFeedbackType = if (module.hasActionScript && module.enabled && !module.remove) PressFeedbackType.Sink else PressFeedbackType.None,
+        insideMargin = PaddingValues(16.dp)
     ) {
         Row(
             modifier = Modifier,
