@@ -66,7 +66,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -76,7 +75,6 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.ramcosta.composedestinations.generated.destinations.ExecuteModuleActionScreenDestination
 import com.ramcosta.composedestinations.generated.destinations.FlashScreenDestination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
-import com.ramcosta.composedestinations.navigation.EmptyDestinationsNavigator
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -298,7 +296,7 @@ fun ModulePager(
                 FloatingActionButton(
                     modifier = Modifier
                         .offset(y = offsetHeight)
-                        .padding(bottom = bottomInnerPadding + 27.dp, end = 20.dp)
+                        .padding(bottom = bottomInnerPadding + 20.dp, end = 20.dp)
                         .border(0.05.dp, colorScheme.outline.copy(alpha = 0.5f), CircleShape),
                     shadowElevation = 0.dp,
                     onClick = {
@@ -812,24 +810,3 @@ fun ModuleItem(
         }
     }
 }
-
-@Preview
-@Composable
-fun ModuleItemPreview() {
-    val module = ModuleViewModel.ModuleInfo(
-        id = "id",
-        name = "name",
-        version = "version",
-        versionCode = 1,
-        author = "author",
-        description = "I am a test module and i do nothing but show a very long description",
-        enabled = true,
-        update = true,
-        remove = false,
-        updateJson = "",
-        hasWebUi = false,
-        hasActionScript = false
-    )
-    ModuleItem(EmptyDestinationsNavigator, module, "", {}, {}, {}, {})
-}
-

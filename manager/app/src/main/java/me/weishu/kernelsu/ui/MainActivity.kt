@@ -13,15 +13,10 @@ import androidx.compose.animation.core.tween
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.foundation.pager.HorizontalPager
-import androidx.compose.foundation.pager.PagerState
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.unit.dp
 import androidx.navigation.NavBackStackEntry
 import androidx.navigation.compose.rememberNavController
 import com.ramcosta.composedestinations.DestinationsNavHost
@@ -33,20 +28,15 @@ import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import dev.chrisbanes.haze.HazeState
 import dev.chrisbanes.haze.HazeStyle
 import dev.chrisbanes.haze.HazeTint
-import dev.chrisbanes.haze.hazeEffect
 import dev.chrisbanes.haze.hazeSource
-import kotlinx.coroutines.launch
 import me.weishu.kernelsu.Natives
 import me.weishu.kernelsu.ksuApp
-import me.weishu.kernelsu.ui.screen.BottomBarDestination
+import me.weishu.kernelsu.ui.component.BottomBar
 import me.weishu.kernelsu.ui.screen.HomePager
 import me.weishu.kernelsu.ui.screen.ModulePager
 import me.weishu.kernelsu.ui.screen.SuperUserPager
 import me.weishu.kernelsu.ui.theme.KernelSUTheme
 import me.weishu.kernelsu.ui.util.install
-import me.weishu.kernelsu.ui.util.rootAvailable
-import top.yukonga.miuix.kmp.basic.NavigationBar
-import top.yukonga.miuix.kmp.basic.NavigationItem
 import top.yukonga.miuix.kmp.basic.Scaffold
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 
@@ -125,7 +115,9 @@ fun MainScreen(navController: DestinationsNavigator) {
     )
 
     Scaffold(
-        bottomBar = { BottomBar(pagerState, hazeState, hazeStyle) },
+        bottomBar = {
+            BottomBar(pagerState, hazeState, hazeStyle)
+        },
     ) { innerPadding ->
         HorizontalPager(
             modifier = Modifier
@@ -141,44 +133,4 @@ fun MainScreen(navController: DestinationsNavigator) {
             }
         }
     }
-}
-
-
-@Composable
-private fun BottomBar(
-    pagerState: PagerState,
-    hazeState: HazeState,
-    hazeStyle: HazeStyle
-) {
-    val isManager = Natives.becomeManager(ksuApp.packageName)
-    val fullFeatured = isManager && !Natives.requireNewKernel() && rootAvailable()
-
-    if (!fullFeatured) return
-
-    val currentPager = pagerState.currentPage
-    val coroutineScope = rememberCoroutineScope()
-
-    val item = BottomBarDestination.entries.mapIndexed { index, destination ->
-        NavigationItem(
-            label = stringResource(destination.label),
-            icon = if (currentPager == index) destination.iconSelected else destination.iconNotSelected,
-        )
-    }
-
-    NavigationBar(
-        modifier = Modifier
-            .hazeEffect(hazeState) {
-                style = hazeStyle
-                blurRadius = 30.dp
-                noiseFactor = 0f
-            },
-        color = Color.Transparent,
-        items = item,
-        selected = currentPager,
-        onClick = { index ->
-            coroutineScope.launch {
-                pagerState.animateScrollToPage(index)
-            }
-        }
-    )
 }

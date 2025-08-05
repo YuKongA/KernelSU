@@ -216,7 +216,8 @@ fun AppProfileTemplateScreen(
                     .offset(y = offsetHeight)
                     .padding(
                         bottom = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding() +
-                                WindowInsets.captionBar.asPaddingValues().calculateBottomPadding() + 10.dp, end = 20.dp
+                                WindowInsets.captionBar.asPaddingValues().calculateBottomPadding() + 20.dp,
+                        end = 20.dp
                     )
                     .border(0.05.dp, colorScheme.outline.copy(alpha = 0.5f), CircleShape),
                 content = {

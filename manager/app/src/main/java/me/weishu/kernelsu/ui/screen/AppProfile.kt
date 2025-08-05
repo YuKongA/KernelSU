@@ -21,7 +21,6 @@ import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.AccountCircle
-import androidx.compose.material.icons.rounded.Android
 import androidx.compose.material.icons.rounded.Security
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -36,7 +35,6 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.dropUnlessResumed
@@ -457,20 +455,3 @@ private fun ProfileBox(
 
     }
 }
-
-
-@Preview
-@Composable
-private fun AppProfilePreview() {
-    var profile by remember { mutableStateOf(Natives.Profile("")) }
-    AppProfileInner(
-        packageName = "icu.nullptr.test",
-        appLabel = "Test",
-        appIcon = { Icon(Icons.Rounded.Android, null) },
-        profile = profile,
-        onProfileChange = {
-            profile = it
-        },
-    )
-}
-

@@ -51,7 +51,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -493,7 +492,6 @@ private fun StatusCard(
                                     color = colorScheme.onSurface
                                 )
                             }
-
                         }
                         Spacer(Modifier.height(12.dp))
                         Card(
@@ -714,27 +712,4 @@ fun getManagerVersion(context: Context): Pair<String, Long> {
     val packageInfo = context.packageManager.getPackageInfo(context.packageName, 0)!!
     val versionCode = PackageInfoCompat.getLongVersionCode(packageInfo)
     return Pair(packageInfo.versionName!!, versionCode)
-}
-
-@Preview
-@Composable
-private fun StatusCardPreview() {
-    Column {
-        StatusCard(KernelVersion(5, 10, 101), 1, null)
-        StatusCard(KernelVersion(5, 10, 101), 20000, true)
-        StatusCard(KernelVersion(5, 10, 101), null, true)
-        StatusCard(KernelVersion(4, 10, 101), null, false)
-    }
-}
-
-@Preview
-@Composable
-private fun WarningCardPreview() {
-    Column {
-        WarningCard(message = "Warning message")
-        WarningCard(
-            message = "Warning message ",
-            colorScheme.outline,
-            onClick = {})
-    }
 }
