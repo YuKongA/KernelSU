@@ -100,6 +100,7 @@ import top.yukonga.miuix.kmp.theme.MiuixTheme.colorScheme
 import top.yukonga.miuix.kmp.utils.PressFeedbackType
 import top.yukonga.miuix.kmp.utils.getWindowSize
 import top.yukonga.miuix.kmp.utils.overScrollVertical
+import top.yukonga.miuix.kmp.utils.scrollEndHaptic
 
 /**
  * @author weishu
@@ -263,6 +264,7 @@ fun AppProfileTemplateScreen(
             LazyColumn(
                 modifier = Modifier
                     .height(getWindowSize().height.dp)
+                    .scrollEndHaptic()
                     .overScrollVertical()
                     .nestedScroll(nestedScrollConnection)
                     .nestedScroll(scrollBehavior.nestedScrollConnection)

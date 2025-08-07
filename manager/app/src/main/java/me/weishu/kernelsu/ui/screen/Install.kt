@@ -69,6 +69,7 @@ import top.yukonga.miuix.kmp.theme.MiuixTheme
 import top.yukonga.miuix.kmp.theme.MiuixTheme.colorScheme
 import top.yukonga.miuix.kmp.utils.getWindowSize
 import top.yukonga.miuix.kmp.utils.overScrollVertical
+import top.yukonga.miuix.kmp.utils.scrollEndHaptic
 
 /**
  * @author weishu
@@ -149,6 +150,7 @@ fun InstallScreen(navigator: DestinationsNavigator) {
         LazyColumn(
             modifier = Modifier
                 .height(getWindowSize().height.dp)
+                .scrollEndHaptic()
                 .overScrollVertical()
                 .nestedScroll(scrollBehavior.nestedScrollConnection)
                 .padding(top = 12.dp)

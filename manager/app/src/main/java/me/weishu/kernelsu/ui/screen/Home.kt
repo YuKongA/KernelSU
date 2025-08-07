@@ -99,6 +99,7 @@ import top.yukonga.miuix.kmp.theme.MiuixTheme.colorScheme
 import top.yukonga.miuix.kmp.utils.PressFeedbackType
 import top.yukonga.miuix.kmp.utils.getWindowSize
 import top.yukonga.miuix.kmp.utils.overScrollVertical
+import top.yukonga.miuix.kmp.utils.scrollEndHaptic
 
 @Composable
 fun HomePager(
@@ -108,7 +109,6 @@ fun HomePager(
 ) {
     val kernelVersion = getKernelVersion()
     val scrollBehavior = MiuixScrollBehavior()
-    val coroutineScope = rememberCoroutineScope()
 
     Scaffold(
         topBar = {
@@ -139,6 +139,7 @@ fun HomePager(
         LazyColumn(
             modifier = Modifier
                 .height(getWindowSize().height.dp)
+                .scrollEndHaptic()
                 .overScrollVertical()
                 .nestedScroll(scrollBehavior.nestedScrollConnection)
                 .padding(horizontal = 12.dp),
@@ -146,6 +147,7 @@ fun HomePager(
             overscrollEffect = null,
         ) {
             item {
+                val coroutineScope = rememberCoroutineScope()
                 val isManager = Natives.becomeManager(ksuApp.packageName)
                 val ksuVersion = if (isManager) Natives.version else null
                 val lkmMode = ksuVersion?.let {
@@ -431,6 +433,19 @@ private fun StatusCard(
                         Box(
                             modifier = Modifier.fillMaxSize()
                         ) {
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .offset(38.dp, 45.dp),
+                                contentAlignment = Alignment.BottomEnd
+                            ) {
+                                Icon(
+                                    modifier = Modifier.size(170.dp),
+                                    imageVector = Icons.Rounded.CheckCircleOutline,
+                                    tint = Color(0xFF36D167),
+                                    contentDescription = null
+                                )
+                            }
                             Column(
                                 modifier = Modifier
                                     .fillMaxSize()
@@ -447,19 +462,6 @@ private fun StatusCard(
                                     stringResource(R.string.home_working_version, ksuVersion),
                                     fontSize = 14.sp,
                                     fontWeight = FontWeight.Medium,
-                                )
-                            }
-                            Box(
-                                modifier = Modifier
-                                    .fillMaxSize()
-                                    .offset(38.dp, 45.dp),
-                                contentAlignment = Alignment.BottomEnd
-                            ) {
-                                Icon(
-                                    modifier = Modifier.size(170.dp),
-                                    imageVector = Icons.Rounded.CheckCircleOutline,
-                                    tint = Color(0xFF36D167),
-                                    contentDescription = null
                                 )
                             }
                         }

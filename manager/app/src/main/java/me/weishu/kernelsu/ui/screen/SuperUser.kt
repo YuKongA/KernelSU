@@ -83,6 +83,7 @@ import top.yukonga.miuix.kmp.theme.MiuixTheme.colorScheme
 import top.yukonga.miuix.kmp.utils.PressFeedbackType
 import top.yukonga.miuix.kmp.utils.getWindowSize
 import top.yukonga.miuix.kmp.utils.overScrollVertical
+import top.yukonga.miuix.kmp.utils.scrollEndHaptic
 
 @Composable
 fun SuperUserPager(
@@ -253,8 +254,8 @@ fun SuperUserPager(
                     LazyColumn(
                         state = listState,
                         modifier = Modifier
-                            .fillMaxSize()
                             .height(getWindowSize().height.dp)
+                            .scrollEndHaptic()
                             .overScrollVertical()
                             .nestedScroll(scrollBehavior.nestedScrollConnection),
                         contentPadding = PaddingValues(

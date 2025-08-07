@@ -57,6 +57,7 @@ import top.yukonga.miuix.kmp.icon.icons.useful.Delete
 import top.yukonga.miuix.kmp.theme.MiuixTheme.colorScheme
 import top.yukonga.miuix.kmp.utils.getWindowSize
 import top.yukonga.miuix.kmp.utils.overScrollVertical
+import top.yukonga.miuix.kmp.utils.scrollEndHaptic
 
 /**
  * @author weishu
@@ -134,6 +135,7 @@ fun TemplateEditorScreen(
         LazyColumn(
             modifier = Modifier
                 .height(getWindowSize().height.dp)
+                .scrollEndHaptic()
                 .overScrollVertical()
                 .nestedScroll(scrollBehavior.nestedScrollConnection)
                 .pointerInteropFilter {

@@ -70,6 +70,7 @@ import top.yukonga.miuix.kmp.icon.MiuixIcons
 import top.yukonga.miuix.kmp.icon.icons.useful.Back
 import top.yukonga.miuix.kmp.icon.icons.useful.Save
 import top.yukonga.miuix.kmp.theme.MiuixTheme.colorScheme
+import top.yukonga.miuix.kmp.utils.scrollEndHaptic
 import java.io.File
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -208,6 +209,7 @@ fun FlashScreen(
         Column(
             modifier = Modifier
                 .fillMaxSize(1f)
+                .scrollEndHaptic()
                 .padding(
                     start = innerPadding.calculateStartPadding(layoutDirection),
                     end = innerPadding.calculateStartPadding(layoutDirection),

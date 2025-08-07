@@ -115,6 +115,7 @@ import top.yukonga.miuix.kmp.icon.icons.useful.ImmersionMore
 import top.yukonga.miuix.kmp.theme.MiuixTheme.colorScheme
 import top.yukonga.miuix.kmp.utils.getWindowSize
 import top.yukonga.miuix.kmp.utils.overScrollVertical
+import top.yukonga.miuix.kmp.utils.scrollEndHaptic
 
 @Composable
 fun ModulePager(
@@ -342,6 +343,7 @@ fun ModulePager(
                     viewModel = viewModel,
                     modifier = Modifier
                         .height(getWindowSize().height.dp)
+                        .scrollEndHaptic()
                         .overScrollVertical()
                         .nestedScroll(nestedScrollConnection)
                         .nestedScroll(scrollBehavior.nestedScrollConnection)

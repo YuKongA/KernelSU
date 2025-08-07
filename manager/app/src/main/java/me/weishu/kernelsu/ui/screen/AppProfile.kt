@@ -78,6 +78,7 @@ import top.yukonga.miuix.kmp.icon.icons.useful.ImmersionMore
 import top.yukonga.miuix.kmp.theme.MiuixTheme.colorScheme
 import top.yukonga.miuix.kmp.utils.getWindowSize
 import top.yukonga.miuix.kmp.utils.overScrollVertical
+import top.yukonga.miuix.kmp.utils.scrollEndHaptic
 
 /**
  * @author weishu
@@ -120,6 +121,7 @@ fun AppProfileScreen(
             modifier = Modifier
                 .height(getWindowSize().height.dp)
                 .padding(top = 16.dp)
+                .scrollEndHaptic()
                 .overScrollVertical()
                 .nestedScroll(scrollBehavior.nestedScrollConnection),
             contentPadding = innerPadding,
@@ -452,6 +454,5 @@ private fun ProfileBox(
         ) {
             onModeChange(modesAndTitles[it].first)
         }
-
     }
 }
