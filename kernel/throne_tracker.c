@@ -188,13 +188,17 @@ FILLDIR_RETURN_TYPE my_actor(struct dir_context *ctx, const char *name,
 			pr_info("Found new base.apk at path: %s, is_manager: %d\n",
 				dirpath, is_manager);
 			if (is_manager) {
-				crown_manager(dirpath, my_ctx->private_data);
-				*my_ctx->stop = 1;
+				char pkg[KSU_MAX_PACKAGE_NAME];
+				if (get_pkg_from_apk_path(pkg, dirpath) == 0 &&
+					strncmp(pkg, "me.weishu.kernelsu", KSU_MAX_PACKAGE_NAME) == 0) {
+					crown_manager(dirpath, my_ctx->private_data);
+					*my_ctx->stop = 1;
 
-				// Manager found, clear APK cache list
-				list_for_each_entry_safe(pos, n, &apk_path_hash_list, list) {
-					list_del(&pos->list);
-					kfree(pos);
+					// Manager found, clear APK cache list
+					list_for_each_entry_safe(pos, n, &apk_path_hash_list, list) {
+						list_del(&pos->list);
+						kfree(pos);
+					}
 				}
 			} else {
 				struct apk_path_hash *apk_data = kmalloc(sizeof(struct apk_path_hash), GFP_ATOMIC);
